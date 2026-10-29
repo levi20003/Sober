@@ -1,0 +1,19 @@
+{
+  "name": "Józanság-számláló",
+  "short_name": "Számláló",
+  "description": "Privát, offline működő segítő a józanság útjához.",
+  "lang": "hu",
+  "dir": "ltr",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14201f",
+  "theme_color": "#14201f",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Segítség most", "short_name": "Segítség", "url": "./#/segitseg", "icons": [{ "src": "icons/icon.svg", "sizes": "any" }] }
+  ]
+}

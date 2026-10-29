@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Zero-server: connect-src 'none' means this page cannot send data anywhere. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#14201f">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Privát, offline működő segítő a józanság útjához.">
+  <title>Józanság-számláló</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon.svg">
+  <noscript><link rel="stylesheet" href="/noscript.css"></noscript>
+  <script type="module" src="/src/main.jsx"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Ugrás a tartalomra</a>
+  <div id="app">
+    <!-- Static crisis fallback. The app replaces it on its first render. If JavaScript is
+         off, or any module fails to load, CSS reveals it after 2.5 s (no inline script
+         needed, so the strict CSP stays intact). Kept in sync with HELPLINES by
+         tests/crisis.test.js. -->
+    <main class="screen boot-fallback" id="main">
+      <h1>Ha most segítségre van szükséged</h1>
+      <p class="card card-emergency">Közvetlen veszély esetén azonnal hívd:
+        <a class="btn btn-call" href="tel:112"><span class="call-number">112</span><span>Általános segélyhívó</span></a></p>
+      <ul class="helplines">
+        <li><a class="btn btn-call btn-primary" href="tel:116123"><span class="call-number">116-123</span><span>S.O.S. Lelki Elsősegély Telefonszolgálat – éjjel-nappal, ingyenes</span></a></li>
+        <li><a class="btn btn-call" href="tel:0680505678"><span class="call-number">06-80-505-678</span><span>Drog Stop segélyvonal – ingyenes</span></a></li>
+        <li><a class="btn btn-call" href="tel:116111"><span class="call-number">116-111</span><span>Kék Vonal – gyerekeknek és fiataloknak</span></a></li>
+      </ul>
+      <p>Lélegezz lassan: 4 ütemre be, 6 ütemre ki. Amit most érzel, el fog múlni.</p>
+      <p class="hint">A Józanság-számláló segít követni és támogatni a józanságod útját. Nem orvosi eszköz, és nem helyettesíti a szakember segítségét.</p>
+    </main>
+  </div>
+  <div id="toast" class="toast-region" aria-live="polite"></div>
+</body>
+</html>

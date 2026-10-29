@@ -1,0 +1,4 @@
+/* Loaded only when JavaScript is disabled: show the crisis fallback immediately.
+   !important because the bundled stylesheet is linked AFTER this one (Vite appends it),
+   so a plain rule would lose the cascade and keep the helplines hidden. */
+.boot-fallback { visibility: visible !important; animation: none !important; }
