@@ -38,3 +38,30 @@ npm run build     # dist/
 npm run serve     # serve dist/ with the production headers, http://127.0.0.1:8080
 npm run e2e       # build + Playwright end-to-end in real Chromium
 ```
+
+## Android: állandó aláírókulcs
+
+Az APK frissítése csak akkor települ a telefonon lévő verzió fölé, ha **ugyanazzal a kulccsal** van aláírva, és a verziókódja nagyobb. A verziókódot a CI adja (`100 + a futás sorszáma`). A kulcsot egyszer kell létrehozni:
+
+```bash
+keytool -genkeypair -v -keystore release.jks -alias sober -keyalg RSA -keysize 4096 -validity 10000
+base64 -w0 release.jks > release.jks.base64     # macOS: base64 -i release.jks | tr -d '\n'
+```
+
+Ezután a GitHubon (**Settings → Secrets and variables → Actions → New repository secret**) négy titkot kell megadni:
+
+| Titok | Érték |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | a `release.jks.base64` fájl teljes tartalma |
+| `ANDROID_KEYSTORE_PASSWORD` | a keystore jelszava |
+| `ANDROID_KEY_ALIAS` | `sober` |
+| `ANDROID_KEY_PASSWORD` | a kulcs jelszava |
+
+- A keystore **soha nem kerülhet a repóba** (a `.gitignore` kizárja a `*.jks`, `*.keystore` fájlokat).
+- **Őrizz meg egy biztonsági másolatot** (jelszókezelő vagy offline tároló). Ha a kulcs elvész, nem lehet többé frissítést kiadni a már telepített appokhoz: az újratelepítéssel a felhasználók naplója is elvész.
+- A CI minden build után kiírja az aláíró tanúsítvány SHA-256 ujjlenyomatát (`apksigner verify --print-certs`) és a kiadás leírásába is beleteszi. Két build ujjlenyomata egyezik, ha a frissítés települni fog.
+- Az első, állandó kulccsal aláírt APK telepítése előtt a telefonról **egyszer el kell távolítani** a korábbi, debug kulccsal aláírt változatot.
+
+## Android: emulátoros próba
+
+A `.github/workflows/android.yml` `emulator-smoke` jobja egy API 35-ös emulátorra telepíti az APK-t, és a `scripts/android-smoke.mjs` a valódi WebView-t a Chrome DevTools protokollal vezérli. A próbabuild WebView-hibakeresése csak ebben a jobban van bekapcsolva (a kiadott APK-ban `webContentsDebuggingEnabled: false`). Hiba esetén a futás annotációi tartalmazzák a lépéseket és a logcat releváns sorait, a képernyőképek az `android-smoke` artifactban vannak.

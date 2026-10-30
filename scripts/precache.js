@@ -6,7 +6,9 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
-const EXCLUDE = /(^|\/)(sw\.js|_headers)$|\.map$/;
+// Dotfiles (.nojekyll, ...) are host configuration, not app files. They are also
+// dropped from the Android APK's assets, so listing them would make the install fail.
+const EXCLUDE = /(^|\/)(sw\.js|_headers)$|\.map$|(^|\/)\.[^/]*$/;
 
 export function listFiles(dir) {
   const out = [];

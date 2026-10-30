@@ -32,6 +32,11 @@ jobs:
       - run: npm run build
       - run: npx cap sync android
 
+      # Minden futás nagyobb verziókódot kap, így az új APK frissítésként települ a régire.
+      # (100 + sorszám: a telefonon már lévő 6-os verziónál mindenképp nagyobb.)
+      - name: Verziókód
+        run: echo "ANDROID_VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+
       - name: Aláírókulcs előkészítése (ha van)
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -39,8 +44,10 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
             echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "SIGNING_KIND=release" >> "$GITHUB_ENV"
           else
-            echo "::warning::Nincs ANDROID_KEYSTORE_BASE64 titok, az APK debug kulccsal készül."
+            echo "SIGNING_KIND=debug" >> "$GITHUB_ENV"
+            echo "::warning::Nincs ANDROID_KEYSTORE_BASE64 titok: az APK ideiglenes debug kulccsal készül, amely minden futásnál más. Az ilyen APK nem települ a korábbi build fölé."
           fi
 
       - name: APK fordítása
@@ -50,6 +57,18 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
+
+      # Az APK-nak érvényes v2 aláírással kell rendelkeznie (Android 7+ ezt követeli meg),
+      # és kiírjuk az aláíró tanúsítvány ujjlenyomatát: két build között akkor egyezik,
+      # ha a frissítés telepíthető.
+      - name: Aláírás ellenőrzése
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs android/app/build/outputs/apk/release/app-release.apk | tee verify.txt
+          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" verify.txt
+          FP=$(grep -m1 "certificate SHA-256 digest" verify.txt | sed 's/.*: //')
+          echo "CERT_SHA256=$FP" >> "$GITHUB_ENV"
+          echo "::notice title=Aláíró tanúsítvány ($SIGNING_KIND kulcs)::SHA-256: $FP, verziókód: $ANDROID_VERSION_CODE"
 
       - name: APK átnevezése és ellenőrzőösszeg
         run: |
@@ -70,9 +89,78 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ "$SIGNING_KIND" = "release" ]; then
+            SIGN_NOTE="állandó kiadási kulcs: az új verziók az előzőre frissítésként települnek"
+          else
+            SIGN_NOTE="IDEIGLENES debug kulcs: ez a build nem települ egy korábbi build fölé, előbb távolítsd el a régit (az adatai elvesznek)"
+          fi
+          cat > "$RUNNER_TEMP/notes.md" <<NOTES
+          Telepíthető APK a main ág $GITHUB_SHA állapotából.
+
+          - Verziókód: $ANDROID_VERSION_CODE
+          - Aláírás: $SIGN_NOTE
+          - Aláíró tanúsítvány SHA-256: \`$CERT_SHA256\`
+          - Ellenőrzőösszeg: jozansag-szamlalo.apk.sha256
+          - Telepítési útmutató: https://levi20003.github.io/Sober/telepites.html
+          NOTES
           gh release delete android-latest --cleanup-tag --yes || true
           gh release create android-latest jozansag-szamlalo.apk jozansag-szamlalo.apk.sha256 \
             --target "$GITHUB_SHA" \
             --title "Józanság-számláló Android (legfrissebb)" \
-            --notes "Telepíthető APK a main ág $GITHUB_SHA állapotából. Ellenőrzőösszeg: jozansag-szamlalo.apk.sha256" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
             --prerelease
+
+  # Valódi telepítés és indítás emulátoron: az APK-t telepítjük, elindítjuk, és a valódi
+  # WebView-t a Chrome DevTools protokollal végigvezetjük a használati folyamaton
+  # (PIN, idővonal, krízisoverlay, 116-123 tárcsázás, újraindítás repülőgép-módban).
+  # A WebView-hibakeresés CSAK ebben a próbabuildben van bekapcsolva; a kiadott APK-ban nem.
+  emulator-smoke:
+    name: Emulátoros próba (valódi WebView)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - run: npm run build
+      - name: WebView-hibakeresés bekapcsolása (csak a próbabuildben)
+        run: |
+          jq '.android.webContentsDebuggingEnabled = true' capacitor.config.json > "$RUNNER_TEMP/cap.json"
+          mv "$RUNNER_TEMP/cap.json" capacitor.config.json
+      - run: npx cap sync android
+      - name: Próba-APK fordítása
+        working-directory: android
+        run: ./gradlew --no-daemon assembleRelease
+      - name: KVM engedélyezése
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      # A v2.37.0 kiadás commitjára rögzítve (nem mozgó címke).
+      - name: Emulátor indítása és smoke teszt
+        uses: reactivecircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          ram-size: 4096M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: node scripts/android-smoke.mjs android/app/build/outputs/apk/release/app-release.apk smoke-out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-smoke
+          path: smoke-out
+          if-no-files-found: ignore
