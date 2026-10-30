@@ -138,9 +138,24 @@ jobs:
           jq '.android.webContentsDebuggingEnabled = true' capacitor.config.json > "$RUNNER_TEMP/cap.json"
           mv "$RUNNER_TEMP/cap.json" capacitor.config.json
       - run: npx cap sync android
-      - name: Próba-APK fordítása
+      # Két build ugyanazzal a (futáson belüli) debug kulccsal, különböző verziókóddal:
+      # a második az elsőre frissítésként települ. A harmadik APK más kulccsal van aláírva,
+      # annak a telepítésnek el kell utasulnia.
+      - name: Próba-APK-k fordítása (1001 és 1002 verziókód)
         working-directory: android
-        run: ./gradlew --no-daemon assembleRelease
+        run: |
+          mkdir -p ../smoke-in
+          ANDROID_VERSION_CODE=1001 ./gradlew --no-daemon assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk ../smoke-in/v1001.apk
+          ANDROID_VERSION_CODE=1002 ./gradlew --no-daemon assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk ../smoke-in/v1002.apk
+      - name: Más kulccsal aláírt APK előállítása
+        run: |
+          keytool -genkeypair -keystore "$RUNNER_TEMP/idegen.jks" -alias idegen -keyalg RSA -keysize 2048 -validity 30 \
+            -storepass idegenjelszo -keypass idegenjelszo -dname "CN=Idegen kulcs"
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/idegen.jks" --ks-pass pass:idegenjelszo --key-pass pass:idegenjelszo \
+            --out smoke-in/foreign.apk smoke-in/v1002.apk
       - name: KVM engedélyezése
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -157,7 +172,7 @@ jobs:
           ram-size: 4096M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: node scripts/android-smoke.mjs android/app/build/outputs/apk/release/app-release.apk smoke-out
+          script: node scripts/android-smoke.mjs smoke-in/v1001.apk smoke-out --upgrade smoke-in/v1002.apk --foreign smoke-in/foreign.apk
       - uses: actions/upload-artifact@v4
         if: always()
         with:

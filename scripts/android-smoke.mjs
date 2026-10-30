@@ -5,7 +5,12 @@
 // crisis overlay + dialer, kill & restart (airplane mode), unlock with data intact,
 // wrong PIN, and that nothing crashed.
 //
-//   node scripts/android-smoke.mjs <app.apk> [outdir]
+//   node scripts/android-smoke.mjs <app.apk> [outdir] [--upgrade <újabb.apk>] [--foreign <idegen-kulcsos.apk>]
+//
+//   --upgrade  ugyanazzal a kulccsal aláírt, nagyobb verziókódú APK: a régi fölé kell települnie,
+//              a napló pedig megmarad
+//   --foreign  más kulccsal aláírt APK: a telepítésnek INSTALL_FAILED_UPDATE_INCOMPATIBLE
+//              hibával el kell utasulnia (ez a telefonon az "Az alkalmazás nem települt")
 //
 // Exits 1 on any failure. In GitHub Actions the verdict is also written as annotations.
 
@@ -17,9 +22,13 @@ import * as flow from './android/flow.mjs';
 const PKG = 'io.github.levi20003.sober';
 const PIN = '48271';
 const PORT = 9222;
-const [apk, outDir = 'smoke-out'] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+const opt = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv.splice(i, 2)[1] : undefined; };
+const upgradeApk = opt('--upgrade');
+const foreignApk = opt('--foreign');
+const [apk, outDir = 'smoke-out'] = argv;
 if (!apk) {
-  console.error('Használat: node scripts/android-smoke.mjs <app.apk> [kimeneti-mappa]');
+  console.error('Használat: node scripts/android-smoke.mjs <app.apk> [kimeneti-mappa] [--upgrade <apk>] [--foreign <apk>]');
   process.exit(2);
 }
 mkdirSync(outDir, { recursive: true });
@@ -84,7 +93,8 @@ try {
   if (!/Success/.test(inst.out)) throw new Error(`Az APK telepítése nem sikerült: ${inst.out.trim().slice(0, 500)}`);
   const pkgInfo = sh(`dumpsys package ${PKG}`);
   const field = (re) => pkgInfo.match(re)?.[1];
-  say(`✓ APK telepítve: verzió ${field(/versionName=(\S+)/)} (code ${field(/versionCode=(\d+)/)}), minSdk ${field(/minSdk=(\d+)/)}, targetSdk ${field(/targetSdk=(\d+)/)}`);
+  const installedCode = Number(field(/versionCode=(\d+)/));
+  say(`✓ APK telepítve: verzió ${field(/versionName=(\S+)/)} (code ${installedCode}), minSdk ${field(/minSdk=(\d+)/)}, targetSdk ${field(/targetSdk=(\d+)/)}`);
 
   // 2. Első indítás
   let { c, problems } = await launch();
@@ -128,7 +138,35 @@ try {
   c.close();
   adb('shell', 'cmd', 'connectivity', 'airplane-mode', 'disable');
 
-  // 5. Összeomlás / hiba a naplóban és a konzolon
+  // 5. Frissítés: ugyanazzal a kulccsal, nagyobb verziókóddal a régi fölé települ, az adat megmarad
+  if (upgradeApk) {
+    const up = adb('install', '-r', upgradeApk);
+    if (!/Success/.test(up.out)) throw new Error(`Az újabb APK nem települt a régi fölé: ${up.out.trim().slice(0, 500)}`);
+    const newCode = Number(sh(`dumpsys package ${PKG}`).match(/versionCode=(\d+)/)?.[1]);
+    if (!(newCode > installedCode)) throw new Error(`A frissítés után a verziókód nem nőtt: ${installedCode} -> ${newCode}`);
+    say(`✓ frissítés a régi fölé települt (verziókód ${installedCode} → ${newCode})`);
+    ({ c, problems } = await launch());
+    allProblems.push(problems);
+    await flow.afterRestart(c, PIN);
+    say('✓ frissítés után a napló és a PIN megvan (az adat nem veszett el)');
+    c.close();
+  }
+
+  // 6. Más kulccsal aláírt APK nem települhet: ez a telefonon az "Az alkalmazás nem települt"
+  if (foreignApk) {
+    const f = adb('install', '-r', foreignApk);
+    if (!/INSTALL_FAILED_UPDATE_INCOMPATIBLE/.test(f.out)) {
+      throw new Error(`A más kulccsal aláírt APK-t el kellett volna utasítani (INSTALL_FAILED_UPDATE_INCOMPATIBLE), de: ${f.out.trim().slice(0, 300)}`);
+    }
+    say('✓ más kulccsal aláírt APK elutasítva (INSTALL_FAILED_UPDATE_INCOMPATIBLE): ez okozza az "Az alkalmazás nem települt" hibát, ha minden build más kulcsot kap');
+    ({ c, problems } = await launch());
+    allProblems.push(problems);
+    await flow.afterRestart(c, PIN);
+    say('✓ az elutasított telepítés után az eredeti app és adata érintetlen');
+    c.close();
+  }
+
+  // 7. Összeomlás / hiba a naplóban és a konzolon
   const crashes = [...earlierCrashes, ...crashLines()];
   if (crashes.length) throw new Error(`Összeomlás a naplóban:\n${crashes.slice(0, 8).join('\n')}`);
   say('✓ nincs összeomlás (FATAL EXCEPTION / ANR) a logcatben');
