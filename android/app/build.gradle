@@ -3,11 +3,14 @@ apply plugin: 'com.android.application'
 android {
     namespace = "io.github.levi20003.sober"
     compileSdk = rootProject.ext.compileSdkVersion
+    // A CI minden futásnál nagyobb verziókódot ad (100 + a futás sorszáma), így az újabb
+    // APK mindig frissítésként települ a régire. Helyi buildnél 6 marad.
+    def ciVersionCode = (System.getenv("ANDROID_VERSION_CODE") ?: "6") as Integer
     defaultConfig {
         applicationId "io.github.levi20003.sober"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
+        versionCode ciVersionCode
         versionName "0.6.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
