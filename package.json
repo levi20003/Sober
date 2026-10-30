@@ -14,7 +14,8 @@
     "serve": "node scripts/serve.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "vite build && node scripts/e2e.mjs"
+    "e2e": "vite build && node scripts/e2e.mjs",
+    "android": "vite build && cap sync android"
   },
   "overrides": {
     "vite": "8.3.4"
@@ -24,6 +25,9 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/core": "8.5.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
     "@vitejs/plugin-react": "6.1.2",

@@ -1,0 +1,78 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx cap sync android
+
+      - name: Aláírókulcs előkészítése (ha van)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Nincs ANDROID_KEYSTORE_BASE64 titok, az APK debug kulccsal készül."
+          fi
+
+      - name: APK fordítása
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: APK átnevezése és ellenőrzőösszeg
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk jozansag-szamlalo.apk
+          sha256sum jozansag-szamlalo.apk | tee jozansag-szamlalo.apk.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jozansag-szamlalo-apk
+          path: |
+            jozansag-szamlalo.apk
+            jozansag-szamlalo.apk.sha256
+
+      # A main ágon mindig ugyanazon a címen érhető el a legfrissebb APK:
+      # https://github.com/<owner>/<repo>/releases/download/android-latest/jozansag-szamlalo.apk
+      - name: Kiadás frissítése (android-latest)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --cleanup-tag --yes || true
+          gh release create android-latest jozansag-szamlalo.apk jozansag-szamlalo.apk.sha256 \
+            --target "$GITHUB_SHA" \
+            --title "Józanság-számláló Android (legfrissebb)" \
+            --notes "Telepíthető APK a main ág $GITHUB_SHA állapotából. Ellenőrzőösszeg: jozansag-szamlalo.apk.sha256" \
+            --prerelease

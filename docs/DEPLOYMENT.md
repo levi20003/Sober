@@ -19,6 +19,16 @@ Note on CSP: the HTTP header allows `connect-src 'self'` because the **service w
 3. Dependency updates: only exact versions published ≥ 14 days earlier; keep the `overrides` entry for `vite` in sync; review `npm audit`.
 4. Deploy from a signed git tag. Publish SHA-256 hashes of the released files so the community can verify what is served.
 
+## Android APK
+
+The same `dist/` is packaged as a native Android app with [Capacitor](https://capacitorjs.com/) (`capacitor.config.json`, `android/`). The web files ship inside the APK and are served from the device, so the app works offline from the first launch. The Capacitor packages are **dev dependencies only**: nothing from them is imported by the web bundle.
+
+- **CI:** [`.github/workflows/android.yml`](../.github/workflows/android.yml) runs the tests, builds `dist/`, runs `cap sync android` and `./gradlew assembleRelease`. Every push to `main` replaces the `android-latest` pre-release, so the newest APK is always at `https://github.com/levi20003/Sober/releases/download/android-latest/jozansag-szamlalo.apk` (with a `.sha256` next to it). Pull requests build the APK as a workflow artifact only.
+- **Signing:** set the repository secrets `ANDROID_KEYSTORE_BASE64` (base64 of a `.jks`), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD`. Without them the APK is signed with the runner's throwaway debug key: it installs, but the next build has a different key, so Android refuses to install it as an update (uninstalling deletes the local data; make an encrypted backup first). Never commit the keystore.
+- **Privacy hardening:** `allowBackup="false"` plus `data_extraction_rules.xml` keep the vault out of Google cloud backup and device-to-device transfer.
+- **Local build:** `npm run android` (build + sync), then open `android/` in Android Studio, or `cd android && ./gradlew assembleDebug` with an Android SDK installed.
+- **Icons/splash:** the PNGs under `android/app/src/main/res/mipmap-*` and `drawable*/splash.png` were rendered from `public/icons/icon.svg` and `icon-maskable.svg`; re-render them if the icon changes.
+
 ## Local development
 
 ```bash

@@ -1,0 +1,9 @@
+{
+  "appId": "io.github.levi20003.sober",
+  "appName": "Józanság-számláló",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

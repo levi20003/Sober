@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Józanság-számláló</string>
+    <string name="title_activity_main">Józanság-számláló</string>
+    <string name="package_name">io.github.levi20003.sober</string>
+    <string name="custom_url_scheme">io.github.levi20003.sober</string>
+</resources>
