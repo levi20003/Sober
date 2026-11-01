@@ -36,6 +36,7 @@ export const A11Y = L.A11Y;
 export const MISC = L.MISC;
 export const UX = L.UX;
 export const SETUP = L.SETUP;
+export const WITHDRAWAL = L.WITHDRAWAL;
 
 // Az ötlet-listák árai a választott pénznemben (forint-alapról átszámítva, kerekítve).
 export const SAVINGS_MILESTONES = convertAmounts(L.SAVINGS_MILESTONES, 'amountHuf');

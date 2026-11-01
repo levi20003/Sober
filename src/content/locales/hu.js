@@ -263,6 +263,8 @@ export const T = {
   freshKind: 'Légy kedves magadhoz ma. Egy nehéz nap nem írja felül az eddigi utadat.',
   freshContinue: 'Tovább a kezdőlapra',
   slipSupport: 'Ha most nehéz, a „Segítség most” gomb mindig itt van.',
+  freshOfferHelp: 'Ha most nehéz, nem kell egyedül lenned vele. Szeretnél beszélni valakivel?',
+  freshOfferHelpButton: 'Segélyvonalak megnyitása',
 
   noteTitle: 'Jegyzet',
   noteEmpty: 'Írj valamit a mentéshez.',
@@ -751,6 +753,7 @@ export const UX = {
   storageErrorText: 'A telefon tárhelye most nem válaszol, ezért nem nyitjuk meg és nem is írjuk felül a naplódat. Próbáld újra egy kicsit később. A segélyvonalak addig is elérhetők.',
   retry: 'Újrapróbálom',
   clipboardWarning: 'Kimásolva. Ha elmentetted (pl. jelszókezelőbe), másolj ki valami mást, hogy a kód ne maradjon a vágólapon.',
+  helplinesVerified: (d) => `Elérhetőségek utoljára ellenőrizve: ${d}`,
   offlineNote: 'A próbálkozás-korlát csak a képernyőn beírt PIN-t védi. Aki a telefon tárolt adatait vagy egy mentésfájlt megszerzi, gépi erővel próbálgathat, ezért egy hosszabb jelszó sokkal biztonságosabb.',
   welcomeInfo: 'Mi ez az alkalmazás?',
   welcomeInfoText: 'Pár kérdéssel összerakjuk, hogy neked szóljon. Bármikor kihagyhatsz egy kérdést, és később mindent átírhatsz. Ha kilépsz a kérdések közben, elölről kezdjük, és addig semmi sem mentődik el.',
@@ -773,4 +776,20 @@ export const SETUP = {
   goalLine: (left) => (left > 0 ? `még ${left} nap a célig` : 'Elérted a célod'),
   thought: 'Mai gondolat',
   moodLogged: 'Mai hangulat',
+};
+
+// Elvonási tünetek kártya. KIKAPCSOLVA (src/lib/features.js): csak szakmai jóváhagyás után kapcsolható be
+// (docs/CLINICAL-REVIEW.md, [EMBERI TEENDŐ]). Szándékosan nincs benne gyógyszer, adagolás vagy leépítési tanács.
+export const WITHDRAWAL = {
+  title: 'Elvonási tünetek: mikor kell azonnal segítség?',
+  intro: 'Az alkohol vagy bizonyos nyugtatók (benzodiazepinek) hirtelen elhagyása veszélyes lehet. Ha az alábbiak bármelyikét tapasztalod magadon vagy valaki máson, ne várj.',
+  signs: [
+    'Görcsroham vagy rángatózás',
+    'Zavartság, tájékozatlanság',
+    'Olyan dolgok látása vagy hallása, amik nincsenek ott',
+    'Erős remegés, nagyon szapora szívverés, magas láz',
+    'Mellkasi fájdalom vagy nehézlégzés',
+  ],
+  action: 'Hívd a 112-t, vagy kérj meg valakit, hogy hívja.',
+  note: 'Ha abbahagyást tervezel, előtte érdemes orvossal beszélned (például a háziorvosoddal vagy egy addiktológiai ambulanciával).',
 };

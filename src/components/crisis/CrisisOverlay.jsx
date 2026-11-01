@@ -9,7 +9,8 @@
 //  - Esc, "Vissza" or the browser Back button closes it; nothing is recorded
 
 import { useRef } from 'react';
-import { COUNTRIES, helplinesFor, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T, UX } from '../../content/index.js';
+import { COUNTRIES, helplinesFor, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T, UX, WITHDRAWAL } from '../../content/index.js';
+import { FEATURES } from '../../lib/features.js';
 import { riskContexts } from '../../domain/risk.js';
 import { splitHelplines } from '../../domain/helplines.js';
 import { useModalDialog } from '../../hooks/useModalDialog.js';
@@ -42,6 +43,8 @@ export function CrisisOverlay({ onClose, events = [], reasons = [], trusted = nu
       </header>
       <main className="screen crisis">
         <h1 id="crisis-h">{T.crisisTitle}</h1>
+        {/* A 112 közvetlenül a cím alatt: 200%-os nagyításnál is görgetés nélkül látszik (tests: e2e). */}
+        {emergency.map((line) => <EmergencyBanner key={line.id} line={line} />)}
         <p className="lead">{T.crisisIntro}</p>
         <fieldset className="chips country-picker">
           <legend>{T.crisisCountry}</legend>
@@ -55,7 +58,7 @@ export function CrisisOverlay({ onClose, events = [], reasons = [], trusted = nu
           </div>
           <p className="hint">{T.crisisCountryHint}</p>
         </fieldset>
-        {emergency.map((line) => <EmergencyBanner key={line.id} line={line} />)}
+        {FEATURES.withdrawalCard && <WithdrawalCard />}
         {risk && (
           <aside className="card card-soft" aria-label={RISK_MESSAGES[risk].title}>
             <h2 className="h3">{RISK_MESSAGES[risk].title}</h2>
@@ -96,5 +99,18 @@ export function CrisisOverlay({ onClose, events = [], reasons = [], trusted = nu
         <button type="button" className="btn btn-ghost" onClick={onClose}>{T.crisisBack}</button>
       </main>
     </dialog>
+  );
+}
+
+/** Elvonási tünetek (alapból kikapcsolva, szakmai jóváhagyásra vár; nincs benne gyógyszer- vagy adagolási tartalom). */
+export function WithdrawalCard({ content = WITHDRAWAL }) {
+  return (
+    <section className="card card-warn" aria-labelledby="withdrawal-h">
+      <h2 id="withdrawal-h">{content.title}</h2>
+      <p>{content.intro}</p>
+      <ul className="steps">{content.signs.map((s) => <li key={s}>{s}</li>)}</ul>
+      <p><strong>{content.action}</strong></p>
+      <p className="hint">{content.note}</p>
+    </section>
   );
 }

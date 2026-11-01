@@ -37,3 +37,14 @@ export async function copyNumber(line, { clipboard = globalThis.navigator?.clipb
     return 'manual';
   }
 }
+
+/** A listában szereplő legrégebbi ellenőrzés dátuma (YYYY-MM-DD): ennyire „friss” a teljes lista. */
+export function lastVerified(lines) {
+  return lines.map((l) => l.verified).filter(Boolean).sort()[0] ?? null;
+}
+
+/** Az ennél régebben ellenőrzött vonalak (napokban); a CI figyelmeztet rájuk (scripts/check-helplines.mjs). */
+export function staleHelplines(lines, today, maxDays = 90) {
+  const t = Date.parse(today);
+  return lines.filter((l) => !l.verified || (t - Date.parse(l.verified)) / 86_400_000 > maxDays);
+}

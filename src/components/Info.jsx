@@ -5,14 +5,17 @@ import { useRef } from 'react';
 import { UX } from '../content/index.js';
 import { useModalDialog } from '../hooks/useModalDialog.js';
 import { Icon } from './icons/Icon.jsx';
+import { DialogHelp } from './crisis/CrisisButton.jsx';
 import { useState } from 'react';
 
-export function Sheet({ title, children, actions, closeLabel, onClose }) {
+/** @param {boolean} [help=true] saját krízislink a lapon (K1); csak akkor false, ha a lap tartalma már ad egyet. */
+export function Sheet({ title, children, actions, closeLabel, onClose, help = true }) {
   const ref = useRef(null);
   useModalDialog(ref, onClose);
   return (
     <dialog ref={ref} className="sheet" aria-labelledby="sheet-h" onClick={(e) => { if (e.target === ref.current) onClose(); }}>
       <div className="sheet-handle" aria-hidden="true" />
+      {help && <DialogHelp />}
       <h2 id="sheet-h">{title}</h2>
       <div className="sheet-body stack">{children}</div>
       <div className="actions">

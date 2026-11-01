@@ -22,6 +22,16 @@ All copy is in one file: [`src/content/locales/hu.js` / `en.js`](../src/content/
 | Quick-log cards | `QUICK_TEMPLATES` in `src/domain/presets.js` | Right eight situations and moods? Should a negative mood card offer the crisis screen after saving? |
 | Presets | `src/domain/presets.js` (moods, triggers, coping, outcomes) | Are any coping options inadvisable? Is anything important missing (e.g. "Elmentem egy csoportfoglalkozásra")? |
 
+### Review package (generated)
+
+- `docs/review/LEKTOR-TAJEKOZTATO.md`: briefing for the reviewer (Hungarian).
+- `docs/review/szoveg-lektoralas-<CONTENT_VERSION>.csv` / `.md`: every user-facing string with key, screen and context,
+  plus empty reviewer columns (Rendben / Módosítandó / Javasolt szöveg / Megjegyzés). Regenerate: `node scripts/review-export.mjs`
+  (English: `--lang en`).
+- `docs/review/screenshots/<CONTENT_VERSION>/`: light and dark screenshots of the safety-critical screens. Regenerate:
+  `npm run build && node scripts/review-screenshots.mjs`.
+- The withdrawal-symptoms card (`WITHDRAWAL`) is drafted but switched **off** (`src/lib/features.js`) until signed off below.
+
 ## 2. Language guardrails (automated)
 
 [`tests/copy.test.js`](../tests/copy.test.js) fails the build if any user-facing source contains:
@@ -34,7 +44,7 @@ All copy is in one file: [`src/content/locales/hu.js` / `en.js`](../src/content/
 - guilt-tripping check-ins: *ittál ma*
 - *visszaes-* (pending the reviewer's decision on terminology)
 
-It also checks that the disclaimer says "segít követni és támogatni" and "nem helyettesíti", and that notification text names nothing about recovery. Reviewers may add or remove terms. The list is the reviewer's tool, not a substitute for review.
+[`tests/clinical.test.js`](../tests/clinical.test.js) additionally bans diagnostic, success-rate and cure claims in both languages, and requires the three boundary statements ("segít követni és támogatni", "nem orvosi eszköz", "nem helyettesíti a szakember segítségét") in onboarding, the crisis screen, Settings → About, the README and the APK release notes. copy.test.js also checks that the disclaimer says "segít követni és támogatni" and "nem helyettesíti", and that notification text names nothing about recovery. Reviewers may add or remove terms. The list is the reviewer's tool, not a substitute for review.
 
 ## 3. Helpline verification
 
@@ -62,6 +72,8 @@ The full table, evidence and release rule are in [SAFETY.md §4](SAFETY.md#4-hel
 | Presets | | | |
 | Notifications | | | |
 | Disclaimer / legal boundary | | | |
+| Withdrawal-symptoms card (enable `FEATURES.withdrawalCard`) | | | |
+| Post-slip help offer (`T.freshOfferHelp`) | | | |
 | PRIVACY.md (legal, GDPR Art. 9) | | | |
 
 After sign-off, set `REVIEW_STATUS` and `CONTENT_VERSION` in `hu.js`. Both are shown in Settings.

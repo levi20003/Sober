@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVIEW, COUNTRIES, ONB } from '../../content/index.js';
+import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVIEW, COUNTRIES, ONB, helplinesFor } from '../../content/index.js';
+import { lastVerified } from '../../domain/helplines.js';
 import { LOCALES } from '../../i18n/locale.js';
 import { CURRENCIES, CURRENCY_IDS } from '../../i18n/money.js';
 import { feedbackUrl } from '../../lib/feedback.js';
@@ -126,6 +127,13 @@ function AppearanceSection() {
       </div>
     </>
   );
+}
+
+/** A kiválasztott ország segélyvonalainak legrégebbi ellenőrzési dátuma (K2). */
+function HelplinesVerified() {
+  const [prefs] = usePrefs();
+  const d = lastVerified(helplinesFor(prefs.country));
+  return d ? <p className="hint">{UX.helplinesVerified(d)}</p> : null;
 }
 
 /** Verzió és frissítés. PWA: automatikus (service worker); Android-app: indításkor és naponta egyszer ellenőriz, letöltés. */
@@ -296,6 +304,7 @@ export function Settings({ onWipe, showRecoveryCode }) {
       <Group title={T.aboutSection}>
         <p>{T.disclaimer}</p>
         <p>{T.privacyPromise}</p>
+        <HelplinesVerified />
         <p className="hint">{MISC.contentVersion(CONTENT_VERSION, REVIEW_STATUS)}</p>
       </Group>
     </Page>

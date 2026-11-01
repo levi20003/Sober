@@ -11,7 +11,7 @@ import { TimelineProvider, useTimeline } from './hooks/useTimeline.js';
 import { UpdateContext, useUpdate } from './hooks/useUpdate.js';
 import { useCrisis } from './hooks/useCrisis.js';
 import { ToastProvider, useToast } from './hooks/useToast.jsx';
-import { CrisisButton } from './components/crisis/CrisisButton.jsx';
+import { CrisisButton, DialogHelp } from './components/crisis/CrisisButton.jsx';
 import { CrisisOverlay } from './components/crisis/CrisisOverlay.jsx';
 import { LockScreen } from './components/screens/AuthScreens.jsx';
 import { Onboarding } from './components/onboarding/Onboarding.jsx';
@@ -190,12 +190,13 @@ function Shell() {
 }
 
 /** Új helyreállító kód (Beállítások → "Új helyreállító kód"): teljes képernyős, egyszeri megjelenítés. */
-function RecoveryOverlay({ code, onDone }) {
+export function RecoveryOverlay({ code, onDone }) {
   const toast = useToast();
   const [ok, setOk] = useState(false);
   const [copied, setCopied] = useState(false);
   return (
     <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="rc-h" style={{ background: 'var(--bg)' }}>
+      <DialogHelp />
       <h2 id="rc-h">{T.recoveryTitle}</h2>
       <p>{T.recoveryIntro}</p>
       <p className="recovery-box mono" translate="no">{code}</p>

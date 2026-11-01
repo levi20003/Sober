@@ -10,6 +10,7 @@ import { useToast } from '../hooks/useToast.jsx';
 import { useFormAction } from '../hooks/useFormAction.js';
 import { useModalDialog } from '../hooks/useModalDialog.js';
 import { Chips, Field } from './ui.jsx';
+import { DialogHelp } from './crisis/CrisisButton.jsx';
 
 function QuickLogDialog({ template, onClose }) {
   const ref = useRef(null);
@@ -23,6 +24,7 @@ function QuickLogDialog({ template, onClose }) {
   });
   return (
     <dialog ref={ref} className="quick-dialog" aria-labelledby="quick-title">
+      <DialogHelp />
       <form className="stack" onSubmit={onSubmit} aria-busy={busy || undefined}>
         <h2 id="quick-title">{template.label}</h2>
         {template.kind === 'trigger' && (

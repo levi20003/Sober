@@ -2,6 +2,9 @@
 
 🇬🇧 English UI and privacy notice: [PRIVACY.en.md](PRIVACY.en.md) · 🇭🇺 Magyar adatvédelmi tájékoztató: [PRIVACY.md](PRIVACY.md) · Community post draft: [docs/REDDIT-POST.md](docs/REDDIT-POST.md)
 
+> **Fontos / Important.** A Józanság-számláló segít követni és támogatni a józanságod útját. Nem orvosi eszköz, és nem helyettesíti a szakember segítségét. Közvetlen veszélyben hívd a 112-t.
+> The Sobriety Counter helps you track and support your journey. It is not a medical device and does not replace professional help. In an emergency call 112 (or your local emergency number).
+
 **Premium, calm UI (v0.10):** a 5-step onboarding (goal, daily cost and hard situations are offered later on a "Make it yours" card); a home screen with one clear hierarchy: the total sober days with goal progress, a one-row mood check-in, two tiles (savings, next milestone), the week and one daily thought. Detailed statistics live on the Timeline. One type scale, 4-px spacing grid, hairline cards, refined dark theme, transform/opacity-only motion and light haptics.
 
 **Simple by design:** screens show only what matters; explanations sit behind a small "i" button, and what is current pops up once (first-run preview notice, backup reminder). Sign-in uses a number pad that opens by itself (switchable), or one big field for a passphrase.

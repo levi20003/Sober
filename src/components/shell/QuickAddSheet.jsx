@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { QUICK_ADD, T } from '../../content/index.js';
 import { useModalDialog } from '../../hooks/useModalDialog.js';
 import { Icon } from '../icons/Icon.jsx';
+import { DialogHelp } from '../crisis/CrisisButton.jsx';
 
 const TONES = ['tone-lavender', 'tone-peach', 'tone-mint', 'tone-sky'];
 
@@ -12,6 +13,7 @@ export function QuickAddSheet({ onClose, onPick, onSlip }) {
   return (
     <dialog ref={ref} className="sheet" aria-labelledby="qa-h" onClick={(e) => { if (e.target === ref.current) onClose(); }}>
       <div className="sheet-handle" aria-hidden="true" />
+      <DialogHelp />
       <h2 id="qa-h">{QUICK_ADD.title}</h2>
       <div className="sheet-grid">
         {QUICK_ADD.items.map((it, i) => (

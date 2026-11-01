@@ -13,6 +13,7 @@ import { useFormAction } from '../../hooks/useFormAction.js';
 import { useModalDialog } from '../../hooks/useModalDialog.js';
 import { Chips, Field } from '../ui.jsx';
 import { phaseDatesText } from './phaseText.js';
+import { DialogHelp } from '../crisis/CrisisButton.jsx';
 
 export function FreshStartSummary({ effects, onDone }) {
   const { closedPhase, openedPhase, totalAfter, retroactive, newPhase, splitEarlierPhase } = effects;
@@ -34,9 +35,13 @@ export function FreshStartSummary({ effects, onDone }) {
         </section>
       )}
       <p className="lead">{T.freshKind}</p>
+      {/* Felajánljuk, nem erőltetjük (K7): a felhasználó dönt, a krízisképernyő csak koppintásra nyílik. */}
+      <section className="card card-soft" aria-labelledby="fresh-help-h">
+        <p id="fresh-help-h">{T.freshOfferHelp}</p>
+        <a className="btn btn-help" href={CRISIS_HASH}>{T.freshOfferHelpButton}</a>
+      </section>
       <div className="actions">
         <button type="button" className="btn btn-primary" onClick={onDone}>{T.freshContinue}</button>
-        <a className="btn btn-ghost" href={CRISIS_HASH}>{T.helpButtonShort}</a>
       </div>
     </>
   );
@@ -61,6 +66,7 @@ export function FreshStartModal({ onClose }) {
   return (
     <dialog ref={ref} className="sheet-dialog" aria-labelledby="fresh-h">
       <div className="screen">
+        <DialogHelp />
         {effects ? <FreshStartSummary effects={effects} onDone={onClose} /> : (
           <>
             <h1 id="fresh-h">{T.slipTitle}</h1>

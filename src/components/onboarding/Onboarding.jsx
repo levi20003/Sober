@@ -159,6 +159,7 @@ export function Onboarding({ onFinish }) {
             <summary>{ONB.welcomeRestore}</summary>
             <RestoreForm onRestored={() => onFinish({ restored: true })} />
           </details>
+          <p className="hint disclaimer">{T.disclaimer}</p>
         </>
       );
       break;

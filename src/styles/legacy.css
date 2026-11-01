@@ -75,3 +75,18 @@ fieldset.chips .check input { margin-top: 2px; flex: none; }
 .quick-dialog { width: min(560px, calc(100vw - 24px)); border: 0; border-radius: 28px; padding: 18px; background: var(--surface); color: var(--text); }
 .quick-dialog::backdrop { background: rgba(20, 14, 40, .6); }
 .quick-dialog h2 { margin-top: 0; }
+
+/* 200%-os nagyítás / nagyon keskeny kijelző (WCAG 1.4.10): a krízisképernyő nem görget vízszintesen (K10, e2e). */
+.topbar .brand { min-width: 0; overflow-wrap: anywhere; }
+.topbar-actions { flex-shrink: 0; }
+.breath-stage { width: min(200px, 100%); height: auto; aspect-ratio: 1; }
+@media (max-width: 260px) {
+  a[href^="tel:"] > * { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+  .call-number { font-size: 1.05rem; white-space: normal; min-width: 0; flex: 1 1 auto; } /* tördelés a kötőjeleknél, nem lóg ki */
+  .crisis-overlay .topbar { padding-inline: 8px; }
+  .crisis h1 { font-size: 1.2rem; margin-block: 8px; }
+  .crisis-overlay .card { padding: 12px; }
+  .crisis-overlay .btn-call { padding: 10px 12px; }
+  .emergency-lead { font-size: .95rem; }
+  .crisis-overlay .topbar .btn { padding-inline: 10px; }
+}

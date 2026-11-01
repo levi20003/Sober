@@ -92,7 +92,7 @@ try {
   // Az előzetes verzió közleménye felugrik, és benne is ott a "Segítség most" gomb.
   const notice = page.locator('dialog.sheet[open]');
   await notice.getByRole('heading', { name: 'Előzetes verzió' }).waitFor();
-  assert.ok(await notice.getByRole('link', { name: 'Most segítségre van szükségem' }).isVisible(), 'help is reachable inside the notice');
+  assert.ok(await notice.locator('a[href="#/segitseg"]').isVisible(), 'help is reachable inside the notice');
   await dismissPreview(page);
   await shot('01-onboarding');
 
@@ -206,10 +206,18 @@ try {
   await page.getByRole('button', { name: 'Gyors rögzítés' }).click();
   await page.locator('dialog.sheet').getByRole('button', { name: 'Megcsúsztam' }).click();
   await shot('05-slip');
+  assert.equal(await page.locator('dialog.sheet-dialog[open] a[href="#/segitseg"]').count(), 1, 'help is reachable from inside the slip form');
   await page.getByLabel(/Mit vinnél magaddal/).fill('Este előre megtervezem a programot.');
   await page.getByLabel(/Mire figyelsz az új szakaszban/).fill('Esténként sétálok egyet.');
   await page.getByRole('button', { name: 'Új szakasz kezdése' }).click();
   await page.getByRole('heading', { name: 'Új szakasz kezdődik' }).waitFor();
+  // A krízisképernyőt felajánljuk, de nem nyitjuk meg magától; koppintásra a modális ablak fölött nyílik meg.
+  assert.equal(await page.locator('dialog.crisis-overlay').count(), 0, 'crisis screen is not forced after a slip');
+  await page.locator('dialog.sheet-dialog[open]').getByRole('link', { name: 'Segélyvonalak megnyitása' }).click();
+  await page.locator('dialog.crisis-overlay[open] a[href="tel:112"]').waitFor();
+  await shot('05b-crisis-after-slip');
+  await page.locator('dialog.crisis-overlay[open]').getByRole('button', { name: 'Vissza' }).first().click();
+  await page.locator('dialog.crisis-overlay').waitFor({ state: 'detached' });
   assert.ok(await page.getByText('30 józan nap. Ez a tiéd marad.').isVisible(), 'closed phase archived as a growth block');
   assert.ok(await page.getByText('Összes józan napod: 30').isVisible());
   await page.getByRole('button', { name: 'Tovább a kezdőlapra' }).click();
@@ -219,7 +227,7 @@ try {
   assert.equal(await page.locator('.hero-card .tl-seg').count(), 2, 'timeline bar shows both phases');
   for (const banned of ['kudarc', 'nulláz']) assert.equal(await page.getByText(banned).count(), 0, banned);
   await shot('05a-home-after-slip');
-  step('fresh start: growth summary, total (30) never resets, Pötty is kind');
+  step('fresh start: growth summary, total (30) never resets, help offered (not forced) and reachable inside the dialog');
 
   // The five tabs
   await tab(page, 'Idővonal');
@@ -401,6 +409,26 @@ try {
   assert.match(await p3.locator('.breath-label').textContent(), /kilégzés/i, 'text guidance still advances');
   await ctx3.close();
   step('prefers-reduced-motion: static circle, text and countdown still guide');
+
+  // 200%-os nagyítás (WCAG 1.4.4 / 1.4.10): a 112 az első hívható szám, látszik görgetés nélkül, nincs vízszintes görgetés
+  const ctxZ = await browser.newContext({ locale: 'hu-HU', viewport: { width: 195, height: 422 }, deviceScaleFactor: 2, serviceWorkers: 'block' });
+  const pz = await ctxZ.newPage();
+  await pz.goto(`${BASE}#/segitseg`);
+  const dlgZ = pz.locator('dialog.crisis-overlay[open]');
+  await dlgZ.waitFor();
+  const firstTel = await dlgZ.locator('a[href^="tel:"]').first().getAttribute('href');
+  assert.equal(firstTel, 'tel:112', '112 is the first number on the crisis screen');
+  const box112 = await dlgZ.locator('.card-emergency a[href="tel:112"]').boundingBox();
+  assert.ok(box112 && box112.y + box112.height <= 422, `112 visible without scrolling at 200% (y=${box112?.y})`);
+  const overflow = await dlgZ.evaluate((d) => d.scrollWidth - d.clientWidth);
+  assert.ok(overflow <= 1, `no horizontal scrolling at 200% (${overflow}px)`);
+  const spill = await dlgZ.evaluate((d) => [...d.querySelectorAll('a[href^="tel:"] > *')].filter((e) => e.getBoundingClientRect().right > e.parentElement.getBoundingClientRect().right + 1).map((e) => e.textContent));
+  assert.deepEqual(spill, [], 'every number fits inside its call button at 200%');
+  const anims = await dlgZ.evaluate((d) => [...d.querySelectorAll('*')].filter((e) => !e.closest('.breathing') && getComputedStyle(e).animationName !== 'none').map((e) => e.className));
+  assert.deepEqual(anims, [], 'no decorative animation on the crisis screen');
+  if (SHOTS) await pz.screenshot({ path: `${SHOTS}/09-crisis-200.png` });
+  await ctxZ.close();
+  step('crisis screen at 200% zoom: 112 first and above the fold, no horizontal scroll, no animation');
 
   // A broken module must not take the helplines down with it
   const ctx4 = await browser.newContext({ locale: 'hu-HU', serviceWorkers: 'block' });

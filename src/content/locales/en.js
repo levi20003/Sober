@@ -254,6 +254,8 @@ export const T = {
   freshKind: 'Be kind to yourself today. One hard day does not overwrite your path so far.',
   freshContinue: 'Continue to the home screen',
   slipSupport: 'If it is hard right now, the "Help now" button is always here.',
+  freshOfferHelp: 'If this is hard right now, you do not have to be alone with it. Would you like to talk to someone?',
+  freshOfferHelpButton: 'Open helplines',
 
   noteTitle: 'Note',
   noteEmpty: 'Write something to save.',
@@ -737,6 +739,7 @@ export const UX = {
   storageErrorText: 'The phone\'s storage is not responding, so we neither open nor overwrite your journal. Please try again a little later. The helplines are available in the meantime.',
   retry: 'Try again',
   clipboardWarning: 'Copied. Once you have saved it (e.g. in a password manager), copy something else so the code does not stay on the clipboard.',
+  helplinesVerified: (d) => `Contact details last checked: ${d}`,
   offlineNote: 'The attempt limit only protects the PIN typed on screen. Someone who obtains the phone\'s stored data or a backup file can try guesses by machine, so a longer passphrase is much safer.',
   welcomeInfo: 'What is this app?',
   welcomeInfoText: 'A few questions and we will make it yours. You can skip any question and change everything later. If you leave during the questions, we start over, and nothing is saved until then.',
@@ -759,4 +762,20 @@ export const SETUP = {
   goalLine: (left) => (left > 0 ? `${left} days to your goal` : 'Goal reached'),
   thought: 'Thought for today',
   moodLogged: 'Today\'s mood',
+};
+
+// Withdrawal-symptoms card. OFF (src/lib/features.js) until clinically approved (docs/CLINICAL-REVIEW.md).
+// Deliberately contains no medicine, quantity or tapering advice.
+export const WITHDRAWAL = {
+  title: 'Withdrawal symptoms: when do you need help straight away?',
+  intro: 'Stopping alcohol or certain sedatives (benzodiazepines) suddenly can be dangerous. If you notice any of these in yourself or someone else, do not wait.',
+  signs: [
+    'A seizure or fit',
+    'Confusion or disorientation',
+    'Seeing or hearing things that are not there',
+    'Severe shaking, a very fast heartbeat, high fever',
+    'Chest pain or difficulty breathing',
+  ],
+  action: 'Call 112 (or your local emergency number), or ask someone to call for you.',
+  note: 'If you plan to stop, it is worth talking to a doctor first (for example your GP or an addiction service).',
 };

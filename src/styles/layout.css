@@ -85,3 +85,8 @@
   display: flex; flex-direction: column; gap: 6px; font-weight: 700; transition: transform 140ms var(--ease-spring);
 }
 .sheet-action:active { transform: scale(0.96); }
+
+/* Krízislink modális ablakokban (K1): mindig elérhető, de nem tolakodó. */
+.dialog-help-row { display: flex; justify-content: flex-end; margin: 0 0 var(--space-2, 8px); }
+.btn.btn-help-small { min-height: 44px; padding-inline: 14px; font-size: 0.9rem; }
+.celebrate .dialog-help-row { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 12px; margin: 0; }

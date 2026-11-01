@@ -5,6 +5,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion.js';
 import { Confetti } from '../Confetti.jsx';
 import { Mascot } from '../mood/Mascot.jsx';
 import { haptic } from '../../lib/haptics.js';
+import { DialogHelp } from '../crisis/CrisisButton.jsx';
 
 export function Celebration({ days, onClose }) {
   const reduced = useReducedMotion();
@@ -15,6 +16,7 @@ export function Celebration({ days, onClose }) {
   }, [reduced]);
   return (
     <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="cel-h">
+      <DialogHelp />
       <Confetti count={48} />
       <Mascot look="celebrate" size={140} label={null} />
       <p className="big" aria-hidden="true">{days}</p>
