@@ -36,6 +36,8 @@ jobs:
       # Supply chain (biztonsági audit 1.4): magas vagy kritikus sérülékenység esetén a build megáll.
       - run: npm audit --audit-level=high
       - run: npm test
+      # Segélyvonalak: 90 napnál régebbi ellenőrzésnél ::warning:: (docs/SAFETY.md 4.1)
+      - run: node scripts/check-helplines.mjs
       # A verziókód a buildbe is bekerül: az app ezzel veti össze a legfrissebb kiadást (frissítésfigyelő).
       - run: npm run build
       # A kiszállított bundle-ben csak react, react-dom, scheduler és a saját kód lehet.
@@ -103,6 +105,9 @@ jobs:
           fi
           cat > "$RUNNER_TEMP/notes.md" <<NOTES
           Telepíthető APK a main ág $GITHUB_SHA állapotából.
+
+          A Józanság-számláló segít követni és támogatni a józanságod útját. Nem orvosi eszköz, és nem helyettesíti a szakember segítségét.
+          Ha közvetlen veszélyben vagy, hívd a 112-t.
 
           - Verziókód: $ANDROID_VERSION_CODE
           - Aláírás: $SIGN_NOTE

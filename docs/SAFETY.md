@@ -14,7 +14,7 @@ The crisis module is the most safety-critical part of the app. A person opening 
 
 | Guarantee | How | Verified by |
 |---|---|---|
-| **One tap from every screen**, including first-run setup and the lock screen, with no PIN needed | `<CrisisButton/>` (a plain link to `#/segitseg`) in the sticky header of every screen opens `<CrisisOverlay/>`, a modal `<dialog>` layered over the current screen. Unfinished input underneath is kept; Esc, "Vissza" or Back closes it. | e2e: tapped from the setup screen before any data exists; the half-typed PIN is intact afterwards |
+| **One tap from every screen and every modal layer**, including first-run setup, the lock screen, the storage-error screen, memory-only mode, every bottom sheet, the slip form, the celebration and recovery-code layers, with no PIN needed (a modal `<dialog>` makes the header inert, so each layer carries its own `<DialogHelp/>`) | `<CrisisButton/>` (a plain link to `#/segitseg`) in the sticky header of every screen opens `<CrisisOverlay/>`, a modal `<dialog>` layered over the current screen. Unfinished input underneath is kept; Esc, "Vissza" or Back closes it. | e2e: tapped from the setup screen before any data exists; the half-typed PIN is intact afterwards |
 | From the home screen without opening the app | Manifest shortcut "Segítség most" (long-press the icon) | `tests/pwa.test.js` |
 | **Works offline** | The build-generated service worker precaches every emitted file. Calls are `tel:` links (phone network, not internet). | e2e: offline → crisis overlay, all four `tel:` links, breathing animation. jsdom: with `fetch`/XHR/WebSocket stubbed to fail, every helpline is an accessible `tel:` link whose click is not intercepted (`tests/components/CrisisOverlay.test.jsx`) |
 | **Works when storage, encryption or the journal are broken** | The crisis components import nothing from `storage/`, `crypto/` or `auth/` | `tests/crisis.test.js` (import-graph check) |
@@ -57,6 +57,31 @@ The helplines are listed per country (`src/content/helplines.js`); the crisis ov
 
 **Release rule:** a wrong number on this screen is a P0 incident. Every release requires a test call to each number, then an update to `verified` in `src/content/helplines.js`. Numbers rated `multiple-secondary` must be upgraded to `official` or removed before public launch.
 
+### 4.1 Negyedéves segélyvonal-ellenőrzés (quarterly verification procedure)
+
+Minden segélyvonal-bejegyzés (`src/content/helplines.js`) kötelező mezői: `verified` (dátum), `source` (hivatalos oldal, https),
+`verifiedBy` (ki ellenőrizte), `verification` (`official` / `multiple-secondary`; weboldalnál `unverified` is lehet).
+A `tests/clinical.test.js` elbukik, ha bármelyik hiányzik. A CI (`node scripts/check-helplines.mjs`) `::warning::` sort ír,
+ha egy vonal utolsó ellenőrzése 90 napnál régebbi. A Beállítások → Rólunk képernyő mutatja: „Elérhetőségek utoljára ellenőrizve: …”.
+
+**Negyedévente (január, április, július, október első hete) — [EMBERI TEENDŐ], felelős: termékgazda vagy kijelölt munkatárs:**
+
+1. Minden számot a `source` hivatalos oldalon meg kell keresni; ha a szám vagy a nyitvatartás eltér, **nem javítjuk emlékezetből**,
+   hanem a hivatalos forrás szerint, és a változást a szakmai lektor jóváhagyja (`docs/CLINICAL-REVIEW.md`).
+2. **Próbahívás** minden telefonszámra (a 112 kivételével: azt nem hívjuk próbából; a 112 ellenőrzése a hivatalos EU-forrásból történik).
+   A próbahívásnál csak azt ellenőrizzük, hogy a vonal él és a megadott szolgálat jelentkezik; a hívást röviden, a szolgálatot
+   nem terhelve zárjuk le (pl. „Csak azt ellenőrzöm, hogy ez a szám jó-e egy alkalmazásban”).
+3. Utána a bejegyzésben frissítendő: `verified` (az ellenőrzés napja), `verifiedBy` (a próbahívást végző **valódi** neve vagy szerepe,
+   pl. „termékgazda, próbahívás”), és ha a hivatalos forrás megerősítette, `verification: 'official'`.
+4. A **Drog Stop** (06-80-505-678) addig marad `multiple-secondary` (másodlagos), amíg a szervezet hivatalos oldala vagy a próbahívás
+   meg nem erősíti. 2026-11-01-én a drogstoponline.hu elérhető volt, de a szám a lap szövegében nem szerepelt. A krízisképernyőn
+   a Drog Stop csak másodlagos (a 112 és a 116-123 után) vonal.
+5. Ha egy szám megszűnt: a vonalat a lektor jóváhagyásával eltávolítjuk, és az `index.html` statikus tartalékából is
+   (a `tests/crisis.test.js` ellenőrzi az egyezést).
+
+A fejlesztői eszközök (pl. Claude Code) csak webes forrásellenőrzést végezhetnek; ezt a `verifiedBy` mező jelzi
+(„webes forrásellenőrzés (fejlesztői eszköz), próbahívás nélkül”). Próbahívást és szakmai jóváhagyást eszköz nem szimulálhat.
+
 ## 5. Breathing exercise
 
 - **Patterns:** *Hosszú kilégzés* 4-6 (default: an extended exhale, generally the gentlest), *Négyzetlégzés* 4-4-4-4, and *4-7-8*. The 4-7-8 description says to switch to the default if the hold feels uncomfortable or causes dizziness.
@@ -70,8 +95,8 @@ The helplines are listed per country (`src/content/helplines.js`); the crisis ov
 ## 6. Open safety questions for the clinical reviewer
 
 1. Is 4-7-8 appropriate during withdrawal or panic, or should it be removed or moved behind a caution?
-2. Should a dedicated **withdrawal warning card** appear above the talk lines (symptoms that require 112 or 104)?
-3. Should the crisis screen be offered automatically after logging a slip?
+2. Should a dedicated **withdrawal warning card** appear above the talk lines (symptoms that require 112 or 104)? A draft exists (`WITHDRAWAL` in the locale files, `WithdrawalCard` in `CrisisOverlay.jsx`) behind `FEATURES.withdrawalCard = false` (`src/lib/features.js`). It contains no medicine, dosage or tapering content. It may only be switched on after sign-off.
+3. Should the crisis screen be offered automatically after logging a slip? **Current behaviour (v0.11):** it is *offered* on the slip summary ("Ha most nehéz, nem kell egyedül lenned vele. Szeretnél beszélni valakivel?" + "Segélyvonalak megnyitása"), never opened by itself.
 4. Should local AA/NA meeting finders or a family-member line be added?
 5. Wording of the risk notes for late nights, weekends and personal patterns.
 

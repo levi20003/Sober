@@ -15,7 +15,7 @@ export function PreviewNotice() {
   if (!open) return null;
   const close = () => { markSeen('preview'); setOpen(false); };
   return (
-    <Sheet title={PREVIEW.badge} onClose={close}
+    <Sheet title={PREVIEW.badge} onClose={close} help={false}
       actions={<><CrisisButton /><a className="btn" href={feedbackUrl()} target="_blank" rel="noopener noreferrer">{PREVIEW.feedback}</a></>}
       closeLabel={UX.gotIt}>
       <p>{PREVIEW.text}</p>

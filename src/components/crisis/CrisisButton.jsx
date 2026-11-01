@@ -12,3 +12,15 @@ export function CrisisButton() {
     </a>
   );
 }
+
+/**
+ * Krízislink modális ablakokba és teljes képernyős rétegekbe. Egy nyitott modális <dialog> alatt a fejléc gombja
+ * inert (nem érhető el), ezért minden ilyen rétegnek saját linkje van (docs/audit/2026-11-krizis-audit.md, K1).
+ */
+export function DialogHelp() {
+  return (
+    <div className="dialog-help-row">
+      <a className="btn btn-help btn-help-small" href={CRISIS_HASH}>{T.helpButtonShort}</a>
+    </div>
+  );
+}
