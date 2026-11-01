@@ -23,6 +23,21 @@ npm run serve     # serve dist/ with production security headers on http://127.0
 npm run e2e       # build + 20-step end-to-end run in real Chromium (Playwright)
 ```
 
+## Android-alkalmazás (APK)
+
+A webes alkalmazás Capacitorral becsomagolva Android APK-ként is települ. A legfrissebb főági build:
+https://github.com/levi20003/Sober/releases/download/android-latest/jozansag-szamlalo.apk
+
+**Telepítés telefonra:** nyisd meg a [telepítési útmutatót](https://levi20003.github.io/Sober/telepites.html) a telefon **Chrome** böngészőjében (ne beépített böngészőben, pl. Messengerben), koppints az APK-ra, és engedélyezd az ismeretlen forrásból való telepítést. A Play Protect figyelmeztetésénél válaszd a „Telepítés mindenképpen” lehetőséget.
+
+**Frissítés és aláírás.** Android csak azonos kulccsal aláírt APK-t telepít egy meglévő fölé. Amíg a repóban nincsenek beállítva az `ANDROID_KEYSTORE_*` titkok, a CI minden futásnál új, ideiglenes debug kulccsal ír alá, és az ilyen build **nem települ a korábbi fölé** („Az alkalmazás nem települt”). Ezt az állandó kulcs megadásával lehet megszüntetni (lásd [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#android-állandó-aláírókulcs)). Ennek hiányában az eltávolítás törli a naplót is, mert minden adat csak az alkalmazásban él.
+
+**Ismert korlát (eszközön még nem ellenőrizve):** a Capacitor nem állít be letöltéskezelőt a WebView-hoz, ezért a titkosított mentés és a CSV/JSON export az APK-ban valószínűleg nem tölt le fájlt (a webes verzióban működik). A fájlválasztós visszaállítást az automatikus próba sem ellenőrzi.
+
+**Helyi fordítás** (Android SDK + JDK 21 kell): `npm ci && npm run android && cd android && ./gradlew assembleRelease`.
+
+**Automatikus ellenőrzés.** A CI minden változtatásnál emulátorra telepíti az APK-t, és a valódi WebView-t végigvezeti a folyamaton (PIN, idővonal, krízisoverlay, 116-123 tárcsázás, újraindítás repülőgép-módban, hibás PIN, összeomlás-ellenőrzés): `scripts/android-smoke.mjs`.
+
 ## Layout
 
 ```
@@ -51,6 +66,8 @@ src/
   content/hu.js         ALL user-facing copy + helplines (single review surface)
   reminders.js          server-less, neutral, one-tap-opt-out reminders
 tests/                  Vitest suites; tests/components/ = jsdom component tests
+android/, capacitor.config.json   Capacitor Android projekt (APK)
+scripts/android/        Chrome DevTools-os WebView-vezérlő az emulátoros próbához
 scripts/                dev server, e2e
 docs/                   security model, schema, clinical review, user testing, deployment
 PRIVACY.md              user-facing privacy notice (Hungarian)

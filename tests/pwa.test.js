@@ -14,6 +14,11 @@ test('service worker: precache list covers every emitted file (offline crisis sc
   assert.deepEqual(list, ['./', './assets/index-abc.js', './assets/index-def.css', './icons/icon.svg', './index.html']);
 });
 
+test('service worker: dotfiles are never precached (an APK build drops them, which would fail the install)', () => {
+  const list = precacheList(['.nojekyll', 'index.html', 'assets/.hidden', 'assets/app.js']);
+  assert.deepEqual(list, ['./', './assets/app.js', './index.html']);
+});
+
 test('service worker: version is a content hash – any changed byte means a new cache', () => {
   const dir = mkdtempSync(join(tmpdir(), 'jsz-sw-'));
   mkdirSync(join(dir, 'assets'));
