@@ -16,12 +16,15 @@ import { SUBSTANCES } from '../../domain/presets.js';
 import { toDateKey } from '../../domain/dates.js';
 import { userError } from '../../lib/errors.js';
 import { withTransition } from '../../lib/transition.js';
-import { readImportFile } from '../../lib/safeJson.js';
+import { readImportText } from '../../lib/safeJson.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useHashRoute } from '../../hooks/useHashRoute.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { useFormAction } from '../../hooks/useFormAction.js';
 import { CrisisButton } from '../crisis/CrisisButton.jsx';
+import { BACKUP_ACCEPT } from '../../lib/nativeFiles.js';
+import { parseBackupText } from '../../domain/backupFile.js';
+import { RecoveryRestoreFields } from '../RestoreFields.jsx';
 import { Mascot } from '../mood/Mascot.jsx';
 import { Icon } from '../icons/Icon.jsx';
 import { NewPinField, PinInput } from '../PinFields.jsx';
@@ -79,14 +82,23 @@ function LanguageToggle() {
 function RestoreForm({ onRestored }) {
   const { auth } = useAuth();
   const restore = useFormAction(async (fd) => {
-    const backup = await readImportFile(fd.get('file'));
-    await auth.restoreBackup(backup, fd.get('pin'));
+    const backup = parseBackupText(await readImportText(fd.get('file')));
+    const code = String(fd.get('code') ?? '').trim();
+    if (code) {
+      // Elfelejtett PIN (M2): a helyreállító kóddal nyitjuk meg, és új PIN-kódot kap ez az eszköz.
+      if (fd.get('newpin') !== fd.get('newpin2')) throw userError(T.pinMismatch);
+      await auth.restoreBackup(backup, code, { newPin: String(fd.get('newpin')) });
+    } else {
+      if (!fd.get('pin')) throw userError(MISC.backupPin);
+      await auth.restoreBackup(backup, fd.get('pin'));
+    }
     onRestored();
   });
   return (
     <form className="stack" onSubmit={restore.onSubmit} aria-busy={restore.busy || undefined}>
-      <Field label={MISC.backupFile}><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
-      <Field label={MISC.backupPin}><PinInput name="pin" autoComplete="current-password" /></Field>
+      <Field label={MISC.backupFile}><input type="file" name="file" accept={BACKUP_ACCEPT} required className="input" /></Field>
+      <Field label={MISC.backupPin}><PinInput name="pin" autoComplete="current-password" required={false} /></Field>
+      <RecoveryRestoreFields />
       <button type="submit" className="btn" disabled={restore.busy}>{T.importEncrypted}</button>
     </form>
   );

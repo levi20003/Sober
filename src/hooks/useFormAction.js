@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from './useToast.jsx';
 import { EXPECTED_CODES, friendlyError } from '../lib/errors.js';
+import { logError } from '../lib/log.js';
 
 /**
  * Async form submit: prevents default, exposes `busy`, passes FormData, and reports
@@ -16,7 +17,7 @@ export function useFormAction(fn) {
     try {
       await fn(new FormData(ev.currentTarget), ev.currentTarget);
     } catch (err) {
-      if (!EXPECTED_CODES.has(err?.code)) console.error(err);
+      if (!EXPECTED_CODES.has(err?.code)) logError(err);
       toast(friendlyError(err), 'error');
     } finally {
       setBusy(false);

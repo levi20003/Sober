@@ -10,10 +10,14 @@ import { createApkUpdateManager } from './lib/apkUpdate.js';
 import { applyPrefs, getPrefs } from './hooks/usePrefs.js';
 import { A11Y, T } from './content/index.js';
 import { isNativeShell } from './lib/platform.js';
+import { logError } from './lib/log.js';
+import { setSecureScreen } from './lib/nativeFiles.js';
 
 document.title = T.appName;
 document.querySelector('.skip')?.replaceChildren(A11Y.skipLink);
 applyPrefs(); // téma és "kevesebb mozgás" még az első kirajzolás előtt
+// Android-app: a felhasználó által bekapcsolt képernyőkép-védelem (FLAG_SECURE) már az induláskor érvényes.
+if (getPrefs().secureScreen) setSecureScreen(true).catch(() => {});
 
 const auth = createAppAuth({ openBackend: openBestBackend });
 const router = createHashRouter(window);
@@ -31,13 +35,13 @@ createRoot(document.getElementById('app')).render(
   </StrictMode>,
 );
 
-auth.init().catch((err) => console.error(err));
+auth.init().catch((err) => logError(err));
 if (native) {
   updates.start();
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') updates.check({ silent: true }); });
 }
 
-addEventListener('unhandledrejection', (e) => console.error(e.reason));
+addEventListener('unhandledrejection', (e) => logError(e.reason));
 
 // Not in the Android shell: its files are bundled in the APK, and the service
 // worker could never install there (the build ignores dotfiles such as .nojekyll).

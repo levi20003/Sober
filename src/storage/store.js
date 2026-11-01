@@ -12,7 +12,8 @@ import {
   assertSecretStrength, createKeySlot, decryptPayload, encryptPayload, generateDek,
   generateRecoveryCode, normalizeRecoveryCode, openKeySlot, randomBytes, toB64,
 } from '../crypto/vault.js';
-import { validateData, SchemaError } from '../domain/schema.js';
+import { validateData, SchemaError, SCHEMA_VERSION } from '../domain/schema.js';
+import { createBackup, inspectBackup, parseBackupText, BackupError } from '../domain/backupFile.js';
 
 const K_VAULT = 'vault';
 const K_PREV = 'vault.prev';
@@ -55,7 +56,9 @@ export class VaultStore {
   constructor(backend, {
     pinIterations = PIN_ITERATIONS, recoveryIterations = RECOVERY_ITERATIONS,
     minIterations = MIN_ITERATIONS, now = () => Date.now(),
+    appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev',
   } = {}) {
+    this.appVersion = String(appVersion);
     if (pinIterations < minIterations || recoveryIterations < minIterations) {
       throw new RangeError('Iteration count below the configured minimum.');
     }
@@ -191,6 +194,10 @@ export class VaultStore {
 
   async #decryptAndValidate(dek, payload) {
     const raw = await decryptPayload(dek, payload);
+    if (typeof raw?.schemaVersion === 'number' && raw.schemaVersion > SCHEMA_VERSION) {
+      // Visszalépés régebbi verzióra (M5): az adat ép, csak ez az app még nem ismeri. Soha ne „javítsuk” vagy írjuk felül.
+      throw new VaultError('UNSUPPORTED', 'A naplót az alkalmazás újabb verziója hozta létre. Kérlek, frissítsd az alkalmazást; az adataid épek.');
+    }
     try {
       return validateData(raw);
     } catch (err) {
@@ -276,23 +283,59 @@ export class VaultStore {
     return { recoveryCode };
   }
 
-  /** Encrypted backup: the vault record itself. Restorable only with the PIN or recovery code. */
+  /**
+   * Titkosított mentés (v2): a vault rekord + verziók + SHA-256 ellenőrzőösszeg (src/domain/backupFile.js).
+   * Csak PIN-kóddal vagy helyreállító kóddal nyitható.
+   */
   async exportEncryptedBackup() {
     const record = await this.#readRecord(K_VAULT);
-    return { app: 'jozansag-szamlalo', kind: 'encrypted-backup', exportedAt: new Date(this.now()).toISOString(), record };
+    return createBackup(record, { appVersion: this.appVersion, schemaVersion: this.#data?.schemaVersion ?? SCHEMA_VERSION, now: this.now() });
   }
 
-  /** Verifies the backup opens with `pin` BEFORE replacing anything on this device. */
-  async importEncryptedBackup(backup, pin) {
-    if (backup?.app !== 'jozansag-szamlalo' || backup?.kind !== 'encrypted-backup' || backup.record?.format !== VAULT_FORMAT) {
-      throw new VaultError('CORRUPTED', 'Ez a fájl nem Józanság-számláló titkosított mentés.');
+  /**
+   * A kész mentésfájl ellenőrzése (M6): újraolvasás, ellenőrzőösszeg, visszafejtés a jelenlegi kulccsal, séma.
+   * Csak ezután mondjuk a felhasználónak, hogy „A mentés elkészült és ellenőrizve”.
+   */
+  async verifyBackup(text) {
+    if (!this.#dek) throw new VaultError('UNSUPPORTED', 'A napló zárolva van.');
+    const { record } = await inspectBackup(parseBackupText(text));
+    try {
+      await this.#decryptAndValidate(this.#dek, record.payload);
+    } catch (err) {
+      throw new BackupError('DAMAGED', undefined, { cause: err });
     }
-    const dek = await this.#open(backup.record.slots?.pin, pin);
-    const data = await this.#decryptAndValidate(dek, backup.record.payload);
+    return true;
+  }
+
+  /**
+   * Visszaállítás mentésből. Mindent ellenőriz, MIELŐTT bármit felülírna ezen az eszközön.
+   * @param {object} backup   a beolvasott mentésfájl (v1 vagy v2)
+   * @param {string} secret   PIN-kód, vagy (ha `newPin` meg van adva) a helyreállító kód
+   * @param {{newPin?: string}} [opts] helyreállító kódos visszaállításnál az új PIN-kód (M2)
+   */
+  async importEncryptedBackup(backup, secret, { newPin } = {}) {
+    const { record } = await inspectBackup(backup);
+    if (newPin !== undefined) assertSecretStrength(newPin);
+    const viaRecovery = newPin !== undefined;
+    let dek = viaRecovery
+      ? await this.#open(record.slots.recovery, normalizeRecoveryCode(secret), true)
+      : await this.#open(record.slots.pin, secret);
+    let data;
+    try {
+      data = await this.#decryptAndValidate(dek, record.payload);
+    } catch (err) {
+      if (err?.code === 'UNSUPPORTED') throw err;
+      throw new BackupError('DAMAGED', undefined, { cause: err });
+    }
+    let next = record;
+    if (viaRecovery) {
+      next = { ...record, revision: record.revision + 1, slots: { ...record.slots, pin: await createKeySlot(dek, newPin, this.pinIterations) } };
+      dek = await reimportNonExtractable(dek);
+    }
     const current = await this.backend.get(K_VAULT);
-    await this.backend.putMany({ [K_VAULT]: backup.record, ...(current ? { [K_PREV]: current } : {}) });
-    await this.#adopt(backup.record, dek, data);
-    await this.#rememberPinShape(pin);
+    await this.backend.putMany({ [K_VAULT]: next, ...(current ? { [K_PREV]: current } : {}) });
+    await this.#adopt(next, dek, data);
+    await this.#rememberPinShape(viaRecovery ? newPin : secret);
   }
 
   lock() {

@@ -97,6 +97,25 @@ Phases are recomputed from events instead of being stored. Stored day counts wou
 - Several slips on one day open one phase. Consecutive slip days produce 0-day phases.
 - Dates are local calendar keys, so DST and late-night entries never shift counts.
 
+## Encrypted backup file (format v2)
+
+```json
+{ "app": "jozansag-szamlalo", "kind": "encrypted-backup", "formatVersion": 2,
+  "appVersion": "0.10.0", "schemaVersion": 3, "exportedAt": "2026-11-01T18:00:00.000Z",
+  "checksum": "sha256:<64 hex>", "record": { "format": 1, "revision": 7, "slots": { "pin": {…}, "recovery": {…} }, "payload": {…} } }
+```
+
+- `checksum` = SHA-256 of `JSON.stringify(record)`. It is not a security control (AES-GCM authenticates the data); it lets the app say
+  **"A mentésfájl sérült vagy hiányos"** for a truncated or bit-flipped file instead of "wrong PIN" (`src/domain/backupFile.js`).
+- **v1** files (until 2026-10: no `formatVersion`, no `checksum`) are still restored; a frozen v1 file is in `tests/fixtures/backup-v1.json`.
+- `formatVersion > 2` or `record.format > 1` → UNSUPPORTED ("update the app"). Nothing on the device is changed before the file has
+  passed the structure check, the checksum and decryption.
+- Restore works with the **PIN**, or with the **recovery code + a new PIN** (the restored record gets a new PIN slot).
+- After every export the app re-reads the file, checks the checksum and decrypts it with the in-memory key before saying
+  "A mentés elkészült és ellenőrizve".
+- `vault.prev` is deliberately **not** included: it is an older copy of the same journal (doubling the size), and after a PIN change it is
+  revoked anyway. The backup always holds the current state.
+
 ## Migration
 
 `migrate()` applies one step per version (`MIGRATIONS[n]: vn → vn+1`). Shipped steps are never edited, so old backups keep migrating identically. Newer versions are refused with a "please update the app" message instead of being misread.

@@ -1,0 +1,35 @@
+{
+  "app": "jozansag-szamlalo",
+  "kind": "encrypted-backup",
+  "exportedAt": "2026-10-20T18:00:00.000Z",
+  "record": {
+    "format": 1,
+    "revision": 7,
+    "slots": {
+      "pin": {
+        "kdf": {
+          "name": "PBKDF2",
+          "hash": "SHA-256",
+          "iterations": 100000,
+          "salt": "sEDx+F/Blcv9ndb85HdDGw=="
+        },
+        "iv": "8IFRB4biQ0hNdhT6",
+        "wrapped": "NFEQV84Mu9nvgZCGBhJpkZsmcsHaHzUw+UGzan3agB8DwUa0FFHj80sqoudZYaLU"
+      },
+      "recovery": {
+        "kdf": {
+          "name": "PBKDF2",
+          "hash": "SHA-256",
+          "iterations": 100000,
+          "salt": "hQA1wy4qCJQj+aacT3cfgg=="
+        },
+        "iv": "Ik8TfOdzFUrLfTV8",
+        "wrapped": "HipUWZ3yjQM/6bZM9dxKtguBXIf//uPEL14pQup+h8et+JL+yb/rs5eYNAVO32Ps"
+      }
+    },
+    "payload": {
+      "iv": "MZBz07NUISdaRbpg",
+      "ct": "NsGlDIR45VDRraZ46N4IYPq5a0R9HGipxJ6Ee5Q0exMubeH/9bFgbzPBgrfE4aWMUVYF3FCwJiABkP/nizFazimEEK05+D0zDOk5Dx2Cro13WYTnln827EgI4WKmJo4qP6di0Ay2BVfhlJl1psPWeYVUBSDAOTUgttls0pRkLD9atyVmII6DRu+uNV2sslS4psoYcwmwi4GGIn56SUPCETE/hVTup/23n0QQzfZN6C1BpPeu9Jg2fZyQz71vDe99j4ZT1EmhMHGjBegYHWdCYR4Tai5s3rx7KZHKYgwDCedtlCwcFaTrXq01H6KaZb5odOa+YxQYxpphWOp/v68t3tgrp6vvPAY3dJnNkPAtk7saeNGcjARwOBw4zbktMtiF4d1JQafBs4jKL3KwDbjnyCgrxFhuZGizSdZIpzJmv16npkczX5cA0YfE7MrETMkxtWfZdQ6vabMMoICbbMNViusVpdYWsy+3oJ1R8nZ2IfEMV8x3amKmSJmCvlNai50tN0B4cic5dkWEanJyoleloBiiPYijOeZpBnQaCRwfrwnS/qxTlTg52SmnFCkdnhuhammXnP2TkNbDvN5FzLbMlHWhbmh5vfeKAnpqgOQdYom6zDue7GB23qJk3Gn+n7o9wjjLc7vTPwKtqgbi0dvlFmvEZbTDY5R2bCzfJrptsLO04O9yelazSPUX6RH+puFh6uerZ138oqCX2b2uebFuhcEZy9P+G07L/WpRB5SgZ9gj8hASTnJ5oqPivPambAZ0TLtqBne512Z1v4Pkysy0JGjATJpSr7Sq+UXTUAQAZBrqaGWvd43T+c8s0Fo/PDBJmom9yZom0zVsMPlt6csDb0CWXnC48DyqoR4jbBg9fq0n7BYFw1HrlaEjnJ0l6e2VwnjiJlhIoYjH7YD/EBuo8KU18z6VJtGJkSgFbnNZkusFqH1HdQcGnSFHsAKqAmKArVIj6e5BVXu/Q70vn0pNwn+PJlrLwfb6OkExbx0DF0VuCFrAmeUmvHd+5QaxjemmbkdZTgP9wBUSgf/Bt/r6SMhTCgIneU34DJnillNDRy8wz1H7/7wCWsU2XOrUyXP+sDCvpY/dQG//uj2NXiKXa67zYUB9qtxL+aCXFdv0Il6ezOXOWK/MhyRxYhFEQxQf8HCTCk4OMdf8w3c2H2Mjn2eqxfn75Nd7vpEb2X1FEM7b0X8ldQ2l3Wy4WQ=="
+    }
+  }
+}

@@ -54,6 +54,11 @@ jobs:
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
             echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
             echo "SIGNING_KIND=release" >> "$GITHUB_ENV"
+          elif [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            # A main ágról kiadás készül: debug kulccsal aláírt APK nem települne frissítésként a felhasználók
+            # telefonján lévő app fölé (az adataik elérhetetlenné válnának). Ilyenkor a build megáll.
+            echo "::error::Nincs ANDROID_KEYSTORE_BASE64 titok a main ágon. Kiadás csak a kiadási kulccsal készülhet (docs/DEPLOYMENT.md)."
+            exit 1
           else
             echo "SIGNING_KIND=debug" >> "$GITHUB_ENV"
             echo "::warning::Nincs ANDROID_KEYSTORE_BASE64 titok: az APK ideiglenes debug kulccsal készül, amely minden futásnál más. Az ilyen APK nem települ a korábbi build fölé."
@@ -77,6 +82,12 @@ jobs:
           grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" verify.txt
           FP=$(grep -m1 "certificate SHA-256 digest" verify.txt | sed 's/.*: //')
           echo "CERT_SHA256=$FP" >> "$GITHUB_ENV"
+          # A kiadási kulcs ujjlenyomata rögzítve van (android/signing-fingerprint.txt): más kulcs = megállunk.
+          EXPECTED=$(grep -E '^[0-9a-f]{64}$' android/signing-fingerprint.txt)
+          if [ "$SIGNING_KIND" = "release" ] && [ "$FP" != "$EXPECTED" ]; then
+            echo "::error::Az APK aláíró tanúsítványa ($FP) nem egyezik a rögzített kiadási ujjlenyomattal ($EXPECTED)."
+            exit 1
+          fi
           echo "::notice title=Aláíró tanúsítvány ($SIGNING_KIND kulcs)::SHA-256: $FP, verziókód: $ANDROID_VERSION_CODE"
 
       - name: APK átnevezése és ellenőrzőösszeg
@@ -169,6 +180,29 @@ jobs:
           APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
           "$APKSIGNER" sign --ks "$RUNNER_TEMP/idegen.jks" --ks-pass pass:idegenjelszo --key-pass pass:idegenjelszo \
             --out smoke-in/foreign.apk smoke-in/v1002.apk
+      # Frissítés a KIADOTT verzióról (M12): a jelenlegi android-latest APK fölé az új buildnek frissítésként
+      # kell települnie. Ehhez az új próba-APK-t a kiadási kulccsal is aláírjuk (a kulcs a futás végén törlődik).
+      - name: Kiadott APK letöltése és az új build aláírása a kiadási kulccsal
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            if [ "$GITHUB_REF" = "refs/heads/main" ]; then echo "::error::Nincs kiadási kulcs a main ágon"; exit 1; fi
+            echo "::warning::Nincs kiadási kulcs (pl. fork PR): a kiadott verzióról történő frissítés próbája kimarad."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/release.jks" --ks-pass env:ANDROID_KEYSTORE_PASSWORD \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" --key-pass env:ANDROID_KEY_PASSWORD \
+            --out smoke-in/release-new.apk smoke-in/v1002.apk
+          rm -f "$RUNNER_TEMP/release.jks"
+          gh release download android-latest --repo "$GITHUB_REPOSITORY" --pattern jozansag-szamlalo.apk --output smoke-in/release-old.apk
+          echo "SMOKE_RELEASE_ARGS=--release-old smoke-in/release-old.apk --release-new smoke-in/release-new.apk" >> "$GITHUB_ENV"
       - name: KVM engedélyezése
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -185,7 +219,7 @@ jobs:
           ram-size: 4096M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: node scripts/android-smoke.mjs smoke-in/v1001.apk smoke-out --upgrade smoke-in/v1002.apk --foreign smoke-in/foreign.apk
+          script: node scripts/android-smoke.mjs smoke-in/v1001.apk smoke-out --upgrade smoke-in/v1002.apk --foreign smoke-in/foreign.apk --old-vault tests/fixtures/vault-format1-schema1.json $SMOKE_RELEASE_ARGS
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:

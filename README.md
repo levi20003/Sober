@@ -21,6 +21,16 @@ A private, offline-first, Hungarian-language PWA that **helps track and support*
 - **Quick log in 2 taps:** preset cards ("Stresszes nap", "Társasági nyomás", "Esti szokás", "Nyugodt / Kiegyensúlyozott", …) → "Rögzítés". Intensity and an encrypted note are optional; no typing is required.
 - **Data ownership:** encrypted backup, CSV (UTF-8 BOM, `;`) and JSON export, and single-step delete-all.
 
+## Telefoncsere / Changing phones
+
+1. Régi telefon: **Beállítások → Adatok → Titkosított mentés**. Az Android-app a rendszer „Mentés ide” ablakát nyitja meg (Letöltések,
+   Drive, e-mail magadnak…), utána megoszthatod is. A fájl titkosított; az app visszaolvassa és ellenőrzi („A mentés elkészült és ellenőrizve”).
+2. Új telefon: telepítsd az appot, és az első képernyőn válaszd: **„Van már mentésem másik eszközről”** → fájl + PIN-kód.
+3. Elfelejtett PIN: ugyanitt **„Elfelejtettem a PIN-kódot”** → helyreállító kód + új PIN-kód.
+4. Ha minden átkerült, a régi telefonon: Beállítások → „Minden adat törlése”.
+
+The same steps are in the app (Settings → Data → "Changing phones"). Old backup files (format v1) still restore.
+
 ## Languages and adding another one
 
 All copy lives in `src/content/locales/hu.js` and `en.js` (same keys, enforced by `tests/i18n.test.js`); `src/content/index.js` picks the language at start-up (`src/i18n/locale.js`: Settings choice, else the phone's language), and switching reloads the app. Helplines are per country in `src/content/helplines.js`. To add a language: copy `en.js`, translate, add it to `LOCALES` and `content/index.js`, add an English-style copy guard to `tests/i18n.test.js`, and have the new helplines verified.

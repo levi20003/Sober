@@ -16,11 +16,12 @@ const HEADERS = {
   'Cross-Origin-Opener-Policy': 'same-origin',
 };
 
-export function startServer(port = Number(process.env.PORT) || 8080) {
+/** @param {{root?: string}} [opts] más könyvtárat is kiszolgálhat (az e2e frissítés-próbája egy másolatot módosít) */
+export function startServer(port = Number(process.env.PORT) || 8080, { root = ROOT } = {}) {
   const server = createServer(async (req, res) => {
     const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    const file = normalize(join(ROOT, path === '/' ? 'index.html' : path));
-    if (!file.startsWith(ROOT) || /[\\/](node_modules|tests|scripts|\.git)[\\/]/.test(file)) {
+    const file = normalize(join(root, path === '/' ? 'index.html' : path));
+    if (!file.startsWith(root) || /[\\/](node_modules|tests|scripts|\.git)[\\/]/.test(file)) {
       res.writeHead(404).end();
       return;
     }

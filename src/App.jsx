@@ -26,6 +26,7 @@ import { TabBar } from './components/shell/TabBar.jsx';
 import { QuickAddSheet } from './components/shell/QuickAddSheet.jsx';
 import { FreshStartModal } from './components/timeline/FreshStartModal.jsx';
 import { PreviewNotice } from './components/home/Notices.jsx';
+import { isNativeShell } from './lib/platform.js';
 
 const SUBTITLES = { '#/eszkozok/hullam': TOOLS.urgeTitle, '#/eszkozok/hala': TOOLS.gratitudeTitle, '#/eszkozok/level': TOOLS.letterTitle, '#/eszkozok/okok': TOOLS.reasonsTitle,
   '#/rogzites/bejelentkezes': T.actionCheckin, '#/rogzites/nehez-pillanat': T.triggerTitle, '#/rogzites/jegyzet': T.noteTitle };
@@ -129,7 +130,7 @@ function Shell() {
   useEffect(() => { if (state.status === AuthStatus.LOCKED) toast.clear?.(); }, [state.status, toast]);
 
   // Auto-lock on inactivity, and immediately on pagehide (back/forward cache).
-  useEffect(() => auth.attachLifecycle({ target: window, doc: document }), [auth]);
+  useEffect(() => auth.attachLifecycle({ target: window, doc: document, native: isNativeShell() }), [auth]);
 
   // Automatikus frissítés: zárolt képernyőn (nincs elveszíthető félkész munka) azonnal, egyébként a felhasználó kérésére.
   useEffect(() => {

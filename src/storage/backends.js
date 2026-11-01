@@ -1,6 +1,8 @@
 // Key-value persistence backends. All values are structured-cloneable JSON objects.
 // Interface: get(key), putMany(entries: Record<string, any>) [atomic], delete(keys[]), destroy()
 
+import { logWarn } from '../lib/log.js';
+
 export class StorageError extends Error {
   /** @param {'UNAVAILABLE'|'QUOTA'|'WRITE_FAILED'|'READ_FAILED'} code */
   constructor(code, message, options) {
@@ -245,11 +247,11 @@ export async function openBestBackend({
     }
     return idb;
   } catch (err) {
-    console.warn('IndexedDB nem érhető el.', err?.name ?? err);
+    logWarn(`IndexedDB nem érhető el (${err?.name ?? 'ismeretlen'}).`);
     // Az IndexedDB-ben már van napló: inkább hibát jelzünk (újrapróbálható), mint hogy egy üres új naplót kínáljunk fel.
     if (hasIdbHint(ls ?? null) && !(lsBackend && (await lsBackend.get('vault')) !== undefined)) throw storageError('UNAVAILABLE', err);
   }
   if (lsBackend) return lsBackend;
-  console.warn('A localStorage sem érhető el, memóriában tárolunk.');
+  logWarn('A localStorage sem érhető el, memóriában tárolunk.');
   return new MemoryBackend();
 }
