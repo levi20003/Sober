@@ -4,13 +4,14 @@ import { CELEBRATE } from '../../content/index.js';
 import { useReducedMotion } from '../../hooks/useReducedMotion.js';
 import { Confetti } from '../Confetti.jsx';
 import { Mascot } from '../mood/Mascot.jsx';
+import { haptic } from '../../lib/haptics.js';
 
 export function Celebration({ days, onClose }) {
   const reduced = useReducedMotion();
   const btn = useRef(null);
   useEffect(() => {
     btn.current?.focus();
-    if (!reduced) globalThis.navigator?.vibrate?.([30, 40, 30]);
+    if (!reduced) haptic([30, 40, 30]);
   }, [reduced]);
   return (
     <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="cel-h">

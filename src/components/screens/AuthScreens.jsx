@@ -11,6 +11,7 @@ import { Field, Screen } from '../ui.jsx';
 import { NewPinField, PinInput } from '../PinFields.jsx';
 import { Sheet } from '../Info.jsx';
 import { Icon } from '../icons/Icon.jsx';
+import { haptic } from '../../lib/haptics.js';
 
 export function RecoveryCode({ code, onDone }) {
   const [ok, setOk] = useState(false);
@@ -41,7 +42,7 @@ function PinPad({ length, onComplete, status, busy, shake }) {
   const setDigits = (v) => { digitsRef.current = v; setDigitsState(v); };
   const press = (d) => {
     if (busy || working.current) return;
-    globalThis.navigator?.vibrate?.(8);
+    haptic(8);
     const next = (digitsRef.current + d).slice(0, length);
     setDigits(next);
     if (next.length === length) {

@@ -57,3 +57,15 @@ test('trusted person: validated, and shown on the crisis page as a tel: link nex
   assert.equal(document.querySelector('a[href="tel:112"]') !== null, true, 'helplines untouched');
   assert.equal(document.querySelector('a[href="tel:116123"]') !== null, true);
 });
+
+test('haptics: no vibration before a real user tap or with reduced motion (no console intervention)', async () => {
+  const { haptic } = await import('../src/lib/haptics.js');
+  const calls = [];
+  const nav = (active) => ({ vibrate: (ms) => { calls.push(ms); return true; }, userActivation: { hasBeenActive: active } });
+  assert.equal(haptic(8, { nav: nav(false), doc: document }), false);
+  assert.equal(haptic(8, { nav: nav(true), doc: document }), true);
+  document.documentElement.setAttribute('data-motion', 'reduced');
+  assert.equal(haptic(8, { nav: nav(true), doc: document }), false);
+  document.documentElement.removeAttribute('data-motion');
+  assert.deepEqual(calls, [8]);
+});
