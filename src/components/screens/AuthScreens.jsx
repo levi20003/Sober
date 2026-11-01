@@ -152,6 +152,7 @@ export function LockScreen({ onReset }) {
       <button type="button" className="btn-link" onClick={() => setHelp(true)}>{UX.helpLogin}</button>
       {help && (
         <Sheet title={UX.helpLogin} closeLabel={UX.close} onClose={() => setHelp(false)}>
+          <p className="hint">{UX.offlineNote}</p>
           <details>
             <summary>{T.forgotPin}</summary>
             <form className="stack" onSubmit={recover.onSubmit} aria-busy={recover.busy || undefined}>

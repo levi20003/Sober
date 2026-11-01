@@ -49,6 +49,7 @@ test('page CSP forbids all network connections and inline script', () => {
   const html = readFileSync('index.html', 'utf8');
   const csp = /Content-Security-Policy" content="([^"]+)"/.exec(html)[1];
   assert.match(csp, /connect-src 'none'/);
+  assert.match(csp, /require-trusted-types-for 'script'/, 'Trusted Types: no string can reach a DOM code sink');
   assert.match(csp, /default-src 'none'/);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
   assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>/, 'no inline scripts');
@@ -70,4 +71,10 @@ test('no raw HTML injection or eval anywhere in the app (React or not)', () => {
 test('manifest exposes a crisis shortcut', () => {
   const m = JSON.parse(readFileSync('public/manifest.webmanifest', 'utf8'));
   assert.ok(m.shortcuts.some((s) => s.url.endsWith('#/segitseg')));
+});
+
+test('supply chain: the bundle checker flags any package other than react, react-dom and scheduler', async () => {
+  const { foreignPackages } = await import('../scripts/check-bundle.mjs');
+  assert.deepEqual(foreignPackages(['/x/node_modules/react/index.js', '/x/node_modules/react-dom/client.js', '/x/node_modules/scheduler/x.js', '/x/src/main.jsx']), []);
+  assert.deepEqual(foreignPackages(['/x/node_modules/left-pad/index.js', '/x/node_modules/@evil/pkg/a.js']), ['@evil/pkg', 'left-pad']);
 });

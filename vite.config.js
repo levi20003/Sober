@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { listFiles, precacheList, contentVersion, renderServiceWorker } from './scripts/precache.js';
 
@@ -11,6 +11,20 @@ const CSP_META = /\s*<meta http-equiv="Content-Security-Policy"[^>]*>/;
  *  The CSP is therefore removed ONLY when serving in development; builds keep it. */
 function devOnlyRelaxCsp() {
   return { name: 'jsz-dev-csp', apply: 'serve', transformIndexHtml: (html) => html.replace(CSP_META, '') };
+}
+
+/** Supply chain (audit 1.4): lists every module that ended up in the bundle (build-report/modules.json, NOT shipped). */
+function bundleReport() {
+  return {
+    name: 'jsz-bundle-report',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      const modules = new Set();
+      for (const chunk of Object.values(bundle)) if (chunk.type === 'chunk') for (const id of Object.keys(chunk.modules)) modules.add(id);
+      mkdirSync('build-report', { recursive: true });
+      writeFileSync('build-report/modules.json', JSON.stringify([...modules].sort(), null, 2));
+    },
+  };
 }
 
 /** Writes dist/sw.js with the full precache list and a content-hash version. */
@@ -34,7 +48,7 @@ function serviceWorker() {
 export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __BUILD_NUMBER__: JSON.stringify(Number(process.env.ANDROID_VERSION_CODE) || 0) },
-  plugins: [react(), devOnlyRelaxCsp(), serviceWorker()],
+  plugins: [react(), devOnlyRelaxCsp(), serviceWorker(), bundleReport()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,

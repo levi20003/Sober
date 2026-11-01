@@ -1,0 +1,11 @@
+# Dependabot: csak a GitHub Actions rögzített (SHA) verzióit frissíti, hetente. Az npm-függőségeket kézzel frissítjük
+# (pontos verziók, legalább 14 napos publikálás, lásd docs/SECURITY-MODEL.md). A biztonsági riasztásokat a repó
+# beállításaiban kell engedélyezni (Settings → Code security → Dependabot alerts).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14

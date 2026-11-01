@@ -16,6 +16,7 @@ import { SUBSTANCES } from '../../domain/presets.js';
 import { toDateKey } from '../../domain/dates.js';
 import { userError } from '../../lib/errors.js';
 import { withTransition } from '../../lib/transition.js';
+import { readImportFile } from '../../lib/safeJson.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useHashRoute } from '../../hooks/useHashRoute.js';
 import { useToast } from '../../hooks/useToast.jsx';
@@ -78,7 +79,7 @@ function LanguageToggle() {
 function RestoreForm({ onRestored }) {
   const { auth } = useAuth();
   const restore = useFormAction(async (fd) => {
-    const backup = JSON.parse(await fd.get('file').text());
+    const backup = await readImportFile(fd.get('file'));
     await auth.restoreBackup(backup, fd.get('pin'));
     onRestored();
   });
@@ -98,7 +99,7 @@ function Pin({ onCreate }) {
   });
   return (
     <>
-      <TitleWithInfo as="h1" title={ONB.pinTitle} infoTitle={UX.pinInfoTitle} info={<><p>{ONB.pinText}</p><p>{T.pinHint}</p><p>{T.secretStrength.weak}</p></>} />
+      <TitleWithInfo as="h1" title={ONB.pinTitle} infoTitle={UX.pinInfoTitle} info={<><p>{ONB.pinText}</p><p>{T.pinHint}</p><p>{UX.offlineNote}</p></>} />
       <form id="onb-pin" className="stack" onSubmit={submit.onSubmit} aria-busy={submit.busy || undefined}>
         <NewPinField label={T.pinLabel} />
         <Field label={T.pinConfirmLabel}><PinInput name="pin2" /></Field>
@@ -142,7 +143,7 @@ export function Onboarding({ onFinish }) {
     maxReached.current = RECOVERY_STEP;
     withTransition(() => navigate(`${STEP_PATH}${RECOVERY_STEP}`));
   };
-  const copy = async () => { try { await navigator.clipboard.writeText(recoveryCode); setCopied(true); } catch { toast(ONB.recoveryText); } };
+  const copy = async () => { try { await navigator.clipboard.writeText(recoveryCode); setCopied(true); toast(UX.clipboardWarning); } catch { toast(ONB.recoveryText); } };
 
   let body;
   switch (step) {

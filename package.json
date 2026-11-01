@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "vite build && node scripts/e2e.mjs",
-    "android": "vite build && node scripts/android-csp.mjs && cap sync android"
+    "android": "vite build && node scripts/android-csp.mjs && cap sync android",
+    "check:bundle": "node scripts/check-bundle.mjs"
   },
   "overrides": {
     "vite": "8.3.4"

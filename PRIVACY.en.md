@@ -33,7 +33,7 @@ In practice: nobody, including us, can read your journal without your PIN or rec
 
 - **Only you**, with your PIN or recovery code.
 - We, the makers, **cannot technically access it**: there is no server. The web version's security rule (`connect-src 'none'`) even forbids the page from opening any network connection.
-- **Single exception, Android app only:** every minute the app sends one ordinary request that carries no data to GitHub's release page (`https://api.github.com/repos/levi20003/Sober/releases/...`) to find out whether a newer version exists. The request contains no personal data or identifier; GitHub can see your IP address as for any request. You can switch it off in Settings, and the security rule of the Android app allows only this one address. The web version sends no such request.
+- **Single exception, Android app only:** at start and at most once a day the app sends one ordinary request that carries no data to GitHub's release page (`https://api.github.com/repos/levi20003/Sober/releases/...`) to find out whether a newer version exists. The request contains no personal data or identifier; GitHub can see your IP address as for any request. You can switch it off in Settings, and the security rule of the Android app allows only this one address. The web version sends no such request.
 - **Feedback** is optional and manual: the "Send feedback" button opens a pre-filled public GitHub form in your browser. The app sends nothing by itself. Please never put personal data, a PIN or a recovery code in it.
 - If someone has access to your unlocked device while the journal is open, they can see it too. That is why it auto-locks after inactivity (default 5 minutes) and can be locked immediately.
 

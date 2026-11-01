@@ -3,6 +3,7 @@ import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVI
 import { LOCALES } from '../../i18n/locale.js';
 import { CURRENCIES, CURRENCY_IDS } from '../../i18n/money.js';
 import { feedbackUrl } from '../../lib/feedback.js';
+import { readImportFile, safeJsonParse } from '../../lib/safeJson.js';
 import { toCsvExport, toJsonExport, parseJsonImport } from '../../domain/export.js';
 import { toDateKey } from '../../domain/dates.js';
 import { download } from '../../lib/format.js';
@@ -127,7 +128,7 @@ function AppearanceSection() {
   );
 }
 
-/** Verzió és frissítés. PWA: automatikus (service worker); Android-app: percenkénti ellenőrzés és letöltés. */
+/** Verzió és frissítés. PWA: automatikus (service worker); Android-app: indításkor és naponta egyszer ellenőriz, letöltés. */
 function UpdateSection() {
   const u = useUpdate();
   const [prefs, setPrefs] = usePrefs();
@@ -198,9 +199,9 @@ export function Settings({ onWipe, showRecoveryCode }) {
   const importer = useFormAction(async (fd) => {
     const file = fd.get('file');
     const pasted = String(fd.get('paste') ?? '').trim();
-    const text = pasted || (file && file.size ? await file.text() : '');
-    if (!text) throw userError(MISC.backupFile);
-    const obj = JSON.parse(text.replace(/^﻿/, ''));
+    if (!pasted && !(file && file.size)) throw userError(MISC.backupFile);
+    const obj = pasted ? safeJsonParse(pasted) : await readImportFile(file);
+    const text = JSON.stringify(obj);
     if (!confirm(MISC.importConfirm)) return;
     if (obj?.kind === 'encrypted-backup') await store.importEncryptedBackup(obj, fd.get('pin'));
     else await store.save(parseJsonImport(text));

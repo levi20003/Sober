@@ -76,3 +76,20 @@ test('the quick keypad can be switched off: then the PIN length is not even stor
   meta = await auth.store.getMeta();
   assert.equal(meta.pinHint, null, 'not written again once switched off');
 });
+
+test('locking removes every piece of journal content from the page (incl. a visible toast)', async () => {
+  window.location.hash = '';
+  const backend = new MemoryBackend();
+  const auth = createAppAuth({ openBackend: async () => backend, storeOptions: { pinIterations: 1000, recoveryIterations: 1000, minIterations: 1000 } });
+  await auth.init();
+  await auth.setup('2581', createInitialData({ journeyStart: daysAgo(3), nickname: 'TITKOSNEV', reasons: ['TITKOS_OK'] }));
+  render(<App auth={auth} router={createHashRouter(window)} />, { container: document.body.appendChild(document.createElement('div')) });
+  await screen.findByRole('heading', { name: /Szia, TITKOSNEV/ });
+  fireEvent.click(screen.getByRole('button', { name: 'Vidám' }));
+  fireEvent.click(within(document.querySelector('dialog.sheet')).getByRole('button', { name: 'Mentés' }));
+  await screen.findByText(/Elmentettem: Vidám/);
+  await act(async () => { auth.lock('manual'); });
+  await screen.findByRole('heading', { name: 'Üdv újra' });
+  const text = document.body.textContent;
+  for (const secret of ['TITKOSNEV', 'TITKOS_OK', 'Elmentettem: Vidám']) assert.ok(!text.includes(secret), `"${secret}" still on the page after locking`);
+});

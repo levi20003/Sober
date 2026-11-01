@@ -21,6 +21,21 @@ const K_META = 'meta';
 export const FREE_ATTEMPTS = 5;
 export const MAX_DELAY_MS = 5 * 60_000;
 
+/**
+ * Remaining wait, robust against clock changes (F6): the wait is measured from `lockedAt` and can never exceed the
+ * delay that was set. If the clock went BACKWARDS (now < lockedAt), the full delay applies again, but never more.
+ * A clock moved forward does end the wait early; an attacker who controls the clock also controls the storage,
+ * so this throttle only protects the on-screen PIN pad (see docs/SECURITY-MODEL.md).
+ */
+export function remainingWait(meta, now) {
+  const delay = Math.min(MAX_DELAY_MS, Math.max(0, meta.lockDelay ?? Math.max(0, (meta.lockedUntil ?? 0) - now)));
+  if (!delay) return 0;
+  const at = Number.isFinite(meta.lockedAt) ? meta.lockedAt : (meta.lockedUntil ?? 0) - delay;
+  const elapsed = now - at;
+  if (elapsed < 0) return delay;
+  return Math.max(0, Math.min(delay, delay - elapsed));
+}
+
 /** Delay before the next unlock attempt is allowed, given consecutive failures. */
 export function throttleDelay(failures) {
   if (failures < FREE_ATTEMPTS) return 0;
@@ -30,7 +45,7 @@ export function throttleDelay(failures) {
 // A meta rekord NEM titkosított (a zárolóképernyőnek és a háttérfolyamatnak olvasnia kell). Személyes tartalom nincs benne:
 //  pinHint: egy csak számjegyes PIN hossza (a gyors billentyűzethez; a Beállításokban kikapcsolható: quickPin=false)
 //  lastBackup / backupSnoozeUntil: a mentés-emlékeztető időpontjai.
-const DEFAULT_META = { failedAttempts: 0, lockedUntil: 0, reminders: { enabled: false, time: '20:00' }, pinHint: null, quickPin: true, lastBackup: null, backupSnoozeUntil: null };
+const DEFAULT_META = { failedAttempts: 0, lockedUntil: 0, lockedAt: 0, lockDelay: 0, reminders: { enabled: false, time: '20:00' }, pinHint: null, quickPin: true, lastBackup: null, backupSnoozeUntil: null };
 
 export class VaultStore {
   #dek = null;
@@ -54,6 +69,28 @@ export class VaultStore {
   #open(slot, secret, extractable = false) {
     return openKeySlot(slot, secret, { extractable, minIterations: this.minIterations });
   }
+
+  /** Every PIN check (unlock, change PIN, new recovery code, restore previous) goes through the throttle (F2). */
+  async #guardedOpen(slot, secret, extractable = false) {
+    const wait = await this.attemptWaitMs();
+    if (wait > 0) {
+      const err = new VaultError('WRONG_SECRET', `Túl sok sikertelen próbálkozás. Próbáld újra ${Math.ceil(wait / 1000)} másodperc múlva.`);
+      err.retryAfterMs = wait;
+      throw err;
+    }
+    try {
+      const dek = await this.#open(slot, secret, extractable);
+      const m = await this.getMeta();
+      if (m.failedAttempts || m.lockDelay || m.lockedUntil) await this.setMeta({ failedAttempts: 0, lockedUntil: 0, lockedAt: 0, lockDelay: 0 });
+      return dek;
+    } catch (err) {
+      if (err.code === 'WRONG_SECRET') await this.#registerFailure();
+      throw err;
+    }
+  }
+
+  /** For tests (F5): the session key must never be exportable. */
+  get keyIsExtractable() { return this.#dek ? this.#dek.extractable : null; }
 
   get isUnlocked() { return this.#dek !== null; }
   get isPersistent() { return this.backend.persistent !== false; }
@@ -108,15 +145,14 @@ export class VaultStore {
       payload: await encryptPayload(dek, data),
     };
     await this.backend.putMany({ [K_VAULT]: record, [K_META]: { ...DEFAULT_META } });
-    await this.#adopt(record, dek, data);
+    await this.#adopt(record, await reimportNonExtractable(dek), data);
     await this.#rememberPinShape(pin);
     return { recoveryCode };
   }
 
   /** Remaining wait in ms before another attempt is allowed (0 = may try now). */
   async attemptWaitMs() {
-    const m = await this.getMeta();
-    return Math.max(0, m.lockedUntil - this.now());
+    return remainingWait(await this.getMeta(), this.now());
   }
 
   async unlock(pin) {
@@ -133,26 +169,13 @@ export class VaultStore {
     const dek = record.extractableDek;
     record.slots = { ...record.slots, pin: await createKeySlot(dek, newPin, this.pinIterations) };
     record.revision += 1;
-    await this.#writeRecord(record);
+    await this.#writeRecord(record, null, { revokePrevious: true });
     await this.#rememberPinShape(newPin);
   }
 
   async #unlockWith(slotName, secret, { extractable = false } = {}) {
-    const wait = await this.attemptWaitMs();
-    if (wait > 0) {
-      const err = new VaultError('WRONG_SECRET', `Túl sok sikertelen próbálkozás. Próbáld újra ${Math.ceil(wait / 1000)} másodperc múlva.`);
-      err.retryAfterMs = wait;
-      throw err;
-    }
     const record = await this.#readRecord(K_VAULT);
-    let dek;
-    try {
-      dek = await this.#open(record.slots?.[slotName], secret, extractable);
-    } catch (err) {
-      if (err.code === 'WRONG_SECRET') await this.#registerFailure();
-      throw err;
-    }
-    await this.setMeta({ failedAttempts: 0, lockedUntil: 0 });
+    const dek = await this.#guardedOpen(record.slots?.[slotName], secret, extractable);
     const data = await this.#decryptAndValidate(dek, record.payload);
     await this.#adopt(record, extractable ? await reimportNonExtractable(dek) : dek, data);
     if (extractable) record.extractableDek = dek;
@@ -162,7 +185,8 @@ export class VaultStore {
   async #registerFailure() {
     const m = await this.getMeta();
     const failedAttempts = m.failedAttempts + 1;
-    await this.setMeta({ failedAttempts, lockedUntil: this.now() + throttleDelay(failedAttempts) });
+    const delay = throttleDelay(failedAttempts);
+    await this.setMeta({ failedAttempts, lockedUntil: this.now() + delay, lockedAt: this.now(), lockDelay: delay });
   }
 
   async #decryptAndValidate(dek, payload) {
@@ -200,17 +224,21 @@ export class VaultStore {
     if (!this.#dek) throw new VaultError('UNSUPPORTED', 'A napló zárolva van.');
     const data = validateData(nextData);
     const current = await this.#readRecord(K_VAULT);
+    if (current.revision !== this.#revision) {
+      // Another tab/window saved in the meantime (F4): never overwrite its changes silently.
+      throw new VaultError('CONFLICT', 'A naplót közben egy másik ablakban módosítottad. Töltsd újra az oldalt, hogy a legfrissebb állapotot lásd.');
+    }
     const record = { ...current, revision: this.#revision + 1, payload: await encryptPayload(this.#dek, data) };
     await this.#writeRecord(record, current);
     this.#data = data;
     return this.data;
   }
 
-  async #writeRecord(record, previous) {
+  async #writeRecord(record, previous, { revokePrevious = false } = {}) {
     const { extractableDek, ...clean } = record;
-    const prev = previous ?? (await this.backend.get(K_VAULT));
+    const prev = revokePrevious ? clean : (previous ?? (await this.backend.get(K_VAULT)));
     const entries = { [K_VAULT]: clean };
-    if (prev) entries[K_PREV] = prev;
+    if (prev) entries[K_PREV] = prev; // revokePrevious: the old secret's slot must not survive in vault.prev (F1)
     await this.backend.putMany(entries);
     this.#revision = clean.revision;
   }
@@ -218,7 +246,7 @@ export class VaultStore {
   /** Called when the current record is CORRUPTED but the previous copy is fine. */
   async restorePrevious(pin) {
     const prev = await this.#readRecord(K_PREV);
-    const dek = await this.#open(prev.slots.pin, pin);
+    const dek = await this.#guardedOpen(prev.slots.pin, pin);
     const data = await this.#decryptAndValidate(dek, prev.payload);
     await this.backend.putMany({ [K_VAULT]: prev });
     await this.#adopt(prev, dek, data);
@@ -231,15 +259,15 @@ export class VaultStore {
   async changePin(oldPin, newPin) {
     assertSecretStrength(newPin);
     const record = await this.#readRecord(K_VAULT);
-    const dek = await this.#open(record.slots.pin, oldPin, true);
-    await this.#writeRecord({ ...record, revision: record.revision + 1, slots: { ...record.slots, pin: await createKeySlot(dek, newPin, this.pinIterations) } });
+    const dek = await this.#guardedOpen(record.slots.pin, oldPin, true);
+    await this.#writeRecord({ ...record, revision: record.revision + 1, slots: { ...record.slots, pin: await createKeySlot(dek, newPin, this.pinIterations) } }, null, { revokePrevious: true });
     await this.#rememberPinShape(newPin);
   }
 
   /** Invalidates the old recovery code and returns a new one. */
   async regenerateRecoveryCode(pin) {
     const record = await this.#readRecord(K_VAULT);
-    const dek = await this.#open(record.slots.pin, pin, true);
+    const dek = await this.#guardedOpen(record.slots.pin, pin, true);
     const recoveryCode = generateRecoveryCode();
     const next = { ...record, revision: record.revision + 1, slots: { ...record.slots, recovery: await createKeySlot(dek, recoveryCode, this.recoveryIterations) } };
     // The previous copy still holds the OLD recovery slot – drop it so the old code is truly revoked.

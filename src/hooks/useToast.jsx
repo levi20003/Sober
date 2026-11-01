@@ -12,6 +12,8 @@ export function ToastProvider({ children }) {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setMsg(null), 3500);
   }, []);
+  // Zároláskor a felület a látható értesítést is eltünteti (ne maradjon kint naplóból származó szöveg).
+  toast.clear = () => { clearTimeout(timer.current); setMsg(null); };
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const region = typeof document !== 'undefined' ? document.getElementById('toast') : null;

@@ -10,7 +10,17 @@
 // Az Android-appban nincs service worker (a fájlok az APK-ban vannak): ott csak a verzió látszik, és a
 // letöltési oldalra mutató hivatkozás.
 
-const CHECK_EVERY_MS = 60_000; // percenként
+// Trusted Types (CSP: require-trusted-types-for 'script'): a service worker URL-je "script URL" sink, ezért egy szűk
+// policy engedi, de KIZÁRÓLAG a saját ./sw.js fájlt.
+let swPolicy = null;
+export function trustedSwUrl(url, tt = globalThis.trustedTypes) {
+  if (url !== './sw.js') throw new TypeError('Only ./sw.js may be registered');
+  if (!tt?.createPolicy) return url;
+  swPolicy ??= tt.createPolicy('jsz-sw', { createScriptURL: (u) => { if (u !== './sw.js') throw new TypeError('blocked'); return u; } });
+  return swPolicy.createScriptURL(url);
+}
+
+const CHECK_EVERY_MS = 3_600_000; // óránként (a tárhely is látja a kéréseket; indításkor és visszatéréskor is keres)
 
 export function createUpdateManager({
   sw = globalThis.navigator?.serviceWorker,
@@ -46,7 +56,7 @@ export function createUpdateManager({
     async start(url = './sw.js') {
       if (!state.supported) return null;
       try {
-        reg = await sw.register(url);
+        reg = await sw.register(trustedSwUrl(url));
       } catch (e) {
         set({ status: 'error' });
         return null;

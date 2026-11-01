@@ -15,6 +15,7 @@ export const AuthStatus = Object.freeze({
   FIRST_TIME_SETUP: 'FIRST_TIME_SETUP',
   LOCKED: 'LOCKED',
   UNLOCKED: 'UNLOCKED',
+  STORAGE_ERROR: 'STORAGE_ERROR', // a tárhely most nem érhető el (pl. IndexedDB-időtúllépés): újrapróbálható, semmit sem ír
 });
 
 export class AuthStateError extends Error {
@@ -100,8 +101,14 @@ export function createAppAuth({ openBackend, storeOptions = {}, now = () => Date
 
     init: () => run(async () => {
       expectStatus('init', AuthStatus.INITIALIZING);
-      const info = await attachStore();
-      set({ ...info, status: (await store.exists()) ? AuthStatus.LOCKED : AuthStatus.FIRST_TIME_SETUP });
+      try {
+        const info = await attachStore();
+        set({ ...info, status: (await store.exists()) ? AuthStatus.LOCKED : AuthStatus.FIRST_TIME_SETUP });
+      } catch (err) {
+        // Never fall through to first-time setup when storage cannot be read (F3).
+        set({ status: AuthStatus.STORAGE_ERROR, error: { code: err?.code ?? 'UNAVAILABLE', message: err?.message ?? String(err) } });
+        throw err;
+      }
     }),
 
     /** Creates the vault. Returns the one-time recovery code. */

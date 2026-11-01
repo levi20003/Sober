@@ -14,6 +14,7 @@ export const PIN_ITERATIONS = 600_000; // OWASP 2023 recommendation for PBKDF2-H
 export const RECOVERY_ITERATIONS = 100_000; // recovery code already carries 160 bits of entropy
 export const MIN_SECRET_LENGTH = 4; // 4-digit PINs are allowed by product decision; see assessSecret()
 export const MIN_ITERATIONS = 100_000; // floor accepted when *opening* a slot (defends against downgraded records)
+export const MAX_ITERATIONS = 5_000_000; // ceiling: a tampered file must not freeze the app for hours (F7)
 
 const AAD_DEK = 'jozansag-szamlalo|dek|v1';
 const AAD_PAYLOAD = 'jozansag-szamlalo|payload|v1';
@@ -151,6 +152,9 @@ export async function createKeySlot(dek, secret, iterations) {
  */
 export async function openKeySlot(slot, secret, { extractable = false, minIterations = MIN_ITERATIONS } = {}) {
   if (!slot?.kdf || slot.kdf.name !== 'PBKDF2' || slot.kdf.hash !== 'SHA-256' || !Number.isInteger(slot.kdf.iterations)) {
+    throw new VaultError('CORRUPTED', 'A kulcstároló sérült vagy ismeretlen formátumú.');
+  }
+  if (slot.kdf.iterations > MAX_ITERATIONS) {
     throw new VaultError('CORRUPTED', 'A kulcstároló sérült vagy ismeretlen formátumú.');
   }
   if (slot.kdf.iterations < minIterations) {
