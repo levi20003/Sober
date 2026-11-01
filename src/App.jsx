@@ -57,8 +57,8 @@ function UpdateBanner() {
   if (!update.ready) return null;
   return (
     <div className="update-banner" role="status" style={{ maxWidth: 528, margin: '8px auto' }}>
-      <span>{UPDATE.banner}</span>
-      <button type="button" className="btn btn-primary" onClick={update.apply}>{UPDATE.apply}</button>
+      <span>{update.native ? UPDATE.apkBanner : UPDATE.banner}</span>
+      <button type="button" className="btn btn-primary" onClick={update.apply}>{update.native ? UPDATE.apkApply : UPDATE.apply}</button>
     </div>
   );
 }

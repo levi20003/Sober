@@ -102,7 +102,7 @@ test('settings: theme and reduced-motion switches change the root attributes and
   fireEvent.click(screen.getByLabelText('Kevesebb mozgás'));
   assert.equal(document.documentElement.getAttribute('data-motion'), 'reduced');
   const stored = JSON.parse(localStorage.getItem('jsz-ui'));
-  assert.deepEqual(stored, { theme: 'dark', motion: 'reduced' });
+  assert.deepEqual(stored, { theme: 'dark', motion: 'reduced', apkCheck: true });
   assert.ok(!localStorage.getItem('jsz-ui').includes('Dani'));
   setPrefs({ theme: 'system', motion: 'full' });
   document.documentElement.removeAttribute('data-theme');

@@ -39,6 +39,7 @@ Minden a te eszközödön, a böngésző beépített titkosító moduljával (We
 
 - **Senki más, csak te**, a PIN-kóddal vagy a helyreállító kóddal.
 - Mi, az alkalmazás készítői, **technikailag sem férünk hozzá**: nincs szerver, ahová adat érkezne. Az alkalmazás biztonsági szabálya (`connect-src 'none'`) a böngészőben **meg is tiltja**, hogy az oldal bármilyen hálózati kapcsolatot nyisson.
+- **Egyetlen kivétel, csak az Android-appban:** az app percenként egy hagyományos, adatot nem küldő lekérdezést küld a GitHub kiadási oldalára, hogy megtudja, van-e újabb verzió (`https://api.github.com/repos/levi20003/Sober/releases/...`). A kérés nem tartalmaz sem személyes adatot, sem azonosítót; a GitHub a szokásos módon láthatja az IP-címedet. Ez a Beállításokban kikapcsolható, és a biztonsági szabály az Android-appban is csak erre az egy címre ad engedélyt. A webes változat semmilyen ilyen kérést nem küld.
 - **Fontos:** ha valaki hozzáfér a feloldott eszközödhöz, miközben a napló nyitva van, ő is láthatja. Ezért a napló inaktivitás után automatikusan zárolódik (alapértelmezés: 5 perc), és a „Zárolás” gombbal azonnal lezárhatod.
 
 ## Mennyire erős a védelem?

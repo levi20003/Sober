@@ -175,7 +175,7 @@ try {
   // try/catch-ében naplózza, és a következő rendszersáv-változásnál újra beállítja. Az app nem
   // használja a --safe-area-inset-* változókat, ezért nincs hatása. Csak ez az egy üzenet
   // kivétel; minden más konzolhiba bukást okoz.
-  const KNOWN_NOISE = /^console\.error: Error injecting safe area CSS: TypeError: Cannot read properties of null/;
+  const KNOWN_NOISE = /^console\.error: Error injecting safe area CSS: TypeError: Cannot read properties of null|api\.github\.com/; // utóbbi: a frissítésfigyelő kérése hálózat nélkül
   const flat = [...new Set(allProblems.flat())];
   const ignored = flat.filter((p) => KNOWN_NOISE.test(p));
   const real = flat.filter((p) => !KNOWN_NOISE.test(p));

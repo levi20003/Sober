@@ -27,15 +27,18 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: gradle
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npx cap sync android
-
       # Minden futás nagyobb verziókódot kap, így az új APK frissítésként települ a régire.
       # (100 + sorszám: a telefonon már lévő 6-os verziónál mindenképp nagyobb.)
       - name: Verziókód
         run: echo "ANDROID_VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+
+      - run: npm ci
+      - run: npm test
+      # A verziókód a buildbe is bekerül: az app ezzel veti össze a legfrissebb kiadást (frissítésfigyelő).
+      - run: npm run build
+      # Csak az APK kap hálózati engedélyt, és csak a GitHub kiadási API-ra (lásd scripts/android-csp.mjs).
+      - run: node scripts/android-csp.mjs
+      - run: npx cap sync android
 
       - name: Aláírókulcs előkészítése (ha van)
         env:
@@ -133,6 +136,7 @@ jobs:
           cache: gradle
       - run: npm ci
       - run: npm run build
+      - run: node scripts/android-csp.mjs
       - name: WebView-hibakeresés bekapcsolása (csak a próbabuildben)
         run: |
           jq '.android.webContentsDebuggingEnabled = true' capacitor.config.json > "$RUNNER_TEMP/cap.json"

@@ -28,11 +28,17 @@ test('decorative figures (label=null) are hidden from assistive tech; the mascot
   for (const n of ICON_NAMES) assert.ok(render(<Icon name={n} />).container.querySelector('svg'), n);
 });
 
+test('the only network code is the Android release check, and it talks to api.github.com alone', () => {
+  const t = readFileSync('src/lib/apkUpdate.js', 'utf8');
+  assert.deepEqual([...new Set([...t.matchAll(/https:\/\/[a-z.]+/g)].map((m) => m[0]))].sort(), ['https://api.github.com', 'https://github.com']);
+  assert.match(t, /RELEASE_API = 'https:\/\/api\.github\.com\//);
+});
+
 test('no new runtime dependency, no network or external assets in the UI sources', () => {
   const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
   assert.deepEqual(Object.keys(pkg.dependencies).sort(), ['react', 'react-dom']);
   const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`]));
-  for (const f of walk('src').filter((x) => /\.(jsx?|css)$/.test(x) && !x.includes('/sw/'))) {
+  for (const f of walk('src').filter((x) => /\.(jsx?|css)$/.test(x) && !x.includes('/sw/') && !x.endsWith('lib/apkUpdate.js'))) {
     const t = readFileSync(f, 'utf8');
     assert.ok(!/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|@font-face|fonts\.googleapis/.test(t), `network/webfont in ${f}`);
   }

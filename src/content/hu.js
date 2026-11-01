@@ -647,12 +647,19 @@ export const SETTINGS_PAGE = {
   updateNone: 'A legújabb verziót használod.',
   updateReady: 'Van új verzió. Alkalmazom, amint befejezted, amit épp csinálsz.',
   updateApply: 'Frissítés most',
-  updateApkText: 'Az Android-appot kézzel kell frissíteni: töltsd le az új APK-t a letöltési oldalról, és telepítsd a régi fölé. Az adataid megmaradnak.',
+  updateApkText: 'Az app percenként megnézi a GitHubon, van-e újabb Android-verzió (egyetlen kérés, semmilyen adatod nem megy el). Ha van, értesítést kapsz; az Android a telepítést mindig tőled kéri jóvá, és az új verzió a régi fölé települ, az adataid megmaradnak.',
+  updateApkError: 'Most nem sikerült megnézni (nincs hálózat?). Később újra megpróbálom.',
+  updateApkReady: 'Új Android-verzió érhető el.',
+  updateApkDownload: 'Új verzió letöltése',
+  updateApkAuto: 'Új verzió keresése percenként az interneten',
+  updateApkAutoHint: 'Kikapcsolva az app semmilyen hálózati kérést nem küld, és csak a gombbal keres.',
   updateApkLink: 'Letöltési oldal megnyitása',
   updateUnsupported: 'Ez a böngésző nem támogatja az automatikus frissítést.',
 };
 
 export const UPDATE = {
+  apkBanner: 'Új Android-verzió érhető el.',
+  apkApply: 'Letöltés',
   banner: 'Új verzió érhető el.',
   apply: 'Frissítés',
   later: 'Később',

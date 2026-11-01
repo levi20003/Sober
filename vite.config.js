@@ -33,7 +33,7 @@ function serviceWorker() {
 
 export default defineConfig({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __BUILD_NUMBER__: JSON.stringify(Number(process.env.ANDROID_VERSION_CODE) || 0) },
   plugins: [react(), devOnlyRelaxCsp(), serviceWorker()],
   build: {
     outDir: 'dist',

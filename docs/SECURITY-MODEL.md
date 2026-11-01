@@ -21,7 +21,7 @@ Status: v0.2.0 draft, 2026-10-29. Not externally audited yet. An independent rev
                      ▼                                       key 'vault.prev' previous good record
             crypto/vault.js (Web Crypto only)                key 'meta'       plaintext, non-sensitive
             └────────────────────────────────────────────────────────────┘
- Network: CSP connect-src 'none' on the page → no fetch/XHR/WebSocket/beacon is possible.
+ Network: CSP connect-src 'none' on the page (the APK build alone allows exactly `https://api.github.com` for its release check, see scripts/android-csp.mjs) → no fetch/XHR/WebSocket/beacon is possible.
 ```
 
 There is no server, no account and no third-party *service*. Since v0.6.0 the UI is React; the shipped bundle contains exactly three npm packages (react, react-dom, scheduler) plus this repository's code. Crypto, storage and the timeline logic remain framework-free and dependency-free. See [Supply chain](#supply-chain).

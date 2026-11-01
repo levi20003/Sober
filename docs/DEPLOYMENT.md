@@ -21,7 +21,7 @@ Note on CSP: the HTTP header allows `connect-src 'self'` because the **service w
 
 ### Hogyan jut el a frissítés a felhasználókhoz (PWA)
 
-A build `sw.js`-e tartalom-hash alapú verziót kap. A telepített alkalmazás indításkor, előtérbe kerüléskor és percenként lekéri a saját `sw.js`-ét (ugyanarról a forrásról, nincs külső hívás); ha az eltér, az új worker letölti az új fájlokat, és az alkalmazás „frissítés kész” állapotot jelez (`src/lib/updateManager.js`). Zárolt képernyőn az oldal magától újratölt, egyébként a felhasználó a „Frissítés” gombbal alkalmazza. Az **Android-APK** nem frissíti magát: új APK-t kell telepíteni a régi fölé (azonos kulcs, nagyobb verziókód).
+A build `sw.js`-e tartalom-hash alapú verziót kap. A telepített alkalmazás indításkor, előtérbe kerüléskor és percenként lekéri a saját `sw.js`-ét (ugyanarról a forrásról, nincs külső hívás); ha az eltér, az új worker letölti az új fájlokat, és az alkalmazás „frissítés kész” állapotot jelez (`src/lib/updateManager.js`). Zárolt képernyőn az oldal magától újratölt, egyébként a felhasználó a „Frissítés” gombbal alkalmazza. Az **Android-APK** percenként lekéri a `android-latest` kiadás leírását, és a benne lévő „Verziókód: N” számot hasonlítja a saját, buildbe égetett verziókódjához (`ANDROID_VERSION_CODE` → `__BUILD_NUMBER__`); ha nagyobb, értesítést mutat, a „Letöltés” gomb az APK-t nyitja. A kiadás leírásának „Verziókód:” sora ezért nem módosítható. A telepítést az Android a felhasználóval hagyatja jóvá (azonos kulcs, nagyobb verziókód kell).
 
 ## Android APK
 

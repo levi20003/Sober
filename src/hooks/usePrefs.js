@@ -11,8 +11,8 @@ let cache = null;
 function read() {
   try {
     const o = JSON.parse(localStorage.getItem(KEY) || '{}');
-    return { theme: ['light', 'dark'].includes(o.theme) ? o.theme : 'system', motion: o.motion === 'reduced' ? 'reduced' : 'full' };
-  } catch { return { theme: 'system', motion: 'full' }; }
+    return { theme: ['light', 'dark'].includes(o.theme) ? o.theme : 'system', motion: o.motion === 'reduced' ? 'reduced' : 'full', apkCheck: o.apkCheck !== false };
+  } catch { return { theme: 'system', motion: 'full', apkCheck: true }; }
 }
 
 export function applyPrefs(prefs = getPrefs(), root = document.documentElement) {

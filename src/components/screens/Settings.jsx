@@ -77,6 +77,7 @@ function AppearanceSection() {
 /** Verzió és frissítés. PWA: automatikus (service worker); Android-app: kézi, letöltési oldalról. */
 function UpdateSection() {
   const u = useUpdate();
+  const [prefs, setPrefs] = usePrefs();
   const native = isNativeShell();
   return (
     <section className="card" aria-labelledby="upd-h">
@@ -85,7 +86,18 @@ function UpdateSection() {
       {native ? (
         <>
           <p className="hint">{SP.updateApkText}</p>
-          <a className="btn" href={APK_PAGE} target="_blank" rel="noopener noreferrer">{SP.updateApkLink}</a>
+          <p className="hint" role="status">{u.ready ? SP.updateApkReady : u.status === 'checking' ? SP.updateChecking : u.status === 'uptodate' ? SP.updateNone : u.status === 'error' ? SP.updateApkError : ''}</p>
+          <div className="actions">
+            {u.ready
+              ? <button type="button" className="btn btn-primary" onClick={u.apply}>{SP.updateApkDownload}</button>
+              : <button type="button" className="btn" onClick={() => u.check({ manual: true })} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
+            <a className="btn btn-ghost" href={APK_PAGE} target="_blank" rel="noopener noreferrer">{SP.updateApkLink}</a>
+          </div>
+          <div className="check">
+            <input type="checkbox" id="apk-auto" role="switch" checked={prefs.apkCheck} onChange={(e) => setPrefs({ apkCheck: e.target.checked })} />
+            <label htmlFor="apk-auto">{SP.updateApkAuto}</label>
+          </div>
+          <p className="hint">{SP.updateApkAutoHint}</p>
         </>
       ) : u.supported ? (
         <>
