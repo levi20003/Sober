@@ -26,6 +26,7 @@ import { useUpdate } from '../../hooks/useUpdate.js';
 import { Page } from '../shell/Page.jsx';
 import { InfoButton, Sheet } from '../Info.jsx';
 import { RecoveryRestoreFields } from '../RestoreFields.jsx';
+import { ApkUpdateStatus, apkBusy } from '../ApkUpdateStatus.jsx';
 
 
 const APK_PAGE = 'https://levi20003.github.io/Sober/telepites.html';
@@ -150,9 +151,10 @@ function UpdateSection() {
       {(native || u.supported) ? (
         <>
           {status && <p className="hint" role="status">{status}</p>}
+          {native && <ApkUpdateStatus update={u} />}
           <div className="actions">
             {u.ready
-              ? <button type="button" className="btn btn-primary" onClick={u.apply}>{native ? SP.updateApkDownload : SP.updateApply}</button>
+              ? <button type="button" className="btn btn-primary" onClick={u.apply} disabled={native && apkBusy(u)}>{native ? SP.updateApkDownload : SP.updateApply}</button>
               : <button type="button" className="btn" onClick={() => u.check(native ? { manual: true } : undefined)} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
             {native && <a className="btn btn-ghost" href={APK_PAGE} target="_blank" rel="noopener noreferrer">{SP.updateApkLink}</a>}
           </div>

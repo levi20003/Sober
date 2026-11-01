@@ -40,4 +40,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Alkalmazáson belüli frissítés: a letöltött, ellenőrzött APK-hoz megnyitja a telepítőt (a felhasználó hagyja jóvá). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>

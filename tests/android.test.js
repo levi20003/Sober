@@ -23,10 +23,11 @@ test('A1: no cloud backup or device transfer of the journal; no storage permissi
   assert.doesNotMatch(MANIFEST, /WRITE_EXTERNAL_STORAGE|READ_EXTERNAL_STORAGE|MANAGE_EXTERNAL_STORAGE|READ_MEDIA/);
 });
 
-test('A1: the FileProvider exposes only the backup share cache, not the whole external storage', () => {
-  assert.doesNotMatch(PATHS, /<external-path/);
+test('A1: the FileProvider exposes only the backup share cache (and the verified update APK), not the whole external storage', () => {
+  assert.doesNotMatch(PATHS, /<external-path|<files-path|<root-path|<external-cache-path/);
   assert.match(PATHS, /<cache-path name="backups" path="backups\/" \/>/);
-  assert.equal((PATHS.match(/-path /g) ?? []).length, 1);
+  // A frissítő modul (2026-11) óta pontosan két, az app gyorsítótárán belüli mappa: backups/ és updates/.
+  assert.deepEqual([...PATHS.matchAll(/<(\w+-path) name="(\w+)" path="([^"]*)"/g)].map((m) => m.slice(1).join(':')), ['cache-path:backups:backups/', 'cache-path:updates:updates/']);
 });
 
 // --- A2: natív mentés (Storage Access Framework) és megosztás, vágólap nélkül ------------------------

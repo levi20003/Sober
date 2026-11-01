@@ -154,6 +154,12 @@ try {
     allProblems.push(problems);
     await flow.afterRestart(c, PIN);
     say('✓ frissítés után a napló és a PIN megvan (az adat nem veszett el)');
+    // Frissítő modul valódi hálózaton: letölti a kiadott APK-t és a .sha256-ot, az ellenőrzőösszeg egyezik, de a
+    // próba-app debug kulccsal van aláírva, ezért az aláírás-ellenőrzésnek el KELL utasítania (SIGNATURE).
+    const upd = await c.eval(`(window.Capacitor && Capacitor.Plugins.JszUpdater ? Capacitor.Plugins.JszUpdater.download().then(() => 'OK', (e) => e.code || e.message) : Promise.resolve('NINCS_MODUL'))`);
+    if (upd === 'NETWORK') say('⚠ a frissítő modul próbája kimaradt: az emulátornak nincs internetkapcsolata');
+    else if (upd !== 'SIGNATURE') throw new Error(`A frissítő modulnak a más kulccsal aláírt kiadást SIGNATURE kóddal kellett volna elutasítania, de: ${upd}`);
+    else say('✓ frissítő modul: a kiadott APK letöltve, SHA-256 egyezik, az eltérő aláíró kulcs miatt nem ajánlja fel a telepítést');
     c.close();
   }
 
