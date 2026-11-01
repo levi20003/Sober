@@ -1,6 +1,6 @@
 {
   "name": "jozansag-szamlalo",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "Józanság-számláló – offline-first, titkosított, magyar nyelvű felépülés-követő PWA",
   "type": "module",
@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "vite build && node scripts/e2e.mjs",
-    "android": "vite build && cap sync android"
+    "android": "vite build && node scripts/android-csp.mjs && cap sync android"
   },
   "overrides": {
     "vite": "8.3.4"

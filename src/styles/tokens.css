@@ -1,0 +1,174 @@
+/* Dizájn-tokenek. Minden szín itt él; a komponensek csak var(--...)-t használnak.
+   Világos az alap; a sötét téma a rendszerbeállítást követi, és a Beállításokban kézzel is
+   választható (data-theme="light" | "dark" a <html>-en). */
+:root {
+  color-scheme: light;
+
+  /* felület */
+  --bg: #fbf7f2;
+  --surface: #ffffff;
+  --surface-2: #f3ece3;
+  --line: #e6ddd0;
+  --text: #2b2540;
+  --muted: #655f7a;
+
+  /* elsődleges művelet */
+  --accent: #6b3fe0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4dbff;
+
+  /* élénk kiemelők (diagramok, jelvények); szöveg nem rájuk, hanem mellé kerül */
+  --coral: #ff6b5e;
+  --sun: #ffc53d;
+  --emerald: #17a673;
+  --purple: #7a4dff;
+
+  /* a "Segítség most" gomb MINDKÉT témában ugyanaz a meleg sárga */
+  --help-bg: #ffc53d;
+  --help-ink: #2b2540;
+
+  --danger: #b42318;
+  --warm: #b86e00;
+  --warn-bg: #fff1d6;
+  --good: #0a7a53;
+
+  /* pasztell kártyák: háttér + rajtuk lévő szöveg */
+  --card-ink: #2b2540;
+  --card-muted: #574f6e;
+  --tone-peach: #ffd9c7;
+  --tone-lavender: #e4dbff;
+  --tone-mint: #cff0df;
+  --tone-pink: #ffd6e4;
+  --tone-butter: #fff1bc;
+  --tone-sky: #d0e7ff;
+
+  /* a 12 hangulatfigura színe (a vonásaik mindig sötét tintával készülnek) */
+  --mood-excited: #ffb020;
+  --mood-cheerful: #ffd84d;
+  --mood-grateful: #ff9ec4;
+  --mood-energetic: #9be15d;
+  --mood-sensitive: #8ec9ff;
+  --mood-confused: #c9b5ff;
+  --mood-bored: #b6c2d1;
+  --mood-stressed: #ff9a76;
+  --mood-angry: #e8505b;
+  --mood-unsure: #6fd6c9;
+  --mood-hurt: #a99bd8;
+  --mood-guilty: #e7a6a0;
+  --fig-ink: #2b2540;
+
+  /* alsó nav */
+  --nav-bg: #2b2540;
+  --nav-fg: #d9d4ea;
+  --nav-active-bubble: #cdbbff;
+  --nav-active-ink: #2b2540;
+
+  /* forma */
+  --r-card: 28px;
+  --r-tile: 24px;
+  --r-input: 16px;
+  --r-pill: 999px;
+  --tap: 48px;
+  --shadow-sm: 0 6px 16px -8px rgba(76, 52, 140, 0.35);
+  --shadow-md: 0 14px 30px -14px rgba(76, 52, 140, 0.45);
+  --shadow-nav: 0 16px 32px -10px rgba(43, 37, 64, 0.55);
+
+  /* mozgás */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 260ms;
+
+  /* betűk: rendszer-betűkészlet, offline, nincs külső font */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #14201f;
+    --surface: #1c2b2a;
+    --surface-2: #233534;
+    --line: #2f4543;
+    --text: #e9efec;
+    --muted: #a9bab5;
+    --accent: #7fb8a8;
+    --accent-ink: #0f1a19;
+    --accent-soft: #2a4a44;
+    --coral: #ff8a7d;
+    --emerald: #3dd9a0;
+    --purple: #a78bff;
+    --danger: #f0a090;
+    --warn-bg: #3a3122;
+    --good: #3dd9a0;
+    --card-ink: #f2eef8;
+    --card-muted: #cfc6dd;
+    --tone-peach: #5b3a30;
+    --tone-lavender: #3f3566;
+    --tone-mint: #1f4d3e;
+    --tone-pink: #5a3045;
+    --tone-butter: #5a4e22;
+    --tone-sky: #1f4160;
+    --nav-bg: #0e1716;
+    --nav-fg: #b7c6c2;
+    --nav-active-bubble: #7fb8a8;
+    --nav-active-ink: #0f1a19;
+    --shadow-sm: 0 6px 16px -8px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 14px 30px -14px rgba(0, 0, 0, 0.7);
+    --shadow-nav: 0 16px 32px -10px rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #14201f;
+  --surface: #1c2b2a;
+  --surface-2: #233534;
+  --line: #2f4543;
+  --text: #e9efec;
+  --muted: #a9bab5;
+  --accent: #7fb8a8;
+  --accent-ink: #0f1a19;
+  --accent-soft: #2a4a44;
+  --coral: #ff8a7d;
+  --emerald: #3dd9a0;
+  --purple: #a78bff;
+  --danger: #f0a090;
+  --warn-bg: #3a3122;
+  --good: #3dd9a0;
+  --card-ink: #f2eef8;
+  --card-muted: #cfc6dd;
+  --tone-peach: #5b3a30;
+  --tone-lavender: #3f3566;
+  --tone-mint: #1f4d3e;
+  --tone-pink: #5a3045;
+  --tone-butter: #5a4e22;
+  --tone-sky: #1f4160;
+  --nav-bg: #0e1716;
+  --nav-fg: #b7c6c2;
+  --nav-active-bubble: #7fb8a8;
+  --nav-active-ink: #0f1a19;
+  --shadow-sm: 0 6px 16px -8px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 14px 30px -14px rgba(0, 0, 0, 0.7);
+  --shadow-nav: 0 16px 32px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* A krízisoverlay MINDIG a nyugodt, sötét palettát használja, bármelyik téma van kiválasztva:
+   gyorsan olvasható, nincs játékos szín. (A "Segítség most" gomb sárgája ettől független.) */
+.crisis-overlay {
+  color-scheme: dark;
+  --bg: #14201f;
+  --surface: #1c2b2a;
+  --surface-2: #233534;
+  --line: #2f4543;
+  --text: #e9efec;
+  --muted: #a9bab5;
+  --accent: #7fb8a8;
+  --accent-ink: #0f1a19;
+  --accent-soft: #2a4a44;
+  --danger: #f0a090;
+  --warn-bg: #3a3122;
+  --card-ink: #e9efec;
+  --card-muted: #a9bab5;
+  --warm: #e8c27a;
+}

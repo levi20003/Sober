@@ -34,6 +34,8 @@ The crisis module is the most safety-critical part of the app. A person opening 
 4. **Self-soothing:** breathing exercise, urge-as-a-wave, concrete next steps, 5-4-3-2-1 grounding.
 5. Offline note and disclaimer.
 
+**New UI (v0.7):** the crisis overlay always uses its own calm dark palette (whatever theme is chosen), has no mascot, confetti or playful motion, and its helplines, order and wording are unchanged. The only addition is an optional card with the user's *own reasons* ("Ezért csinálod"), shown solely when the journal is already unlocked; nothing is decrypted for it.
+
 ## 4. Helplines and verification status
 
 | Line | Number | `verification` | Evidence (2026-10-29) | Before public launch |

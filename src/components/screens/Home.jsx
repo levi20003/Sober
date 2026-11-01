@@ -1,73 +1,74 @@
 import { useState } from 'react';
-import { T, RISK_MESSAGES } from '../../content/hu.js';
+import { RISK_MESSAGES, HOME, T } from '../../content/hu.js';
 import { riskContexts } from '../../domain/risk.js';
 import { formatDateHu } from '../../domain/dates.js';
+import { figureOf, moodOnDay } from '../../domain/moods.js';
+import { uncelebratedMilestone } from '../../domain/milestones.js';
+import { Actions } from '../../domain/timelineReducer.js';
 import { CRISIS_HASH } from '../../lib/hashRouter.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
-import { useHashRoute } from '../../hooks/useHashRoute.js';
-import { Screen } from '../ui.jsx';
-import { TimelineBar } from '../timeline/TimelineBar.jsx';
+import { Mascot } from '../mood/Mascot.jsx';
 import { FreshStartModal } from '../timeline/FreshStartModal.jsx';
-import { SavingsWidget } from '../savings/SavingsWidget.jsx';
-import { QuickLog } from '../QuickLog.jsx';
+import { MoodCheckin } from '../home/MoodCheckin.jsx';
+import { Celebration } from '../home/Celebration.jsx';
+import { Badges, DailyThoughts, DayCounter, EnergyStress, GoalCard, SavingsCard, WeekGlance, WeekMoods } from '../home/Widgets.jsx';
+import { Page } from '../shell/Page.jsx';
 
-function Stat({ label, value, hint }) {
-  return (
-    <div className="stat">
-      <p className="stat-label">{label}</p>
-      <p className="stat-value">{value}</p>
-      {hint && <p className="hint">{hint}</p>}
-    </div>
-  );
-}
+const reactionFor = (figId) => {
+  const v = figureOf(figId)?.valence ?? 0;
+  return v > 0 ? 'positive' : v < 0 ? 'hard' : 'neutral';
+};
 
 export function Home() {
-  const { snapshot } = useTimeline();
-  const { navigate } = useHashRoute();
+  const { snapshot, dispatch } = useTimeline();
   const [freshStart, setFreshStart] = useState(false);
-  const { data, stats: s, phases, savings } = snapshot;
+  const [reaction, setReaction] = useState(null);
+  const [celebrated, setCelebrated] = useState(false);
+  const { data, stats: s, phases, savings, today } = snapshot;
+  const profile = data.profile;
   const risk = riskContexts(new Date(), data.events)[0];
-  const sleepText = s.sleep.delta === null ? null : s.sleep.delta > 0.2 ? T.sleepBetter : s.sleep.delta < -0.2 ? T.sleepWorse : T.sleepSame;
   const freshToday = s.currentPhaseDays === 0 && s.phaseCount > 1;
+  const todayMood = moodOnDay(data.events, today);
+  const milestone = celebrated ? null : uncelebratedMilestone(s.totalSoberDays, profile.lastCelebration ?? 0);
+  const goal = profile.goalDays ? { goal: profile.goalDays, shown: Math.min(s.totalSoberDays, profile.goalDays), ratio: Math.min(1, s.totalSoberDays / profile.goalDays) } : null;
+  const tags = [...(profile.triggers ?? [])];
+
+  const bubble = freshToday ? HOME.pottyReact.slip
+    : reaction ? HOME.pottyReact[reaction]
+    : todayMood ? HOME.pottyReact[reactionFor(todayMood.mood)]
+    : HOME.helloBubble(profile.nickname, false);
+  const look = freshToday ? 'comfort' : (reaction ?? (todayMood && reactionFor(todayMood.mood))) === 'hard' ? 'comfort' : (reaction || todayMood) ? 'cheer' : 'wave';
 
   return (
-    <Screen>
-      <h1 className="visually-hidden">{T.navHome}</h1>
+    <Page title={T.navHome}>
       {risk && (
-        <a className="card card-soft risk-banner" href={CRISIS_HASH}>
+        <a className="card risk-banner" href={CRISIS_HASH}>
           <strong>{RISK_MESSAGES[risk].title}</strong><span>{RISK_MESSAGES[risk].text}</span>
         </a>
       )}
-
-      {/* Hero: the accumulated total leads; the current phase sits beside it, never alone. */}
-      <section className="card hero" aria-label={T.totalSober}>
-        <p className="stat-label">{T.totalSober}</p>
-        <p className="hero-value">{T.days(s.totalSoberDays)}</p>
-        <p className="hero-sub">{freshToday ? T.phaseZero : T.heroCurrent(s.currentPhaseDays, formatDateHu(s.currentPhaseStart))}</p>
-        {s.phaseCount > 1 && <TimelineBar phases={phases} totalSoberDays={s.totalSoberDays} />}
-        <p className="hint">{T.totalSoberHint}</p>
-      </section>
-
-      <QuickLog />
-      <SavingsWidget savings={savings} onSetup={() => navigate('#/beallitasok')} />
-
-      <section className="stats">
-        {s.phaseCount > 1 && <Stat label={T.longestPhase} value={T.days(s.longestPhaseDays)} />}
-        <Stat label={T.coped} value={String(s.copedCount)} />
-        {s.sleep.recent !== null && <Stat label={T.sleepTrend} value={`${s.sleep.recent.toFixed(1)} / 5`} hint={sleepText} />}
-      </section>
-
-      <section className="card">
-        <h2>{T.checkinPrompt}</h2>
-        {s.checkedInToday && <p>{T.checkinDone}</p>}
-        <div className="actions">
-          {!s.checkedInToday && <button type="button" className="btn btn-primary" onClick={() => navigate('#/rogzites/bejelentkezes')}>{T.actionCheckin}</button>}
-          <button type="button" className="btn" onClick={() => navigate('#/rogzites/nehez-pillanat')}>{T.actionTrigger}</button>
-          <button type="button" className="btn" onClick={() => navigate('#/rogzites/jegyzet')}>{T.actionNote}</button>
-          <button type="button" className="btn btn-ghost" onClick={() => setFreshStart(true)}>{T.actionSlip}</button>
-        </div>
-      </section>
+      <div className="hello rise-in">
+        <Mascot look={look} size={72} label={null} />
+        <p className="bubble" aria-live="polite">{bubble}</p>
+      </div>
+      <div className="rise-in" style={{ '--d': '60ms' }}>
+        <DayCounter stats={s} phases={phases} goal={goal} freshToday={freshToday} currentSince={formatDateHu(s.currentPhaseStart)} />
+      </div>
+      <GoalCard total={s.totalSoberDays} goalDays={profile.goalDays} />
+      <SavingsCard savings={savings} today={today} />
+      <MoodCheckin onSaved={(fig) => setReaction(reactionFor(fig))} />
+      <WeekGlance events={data.events} today={today} journeyStart={profile.journeyStart} />
+      <WeekMoods events={data.events} today={today} />
+      <EnergyStress events={data.events} today={today} />
+      <Badges total={s.totalSoberDays} />
+      <DailyThoughts today={today} tags={tags} />
+      {freshToday && <p className="card card-soft">{HOME.slipKind}</p>}
+      <div className="actions">
+        <button type="button" className="btn btn-ghost" onClick={() => setFreshStart(true)}>{T.actionSlip}</button>
+      </div>
       {freshStart && <FreshStartModal onClose={() => setFreshStart(false)} />}
-    </Screen>
+      {milestone && (
+        <Celebration days={milestone} onClose={async () => { setCelebrated(true); await dispatch({ type: Actions.UPDATE_PROFILE, payload: { lastCelebration: milestone } }).catch(() => {}); }} />
+      )}
+    </Page>
   );
 }

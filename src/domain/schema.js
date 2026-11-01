@@ -1,9 +1,14 @@
 // Decrypted vault payload schema, validation and migration.
 //
-// Payload shape (schemaVersion 2):
+// Payload shape (schemaVersion 3):
 // {
-//   schemaVersion: 1,
-//   profile:  { journeyStart: 'YYYY-MM-DD' },
+//   schemaVersion: 3,
+//   profile:  {
+//     journeyStart: 'YYYY-MM-DD',
+//     nickname?: string (1..24), substances?: id[], otherSubstance?: string (1..40),
+//     goalDays?: int (1..3650), triggers?: id[], customTriggers?: string[] (1..30 chars, max 10),
+//     reasons?: string[] (1..140 chars, max 12), lastCelebration?: int (legnagyobb ünnepelt mérföldkő, nap),
+//   },
 //   settings: {
 //     costHistory: [{ from: 'YYYY-MM-DD', dailyCostHuf: int }],  // effective-dated, ascending
 //     savingsGoal?: { label: string, amountHuf: int },
@@ -13,20 +18,26 @@
 // }
 //
 // Event (common): { id, type, date: 'YYYY-MM-DD', at: ISO-8601, note?: string }
-//   checkin: { mood?, sleep?: 1..5, craving?: 0..3, triggers?: id[] }
-//   trigger: { triggers: id[], intensity?: 1..5, coping: id[], outcome?: id }
-//   slip:    { lesson?, intention?, triggers?: id[] } – closes the current phase (lesson) and
-//            opens a new one (intention); never deletes history
-//   note:    {}
+//   checkin:   { mood?, intensity?: 1..5, sleep?: 1..5, craving?: 0..3, triggers?: id[] }
+//   trigger:   { triggers: id[], intensity?: 1..5, coping: id[], outcome?: id }
+//   slip:      { lesson?, intention?, triggers?: id[] } – closes the current phase (lesson) and
+//              opens a new one (intention); never deletes history
+//   note:      {}
+//   urge:      { seconds: 0..86400, outcome: 'passed' | 'still' }       sóvárgás-túlélő
+//   challenge: { challengeId: string }                                  napi kis kihívás
+//   gratitude: { items: string[1..3] }                                  hálanapló
+//   letter:    { note (a levél), when: 'hard' | 'milestone', milestoneDays?: int }
 
 import { isValidDateKey } from './dates.js';
 import { LABELS } from './presets.js';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const MAX_DAILY_COST = 1_000_000;
 export const MAX_GOAL = 100_000_000;
 export const MAX_COST_ENTRIES = 500;
-export const EVENT_TYPES = ['checkin', 'trigger', 'slip', 'note'];
+export const EVENT_TYPES = ['checkin', 'trigger', 'slip', 'note', 'urge', 'challenge', 'gratitude', 'letter'];
+export const MAX_NICKNAME = 24;
+export const MAX_GOAL_DAYS = 3650;
 export const MAX_NOTE_LENGTH = 2000;
 export const MAX_EVENTS = 50_000;
 
@@ -42,10 +53,10 @@ export function newId() {
   return Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
 }
 
-export function createInitialData({ journeyStart, dailyCostHuf = 0 }) {
+export function createInitialData({ journeyStart, dailyCostHuf = 0, ...profile }) {
   return validateData({
     schemaVersion: SCHEMA_VERSION,
-    profile: { journeyStart },
+    profile: { journeyStart, ...profile },
     settings: { costHistory: [{ from: journeyStart, dailyCostHuf }], autoLockMinutes: 5 },
     events: [],
   });
@@ -94,6 +105,8 @@ export function validateEvent(e) {
     case 'checkin': {
       if (e.mood !== undefined && !LABELS.mood.has(e.mood)) fail('Hangulat: ismeretlen érték');
       if (e.mood !== undefined) base.mood = e.mood;
+      const mintensity = cleanInt(e.intensity, 1, 5, 'Erősség');
+      if (mintensity !== undefined) base.intensity = mintensity;
       const sleep = cleanInt(e.sleep, 1, 5, 'Alvás');
       const craving = cleanInt(e.craving, 0, 3, 'Sóvárgás');
       if (sleep !== undefined) base.sleep = sleep;
@@ -125,14 +138,84 @@ export function validateEvent(e) {
     case 'note':
       if (!note) fail('Jegyzet: üres bejegyzés');
       break;
+    case 'urge': {
+      base.seconds = cleanInt(e.seconds, 0, 86_400, 'Időtartam', false);
+      if (!['passed', 'still'].includes(e.outcome)) fail('Sóvárgás: ismeretlen kimenet');
+      base.outcome = e.outcome;
+      break;
+    }
+    case 'challenge': {
+      if (typeof e.challengeId !== 'string' || !/^[a-z0-9-]{2,40}$/.test(e.challengeId)) fail('Kihívás: érvénytelen azonosító');
+      base.challengeId = e.challengeId;
+      break;
+    }
+    case 'gratitude': {
+      base.items = cleanList(e.items, 1, 3, 140, 'Hála');
+      break;
+    }
+    case 'letter': {
+      if (!note) fail('Levél: üres levél');
+      if (!['hard', 'milestone'].includes(e.when)) fail('Levél: ismeretlen időzítés');
+      base.when = e.when;
+      const md = cleanInt(e.milestoneDays, 1, MAX_GOAL_DAYS, 'Mérföldkő');
+      if (md !== undefined) base.milestoneDays = md;
+      break;
+    }
   }
   return base;
+}
+
+/** List of short trimmed texts; empty entries are dropped. */
+function cleanList(v, min, max, maxLen, field) {
+  if (!Array.isArray(v)) fail(`${field}: lista szükséges`);
+  const out = v.map((x) => (typeof x === 'string' ? x.trim() : '')).filter(Boolean);
+  if (out.length < min || out.length > max) fail(`${field}: ${min}–${max} elem szükséges`);
+  for (const x of out) if (x.length > maxLen) fail(`${field}: legfeljebb ${maxLen} karakter`);
+  return out;
+}
+
+/** Optional profile fields (onboarding answers and personal settings). Unknown keys are dropped. */
+export function validateProfile(p) {
+  if (!isObj(p) || !isValidDateKey(p.journeyStart)) fail('Profil: érvénytelen kezdődátum');
+  const out = { journeyStart: p.journeyStart };
+
+  if (p.nickname !== undefined && p.nickname !== null && String(p.nickname).trim() !== '') {
+    if (typeof p.nickname !== 'string') fail('Becenév: szöveg szükséges');
+    const n = p.nickname.trim();
+    if (n.length > MAX_NICKNAME) fail(`Becenév: legfeljebb ${MAX_NICKNAME} karakter`);
+    out.nickname = n;
+  }
+  if (p.substances !== undefined) {
+    const list = cleanIds(p.substances, 'substance', 'Mitől maradnál távol');
+    if (list.length) out.substances = list;
+  }
+  if (p.otherSubstance !== undefined && p.otherSubstance !== null && String(p.otherSubstance).trim() !== '') {
+    const t = cleanList([p.otherSubstance], 1, 1, 40, 'Egyéb')[0];
+    out.otherSubstance = t;
+  }
+  if (p.goalDays !== undefined && p.goalDays !== null) out.goalDays = cleanInt(p.goalDays, 1, MAX_GOAL_DAYS, 'Cél (nap)');
+  if (p.triggers !== undefined) {
+    const list = cleanIds(p.triggers, 'trigger', 'Nehéz helyzetek');
+    if (list.length) out.triggers = list;
+  }
+  if (p.customTriggers !== undefined) {
+    const list = cleanList(p.customTriggers, 0, 10, 30, 'Saját helyzetek');
+    if (list.length) out.customTriggers = [...new Set(list)];
+  }
+  if (p.reasons !== undefined) {
+    const list = cleanList(p.reasons, 0, 12, 140, 'Személyes okok');
+    if (list.length) out.reasons = list;
+  }
+  if (p.lastCelebration !== undefined && p.lastCelebration !== null) {
+    out.lastCelebration = cleanInt(p.lastCelebration, 0, MAX_GOAL_DAYS, 'Ünnepelt mérföldkő');
+  }
+  return out;
 }
 
 /** Validates and normalizes a payload; returns a fresh object. Throws SchemaError. */
 export function validateData(input) {
   const d = migrate(input);
-  if (!isObj(d.profile) || !isValidDateKey(d.profile.journeyStart)) fail('Profil: érvénytelen kezdődátum');
+  const profile = validateProfile(d.profile);
   if (!isObj(d.settings)) fail('Beállítások hiányoznak');
   const costHistory = validateCostHistory(d.settings.costHistory);
   const savingsGoal = validateGoal(d.settings.savingsGoal);
@@ -148,7 +231,7 @@ export function validateData(input) {
     return v;
   });
   for (const e of events) {
-    if (e.type === 'slip' && e.date < d.profile.journeyStart) {
+    if (e.type === 'slip' && e.date < profile.journeyStart) {
       fail('Megcsúszás dátuma nem lehet korábbi, mint az út kezdete');
     }
   }
@@ -156,7 +239,7 @@ export function validateData(input) {
 
   return {
     schemaVersion: SCHEMA_VERSION,
-    profile: { journeyStart: d.profile.journeyStart },
+    profile,
     settings: { costHistory, ...(savingsGoal ? { savingsGoal } : {}), autoLockMinutes: autoLock },
     events,
   };
@@ -193,6 +276,10 @@ function validateGoal(g) {
 const MIGRATIONS = {
   // v1 → v2: single dailyCostHuf → effective-dated costHistory starting at journeyStart.
   // Preserves every past savings figure exactly (one segment, same cost for all days).
+  // v2 → v3: új, mind opcionális profilmezők (becenév, cél, helyzetek...) és új eseménytípusok.
+  // Semmi nem íródik át, ezért minden meglévő napló változtatás nélkül érvényes marad; a hiányzó
+  // mezőket a Beállításokban lehet pótolni.
+  2: (d) => ({ ...d, schemaVersion: 3 }),
   1: (d) => {
     const { dailyCostHuf, ...rest } = isObj(d.settings) ? d.settings : {};
     const cost = typeof dailyCostHuf === 'number' && Number.isFinite(dailyCostHuf) ? Math.round(dailyCostHuf) : dailyCostHuf;

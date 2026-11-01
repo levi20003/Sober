@@ -6,7 +6,21 @@ import { validateData } from './schema.js';
 export const CSV_BOM = '﻿';
 const SEP = ';'; // Hungarian Excel uses ';' as list separator (decimal comma locale)
 
-const TYPE_LABELS = { checkin: 'Napi bejelentkezés', trigger: 'Nehéz pillanat', slip: 'Megcsúszás, új szakasz', note: 'Jegyzet' };
+const TYPE_LABELS = {
+  checkin: 'Napi bejelentkezés', trigger: 'Nehéz pillanat', slip: 'Megcsúszás, új szakasz', note: 'Jegyzet',
+  urge: 'Sóvárgás-túlélő', challenge: 'Napi kihívás', gratitude: 'Hála', letter: 'Levél',
+};
+
+/** Type-specific content of the newer event kinds, in one human-readable cell. */
+function details(e) {
+  switch (e.type) {
+    case 'gratitude': return e.items.join(', ');
+    case 'urge': return `${Math.round(e.seconds / 60)} perc, ${e.outcome === 'passed' ? 'elmúlt' : 'még tart'}`;
+    case 'challenge': return e.challengeId;
+    case 'letter': return e.when === 'milestone' ? `mérföldkőnél${e.milestoneDays ? ` (${e.milestoneDays} nap)` : ''}` : 'nehéz pillanatban';
+    default: return '';
+  }
+}
 
 export function toJsonExport(data, now = new Date()) {
   return JSON.stringify({ app: 'jozansag-szamlalo', kind: 'plain-export', exportedAt: now.toISOString(), data }, null, 2);
@@ -22,7 +36,7 @@ export function csvCell(value) {
 }
 
 export function toCsvExport(data) {
-  const header = ['Dátum', 'Időpont', 'Típus', 'Hangulat', 'Alvás', 'Sóvárgás', 'Kiváltó helyzetek', 'Erősség', 'Megküzdés', 'Kimenet', 'Tanulság', 'Jegyzet'];
+  const header = ['Dátum', 'Időpont', 'Típus', 'Hangulat', 'Alvás', 'Sóvárgás', 'Kiváltó helyzetek', 'Erősség', 'Megküzdés', 'Kimenet', 'Tanulság', 'Jegyzet', 'Részletek'];
   const rows = data.events.map((e) => [
     e.date,
     new Date(e.at).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }),
@@ -36,6 +50,7 @@ export function toCsvExport(data) {
     e.outcome && labelOf('outcome', e.outcome),
     e.lesson,
     e.note,
+    details(e),
   ]);
   return CSV_BOM + [header, ...rows].map((r) => r.map(csvCell).join(SEP)).join('\r\n') + '\r\n';
 }

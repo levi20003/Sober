@@ -46,3 +46,20 @@ export function formatDateHu(key) {
   return new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })
     .format(new Date(Date.UTC(y, m - 1, d)));
 }
+
+/** 'YYYY-MM-01' of the month containing `key`. */
+export const startOfMonth = (key) => `${key.slice(0, 7)}-01`;
+
+/** First day of the month `n` months after (or before, n < 0) the month of `key`. */
+export function addMonths(key, n) {
+  const [y, m] = key.split('-').map(Number);
+  const idx = y * 12 + (m - 1) + n;
+  return `${Math.floor(idx / 12)}-${String((idx % 12) + 1).padStart(2, '0')}-01`;
+}
+
+/** "november", "2026. november" – for chart axes and month lists. */
+export function monthNameHu(key, { year = false } = {}) {
+  const [y, m] = key.split('-').map(Number);
+  return new Intl.DateTimeFormat('hu-HU', year ? { year: 'numeric', month: 'long', timeZone: 'UTC' } : { month: 'long', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(y, m - 1, 1)));
+}

@@ -56,33 +56,46 @@ export async function waitHeading(c, text, timeoutMs = 30_000) {
   await c.waitFor(`document.querySelector('h1')?.textContent.trim() === ${j(text)}`, { timeoutMs, what: `"${text}" főcím` });
 }
 
-/** First launch: create the vault, quick-log, open the crisis overlay, open the journal. */
+/** First launch: the 10-step onboarding creates the vault, then quick-log, crisis overlay, timeline. */
 export async function firstRun(c, pin) {
   const steps = [];
-  await waitHeading(c, 'Üdv itt.', 45_000);
-  steps.push('beállítóképernyő megjelent');
-
-  await c.eval(`__s.set(__s.byLabel('Válassz PIN-kódot'), ${j(pin)})`);
-  await c.eval(`__s.set(__s.byLabel('PIN-kód még egyszer'), ${j(pin)})`);
-  await c.eval(`__s.set(__s.byLabel('Napi költség'), '2500')`);
-  await c.eval(`__s.click('button', 'Kezdjük')`);
-  await c.waitFor(`document.querySelector('.recovery-code')?.textContent.trim().length > 30`, { timeoutMs: 60_000, what: 'helyreállító kód (PBKDF2 számítás)' });
+  const next = async (label = 'Tovább') => c.eval(`__s.click('button', ${j(label)})`);
+  const step = async (n) => c.waitFor(`document.querySelector('[role=progressbar]')?.getAttribute('aria-valuenow') === '${n}'`, { what: `bevezető ${n}. lépés` });
+  await waitHeading(c, 'Szia! Ez a te csendes, privát helyed.', 45_000);
+  steps.push('bevezető 1. lépés megjelent');
+  await next('Kezdjük'); await step(2);
+  await c.eval(`__s.set(document.querySelector('input[name=nickname]'), 'Dani')`);
+  await next(); await step(3);
+  await c.eval(`__s.click('label.choice', 'Alkohol')`);
+  await next(); await step(4);
+  await next(); await step(5); // "Ma kezdem" az alapértelmezés
+  await c.eval(`__s.click('label.choice', '30 nap')`);
+  await next(); await step(6);
+  await c.eval(`__s.set(document.querySelector('input[name=cost]'), '2500')`);
+  await next(); await step(7);
+  await c.eval(`__s.click('label.choice', 'Stressz')`);
+  await next(); await step(8);
+  await c.eval(`__s.set(document.querySelector('input[name=pin]'), ${j(pin)})`);
+  await c.eval(`__s.set(document.querySelector('input[name=pin2]'), ${j(pin)})`);
+  await next();
+  await c.waitFor(`document.querySelector('[data-testid=recovery-code]')?.textContent.trim().length > 30`, { timeoutMs: 60_000, what: 'helyreállító kód (PBKDF2 számítás)' });
   steps.push('PIN beállítva, helyreállító kód megjelent');
   await c.eval(`document.getElementById('rc-ok').click()`);
-  await c.eval(`__s.click('button', 'Tovább')`);
-  await c.waitFor(`document.querySelector('.hero-value')`, { what: 'kezdőlap' });
-  steps.push('kezdőlap megnyílt');
+  await next(); await step(10);
+  await next('Irány a főoldal');
+  await c.waitFor(`document.querySelector('.hero-value') && document.querySelector('nav.tabbar')`, { what: 'főoldal az alsó navigációval' });
+  steps.push('főoldal megnyílt, alsó navigáció látszik');
 
+  await c.eval(`__s.click('nav.tabbar a', 'Idővonal')`);
+  await c.waitFor(`document.querySelector('.quick-card')`, { what: 'idővonal gyors naplóval' });
   await c.eval(`__s.click('.quick-card', 'Stresszes nap')`);
   await c.waitFor(`document.querySelector('dialog[open]')`, { what: 'gyors rögzítés ablak' });
   await c.eval(`(() => { const d = document.querySelector('dialog[open]'); [...d.querySelectorAll('button')].find((b) => b.textContent.includes('Rögzítés')).click(); return true; })()`);
   await c.waitFor(`[...document.querySelectorAll('[role=status]')].some((e) => e.textContent.includes('Rögzítve: Stresszes nap'))`, { what: 'rögzítés visszajelzés' });
   steps.push('gyors rögzítés elmentve');
-
-  await c.eval(`location.hash = '#/naplo'`);
-  await c.waitFor(`document.querySelectorAll('.entry').length >= 1`, { what: 'napló bejegyzés' });
-  steps.push('idővonal-bejegyzés látszik a naplóban');
-  await c.eval(`location.hash = '#/'`);
+  await c.waitFor(`document.querySelectorAll('.entry').length >= 1`, { what: 'idővonal-bejegyzés' });
+  steps.push('idővonal-bejegyzés látszik');
+  await c.eval(`__s.click('nav.tabbar a', 'Főoldal')`);
 
   await c.waitFor(`document.querySelector('.hero-value')`, { what: 'kezdőlap' });
   await c.eval(`__s.click('a.btn-help')`);
@@ -106,10 +119,10 @@ export async function afterRestart(c, pin) {
   await c.eval(`__s.click('button', 'Megnyitás')`);
   await c.waitFor(`document.querySelector('.hero-value')`, { timeoutMs: 60_000, what: 'feloldás utáni kezdőlap' });
   steps.push('PIN-nel feloldva');
-  await c.eval(`location.hash = '#/naplo'`);
-  await c.waitFor(`document.querySelectorAll('.entry').length >= 1`, { what: 'a korábbi bejegyzés a naplóban' });
+  await c.eval(`__s.click('nav.tabbar a', 'Idővonal')`);
+  await c.waitFor(`document.querySelectorAll('.entry').length >= 1`, { what: 'a korábbi bejegyzés az idővonalon' });
   steps.push('a korábbi bejegyzés megvan újraindítás után is');
-  await c.eval(`location.hash = '#/'`);
+  await c.eval(`__s.click('nav.tabbar a', 'Főoldal')`);
   return { steps };
 }
 

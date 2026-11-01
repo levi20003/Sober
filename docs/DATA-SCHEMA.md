@@ -1,11 +1,20 @@
-# Decrypted payload schema (v1)
+# Decrypted payload schema (v3)
 
 Source of truth: [src/domain/schema.js](../src/domain/schema.js). Validation runs on every save, unlock and import, so invalid data never reaches storage.
 
 ```js
 {
-  schemaVersion: 2,
-  profile:  { journeyStart: 'YYYY-MM-DD' },
+  schemaVersion: 3,
+  profile:  {
+    journeyStart: 'YYYY-MM-DD',
+    nickname?: ≤24 chars,
+    substances?: ['alcohol','tobacco','gambling','drugs','pills','other'],
+    otherSubstance?: ≤40 chars,
+    goalDays?: 1..3650,
+    triggers?: preset ids,  customTriggers?: ≤10 × ≤30 chars,
+    reasons?: ≤12 × ≤140 chars,        // "Az okaim": shown on the crisis page and in urge surfing
+    lastCelebration?: 0..3650,          // highest milestone already celebrated
+  },
   settings: {
     costHistory: [{ from: 'YYYY-MM-DD', dailyCostHuf: 0..1_000_000 }],  // effective-dated, strictly ascending
     savingsGoal?: { label: 1..60 chars, amountHuf: 1..100_000_000 },
@@ -14,6 +23,10 @@ Source of truth: [src/domain/schema.js](../src/domain/schema.js). Validation run
   events:   Event[]   // sorted by date, then time
 }
 ```
+
+## v3 migration (new UI)
+
+`MIGRATIONS[2]` only bumps the version: every new profile field is optional, so existing users keep all data and **do not see the onboarding again** (it only runs when there is no vault). New event types: `urge` (`seconds`, `outcome: passed|still`), `challenge` (`challengeId`), `gratitude` (`items` 1–3), `letter` (`note`, `when: hard|milestone`). `checkin.mood` accepts the 12 figure ids; the eight older mood ids stay valid and are drawn with the closest figure (`LEGACY_MOOD_FIGURE`). All of it is inside the encrypted payload and in the exports.
 
 ## Savings (HUF)
 

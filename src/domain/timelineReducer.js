@@ -23,6 +23,11 @@ export const Actions = Object.freeze({
   DELETE_ENTRY: 'DELETE_ENTRY',
   SET_DAILY_COST: 'SET_DAILY_COST',
   SET_SAVINGS_GOAL: 'SET_SAVINGS_GOAL',
+  LOG_URGE: 'LOG_URGE',
+  LOG_CHALLENGE: 'LOG_CHALLENGE',
+  LOG_GRATITUDE: 'LOG_GRATITUDE',
+  LOG_LETTER: 'LOG_LETTER',
+  UPDATE_PROFILE: 'UPDATE_PROFILE',
 });
 
 const EVENT_TYPE = {
@@ -30,6 +35,10 @@ const EVENT_TYPE = {
   [Actions.LOG_TRIGGER]: 'trigger',
   [Actions.LOG_NOTE]: 'note',
   [Actions.FRESH_START]: 'slip',
+  [Actions.LOG_URGE]: 'urge',
+  [Actions.LOG_CHALLENGE]: 'challenge',
+  [Actions.LOG_GRATITUDE]: 'gratitude',
+  [Actions.LOG_LETTER]: 'letter',
 };
 
 export class TimelineError extends Error {
@@ -88,7 +97,11 @@ export function timelineReducer(data, action, { now = new Date() } = {}) {
   switch (action?.type) {
     case Actions.LOG_CHECKIN:
     case Actions.LOG_TRIGGER:
-    case Actions.LOG_NOTE: {
+    case Actions.LOG_NOTE:
+    case Actions.LOG_URGE:
+    case Actions.LOG_GRATITUDE:
+    case Actions.LOG_LETTER:
+    case Actions.LOG_CHALLENGE: {
       if (payload.date && payload.date > today) throw new TimelineError('Jövőbeli napra nem lehet bejegyzést írni.');
       const event = makeEvent(EVENT_TYPE[action.type], payload, now);
       return { data: finalize(data, [...data.events, event]), effects: { type: 'logged', event } };
@@ -119,6 +132,18 @@ export function timelineReducer(data, action, { now = new Date() } = {}) {
       const costHistory = updateCostHistory(data.settings.costHistory, { amountHuf, mode, from });
       const next = finalize({ ...data, settings: { ...data.settings, costHistory } }, data.events);
       return { data: next, effects: { type: 'cost-updated', mode, costHistory } };
+    }
+
+    // A profil részleges frissítése (becenév, cél, helyzetek, okok, ünnepelt mérföldkő...).
+    // A journeyStart nem módosítható innen: azt a Beállítások külön kezeli.
+    case Actions.UPDATE_PROFILE: {
+      const { journeyStart: _ignored, ...patch } = payload;
+      const profile = { ...data.profile };
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null || v === undefined || (Array.isArray(v) && v.length === 0) || v === '') delete profile[k];
+        else profile[k] = v;
+      }
+      return { data: finalize({ ...data, profile }, data.events), effects: { type: 'profile-updated', keys: Object.keys(patch) } };
     }
 
     case Actions.SET_SAVINGS_GOAL: {

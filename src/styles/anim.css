@@ -1,0 +1,39 @@
+/* Közös mozgások. Csak transform és opacity animálódik. */
+.pop-in { animation: pop-in 480ms var(--ease-spring) both; }
+@keyframes pop-in { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+.rise-in { animation: rise-in 420ms var(--ease-soft) both; animation-delay: var(--d, 0ms); }
+@keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.ring-spin { animation: ring-spin 900ms var(--ease-soft) both; transform-box: view-box; transform-origin: 50% 50%; }
+@keyframes ring-spin { from { transform: rotate(-120deg); opacity: 0; } to { transform: rotate(0); opacity: 1; } }
+.press { transition: transform 120ms var(--ease-soft); }
+.press:active { transform: scale(.96); }
+
+/* konfetti: CSS-ből, fix számú span */
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 60; }
+.confetti i { position: absolute; top: -12px; left: var(--x); width: 10px; height: 16px; border-radius: 3px; background: var(--c); opacity: 0;
+  animation: confetti-fall var(--t) cubic-bezier(.3,.6,.4,1) var(--dl) both; }
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0); }
+  100% { opacity: 0; transform: translate3d(var(--dx), 105vh, 0) rotate(var(--r)); }
+}
+
+/* lélegző folt az Eszközökben */
+.breath-blob { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff8 0 12%, transparent 40%), var(--tone-lavender);
+  box-shadow: 0 18px 40px -18px var(--accent); animation: blob-breathe 8s ease-in-out infinite; margin: 8px auto; }
+@keyframes blob-breathe { 0%, 100% { transform: scale(.78); } 50% { transform: scale(1); } }
+
+/* Kevesebb mozgás: rendszerbeállítás VAGY a Beállítások kapcsolója (data-motion="reduced") */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+  .confetti, .breath-blob { animation: none; }
+  .confetti { display: none; }
+}
+:root[data-motion="reduced"] *, :root[data-motion="reduced"] *::before, :root[data-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+}
+:root[data-motion="reduced"] .confetti { display: none; }
+::view-transition-group(*) { animation-duration: 220ms; }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+:root[data-motion="reduced"]::view-transition-group(*), :root[data-motion="reduced"]::view-transition-old(*), :root[data-motion="reduced"]::view-transition-new(*) { animation: none !important; }
+/* A krízisoldal mindig nyugodt: nincs játékos mozgás, konfetti vagy pop. */
+.crisis-overlay .pop-in, .crisis-overlay .rise-in, .crisis-overlay .confetti { animation: none; }

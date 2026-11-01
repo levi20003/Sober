@@ -9,7 +9,7 @@ import { Screen } from '../ui.jsx';
 import { TimelineBar } from './TimelineBar.jsx';
 import { PhaseCard } from './PhaseCard.jsx';
 
-export function TimelineView() {
+export function TimelineBody() {
   const { snapshot, dispatch } = useTimeline();
   const toast = useToast();
   const { phases, stats, today, savings } = snapshot;
@@ -22,8 +22,7 @@ export function TimelineView() {
 
   const empty = phases.every((p) => p.entries.length === 0);
   return (
-    <Screen>
-      <h1>{T.journalTitle}</h1>
+    <>
       <section className="card">
         <h2>{T.timelineTitle}</h2>
         <p className="hero-sub">{`${T.totalSober}: `}<strong>{T.days(stats.totalSoberDays)}</strong></p>
@@ -34,6 +33,15 @@ export function TimelineView() {
       {[...phases].reverse().map((p, i) => (
         <PhaseCard key={p.start} phase={p} today={today} onDelete={onDelete} open={i === 0} savedHuf={savings.perPhase[p.index]} />
       ))}
+    </>
+  );
+}
+
+export function TimelineView() {
+  return (
+    <Screen>
+      <h1>{T.journalTitle}</h1>
+      <TimelineBody />
     </Screen>
   );
 }

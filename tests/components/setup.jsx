@@ -14,6 +14,9 @@ import { addDays, toDateKey } from '../../src/domain/dates.js';
 // jsdom's window.crypto may lack SubtleCrypto; the vault needs the real Web Crypto.
 if (!globalThis.crypto?.subtle) Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
 
+// jsdom does not implement scrolling; the app scrolls to the top / restores positions on navigation.
+window.scrollTo = () => {};
+
 export const PIN = '2581';
 export const daysAgo = (n) => addDays(toDateKey(), -n);
 

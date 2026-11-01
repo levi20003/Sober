@@ -1,52 +1,131 @@
-import { useEffect, useMemo, useState } from 'react';
-import { T } from './content/hu.js';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { HOME, NAV_TABS, TOOLS, UPDATE, T } from './content/hu.js';
 import { AuthStatus } from './auth/appAuth.js';
 import { disableReminders } from './reminders.js';
+import { formatDayHu } from './domain/greeting.js';
+import { moodOnDay, figureOf } from './domain/moods.js';
+import { tabOf } from './lib/hashRouter.js';
 import { AuthContext, useAuth } from './hooks/useAuth.js';
 import { RouterContext, useHashRoute } from './hooks/useHashRoute.js';
-import { TimelineProvider } from './hooks/useTimeline.js';
+import { TimelineProvider, useTimeline } from './hooks/useTimeline.js';
+import { UpdateContext, useUpdate } from './hooks/useUpdate.js';
 import { useCrisis } from './hooks/useCrisis.js';
 import { ToastProvider, useToast } from './hooks/useToast.jsx';
-import { Screen } from './components/ui.jsx';
 import { CrisisButton } from './components/crisis/CrisisButton.jsx';
 import { CrisisOverlay } from './components/crisis/CrisisOverlay.jsx';
-import { Onboarding, LockScreen, RecoveryCode } from './components/screens/AuthScreens.jsx';
+import { LockScreen } from './components/screens/AuthScreens.jsx';
+import { Onboarding } from './components/onboarding/Onboarding.jsx';
 import { Home } from './components/screens/Home.jsx';
 import { CheckinForm, TriggerForm, NoteForm } from './components/screens/LogForms.jsx';
 import { Settings } from './components/screens/Settings.jsx';
-import { TimelineView } from './components/timeline/TimelineView.jsx';
+import { TimelinePage } from './components/screens/TimelinePage.jsx';
+import { SavingsPage } from './components/screens/SavingsPage.jsx';
+import { ToolsRoute } from './components/screens/ToolsPage.jsx';
+import { AppBar } from './components/shell/AppBar.jsx';
+import { TabBar } from './components/shell/TabBar.jsx';
+import { QuickAddSheet } from './components/shell/QuickAddSheet.jsx';
+import { FreshStartModal } from './components/timeline/FreshStartModal.jsx';
 
-const NAV = [['#/', T.navHome], ['#/naplo', T.navJournal], ['#/beallitasok', T.navSettings]];
+const SUBTITLES = { '#/eszkozok/hullam': TOOLS.urgeTitle, '#/eszkozok/hala': TOOLS.gratitudeTitle, '#/eszkozok/level': TOOLS.letterTitle, '#/eszkozok/okok': TOOLS.reasonsTitle,
+  '#/rogzites/bejelentkezes': T.actionCheckin, '#/rogzites/nehez-pillanat': T.triggerTitle, '#/rogzites/jegyzet': T.noteTitle };
 
-function UnlockedRoutes({ route, onWipe, showRecoveryCode }) {
-  switch (route) {
-    case '#/naplo': return <TimelineView />;
+function pageTitle(route) {
+  if (SUBTITLES[route]) return SUBTITLES[route];
+  return NAV_TABS.find((t) => t.hash === tabOf(route))?.title ?? T.appName;
+}
+
+/** Az oldal tartalma az útvonal szerint. Csak feloldott (UNLOCKED) állapotban jön létre. */
+function Routes({ route, onWipe, showRecoveryCode }) {
+  const tab = tabOf(route);
+  if (route.startsWith('#/rogzites/')) {
+    if (route === '#/rogzites/bejelentkezes') return <CheckinForm />;
+    if (route === '#/rogzites/nehez-pillanat') return <TriggerForm />;
+    if (route === '#/rogzites/jegyzet') return <NoteForm />;
+  }
+  switch (tab) {
+    case '#/idovonal': return <TimelinePage />;
+    case '#/megtakaritas': return <SavingsPage />;
+    case '#/eszkozok': return <ToolsRoute hash={route} />;
     case '#/beallitasok': return <Settings onWipe={onWipe} showRecoveryCode={showRecoveryCode} />;
-    case '#/rogzites/bejelentkezes': return <CheckinForm />;
-    case '#/rogzites/nehez-pillanat': return <TriggerForm />;
-    case '#/rogzites/jegyzet': return <NoteForm />;
     default: return <Home />;
   }
 }
 
+/** Minden oldalon látszik, amint új verzió van kész (a percenkénti keresés találata). */
+function UpdateBanner() {
+  const update = useUpdate();
+  if (!update.ready) return null;
+  return (
+    <div className="update-banner" role="status" style={{ maxWidth: 528, margin: '8px auto' }}>
+      <span>{update.native ? UPDATE.apkBanner : UPDATE.banner}</span>
+      <button type="button" className="btn btn-primary" onClick={update.apply}>{update.native ? UPDATE.apkApply : UPDATE.apply}</button>
+    </div>
+  );
+}
+
+function UnlockedApp({ onWipe, showRecoveryCode }) {
+  const { auth } = useAuth();
+  const { base: route, navigate, goTab } = useHashRoute();
+  const { snapshot } = useTimeline();
+  const [sheet, setSheet] = useState(false);
+  const [fresh, setFresh] = useState(false);
+  const scrollY = useRef(new Map());
+  const current = useRef(route);
+
+  // Fülenként megőrzött görgetési pozíció.
+  useEffect(() => {
+    const on = () => scrollY.current.set(current.current, window.scrollY);
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
+  useLayoutEffect(() => {
+    current.current = route;
+    const isTab = tabOf(route) === route;
+    window.scrollTo(0, isTab ? (scrollY.current.get(route) ?? 0) : 0);
+  }, [route]);
+
+  const { data, today } = snapshot;
+  const nick = data.profile.nickname;
+  const m = moodOnDay(data.events, today);
+  const isHome = route === '#/';
+  return (
+    <>
+      <AppBar title={isHome ? HOME.appbarHello(nick) : pageTitle(route)} subtitle={isHome ? formatDayHu(new Date()) : undefined}
+        mood={m ? figureOf(m.mood)?.id : null} onAvatar={() => goTab('#/beallitasok')} />
+      <UpdateBanner />
+      <div key={route} className="route">
+        <Routes route={route} onWipe={onWipe} showRecoveryCode={showRecoveryCode} />
+      </div>
+      <TabBar route={route} goTab={goTab} onPlus={() => setSheet(true)} />
+      {sheet && <QuickAddSheet onClose={() => setSheet(false)} onPick={(h) => { setSheet(false); navigate(h); }} onSlip={() => { setSheet(false); setFresh(true); }} />}
+      {fresh && <FreshStartModal onClose={() => setFresh(false)} />}
+    </>
+  );
+}
+
 function Shell() {
   const { auth, state } = useAuth();
-  const { base: route, navigate } = useHashRoute();
+  const { base: route, navigate, replace } = useHashRoute();
   const crisis = useCrisis();
   const toast = useToast();
-  const [recoveryCode, setRecoveryCode] = useState(null);
+  const update = useUpdate();
+  const [onbOpen, setOnbOpen] = useState(false);
   const unlocked = state.status === AuthStatus.UNLOCKED;
+
+  // A bevezető addig marad nyitva, amíg a 10. lépésen a "Irány a főoldal" gombot meg nem nyomják (a tároló már a 8. lépés után létrejön).
+  useEffect(() => { if (state.status === AuthStatus.FIRST_TIME_SETUP) setOnbOpen(true); }, [state.status]);
+  const finishOnboarding = () => { setOnbOpen(false); replace('#/'); };
 
   // Auto-lock on inactivity, and immediately on pagehide (back/forward cache).
   useEffect(() => auth.attachLifecycle({ target: window, doc: document }), [auth]);
 
-  // Move focus to the new screen on navigation (screen readers, keyboard users).
+  // Automatikus frissítés: zárolt képernyőn (nincs elveszíthető félkész munka) azonnal, egyébként a felhasználó kérésére.
   useEffect(() => {
-    document.getElementById('main')?.focus({ preventScroll: true });
-    scrollTo(0, 0);
-  }, [route, state.status]);
+    if (update.ready && state.status === AuthStatus.LOCKED && !onbOpen) update.apply();
+  }, [update.ready, state.status, onbOpen]);
+  const toasted = useRef(false);
+  useEffect(() => { if (update.ready && unlocked && !toasted.current) { toasted.current = true; toast(UPDATE.toast); } }, [update.ready, unlocked, toast]);
 
-  const requestPersistence = () => navigator.storage?.persist?.().catch(() => {});
   const wipe = async () => {
     await disableReminders(auth.store).catch(() => {});
     await auth.resetAll();
@@ -54,65 +133,65 @@ function Shell() {
     navigate('#/');
     toast(T.deleted);
   };
+  const [recoveryCode, setRecoveryCode] = useState(null);
 
   // The crisis overlay reads journal events only if the journal is ALREADY open.
-  const crisisEvents = useMemo(
-    () => (crisis.isOpen && unlocked ? auth.store.data.events : []),
-    [crisis.isOpen, unlocked, auth.store],
-  );
+  const crisisEvents = useMemo(() => (crisis.isOpen && unlocked ? auth.store.data.events : []), [crisis.isOpen, unlocked, auth.store]);
+  const crisisReasons = useMemo(() => (crisis.isOpen && unlocked ? auth.store.data.profile.reasons ?? [] : []), [crisis.isOpen, unlocked, auth.store]);
 
   let screen;
-  switch (state.status) {
-    case AuthStatus.FIRST_TIME_SETUP:
-      screen = <Onboarding onCreated={(code) => { setRecoveryCode(code); requestPersistence(); }} onRestored={requestPersistence} />;
-      break;
-    case AuthStatus.LOCKED:
-      screen = <LockScreen onReset={wipe} />;
-      break;
-    case AuthStatus.UNLOCKED:
-      screen = recoveryCode
-        ? <RecoveryCode code={recoveryCode} onDone={() => { setRecoveryCode(null); navigate('#/'); }} />
-        : (
-          <TimelineProvider vault={auth.store}>
-            <UnlockedRoutes route={route} onWipe={wipe} showRecoveryCode={setRecoveryCode} />
-          </TimelineProvider>
-        );
-      break;
-    default:
-      screen = <Screen><p>Betöltés…</p></Screen>;
+  if (onbOpen || state.status === AuthStatus.FIRST_TIME_SETUP) {
+    screen = <Onboarding onFinish={finishOnboarding} />;
+  } else if (state.status === AuthStatus.LOCKED) {
+    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header><LockScreen onReset={wipe} /></>;
+  } else if (unlocked) {
+    screen = (
+      <TimelineProvider vault={auth.store}>
+        <UnlockedApp onWipe={wipe} showRecoveryCode={setRecoveryCode} />
+        {recoveryCode && <RecoveryOverlay code={recoveryCode} onDone={() => setRecoveryCode(null)} />}
+      </TimelineProvider>
+    );
+  } else {
+    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header><main className="screen screen-plain" id="main" tabIndex={-1}><p>Betöltés…</p></main></>;
   }
 
-  const showNav = unlocked && !recoveryCode;
   return (
     <>
-      <header className="topbar">
-        <span className="brand">{T.appName}</span>
-        <div className="topbar-actions">
-          {showNav && <button type="button" className="btn-link" onClick={() => auth.lock('manual')}>{T.lockNow}</button>}
-          <CrisisButton />
-        </div>
-      </header>
-      {state.status !== AuthStatus.INITIALIZING && !state.persistent && (
-        <p className="banner-warn" role="status">{T.storageVolatile}</p>
-      )}
+      {state.status !== AuthStatus.INITIALIZING && !state.persistent && <p className="banner-warn" role="status">{T.storageVolatile}</p>}
       {screen}
-      {showNav && (
-        <nav className="bottomnav" aria-label="Fő navigáció">
-          {NAV.map(([href, label]) => <a key={href} href={href} aria-current={route === href ? 'page' : undefined}>{label}</a>)}
-        </nav>
-      )}
-      {crisis.isOpen && <CrisisOverlay onClose={crisis.close} events={crisisEvents} />}
+      {crisis.isOpen && <CrisisOverlay onClose={crisis.close} events={crisisEvents} reasons={crisisReasons} />}
     </>
   );
 }
 
-export function App({ auth, router }) {
+/** Új helyreállító kód (Beállítások → "Új helyreállító kód"): teljes képernyős, egyszeri megjelenítés. */
+function RecoveryOverlay({ code, onDone }) {
+  const [ok, setOk] = useState(false);
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="rc-h" style={{ background: 'var(--bg)' }}>
+      <h2 id="rc-h">{T.recoveryTitle}</h2>
+      <p>{T.recoveryIntro}</p>
+      <p className="recovery-box mono" translate="no">{code}</p>
+      <button type="button" className="btn" onClick={async () => { try { await navigator.clipboard.writeText(code); setCopied(true); } catch { /* kézi másolás */ } }}>{copied ? T.copied : T.copy}</button>
+      <div className="check" style={{ justifyContent: 'center' }}>
+        <input type="checkbox" id="rc2-ok" checked={ok} onChange={(e) => setOk(e.target.checked)} />
+        <label htmlFor="rc2-ok">{T.recoveryConfirm}</label>
+      </div>
+      <button type="button" className="btn btn-primary btn-big" disabled={!ok} onClick={onDone}>Tovább</button>
+    </div>
+  );
+}
+
+export function App({ auth, router, updates }) {
   return (
     <AuthContext.Provider value={auth}>
       <RouterContext.Provider value={router}>
-        <ToastProvider>
-          <Shell />
-        </ToastProvider>
+        <UpdateContext.Provider value={updates ?? null}>
+          <ToastProvider>
+            <Shell />
+          </ToastProvider>
+        </UpdateContext.Provider>
       </RouterContext.Provider>
     </AuthContext.Provider>
   );

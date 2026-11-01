@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { listFiles, precacheList, contentVersion, renderServiceWorker } from './scripts/precache.js';
 
+const APP_VERSION = JSON.parse(readFileSync('package.json', 'utf8')).version;
 const CSP_META = /\s*<meta http-equiv="Content-Security-Policy"[^>]*>/;
 
 /** The dev server injects an inline React-refresh preamble, which the strict CSP forbids.
@@ -32,6 +33,7 @@ function serviceWorker() {
 
 export default defineConfig({
   base: './',
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __BUILD_NUMBER__: JSON.stringify(Number(process.env.ANDROID_VERSION_CODE) || 0) },
   plugins: [react(), devOnlyRelaxCsp(), serviceWorker()],
   build: {
     outDir: 'dist',

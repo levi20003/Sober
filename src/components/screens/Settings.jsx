@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
-import { T, CONTENT_VERSION, REVIEW_STATUS } from '../../content/hu.js';
+import { useState } from 'react';
+import { T, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, ONB } from '../../content/hu.js';
 import { toCsvExport, toJsonExport, parseJsonImport } from '../../domain/export.js';
 import { toDateKey } from '../../domain/dates.js';
-import { enableReminders, disableReminders, remindersSupported } from '../../reminders.js';
 import { download } from '../../lib/format.js';
 import { userError } from '../../lib/errors.js';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -10,43 +9,106 @@ import { useTimeline } from '../../hooks/useTimeline.js';
 import { useHashRoute } from '../../hooks/useHashRoute.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { useFormAction } from '../../hooks/useFormAction.js';
-import { Field, Screen } from '../ui.jsx';
+import { Field } from '../ui.jsx';
 import { NewPinField, PinInput } from '../PinFields.jsx';
-import { CostEditor, GoalEditor } from '../savings/CostEditor.jsx';
+import { SUBSTANCES, ONBOARDING_TRIGGERS } from '../../domain/presets.js';
+import { MAX_GOAL_DAYS, MAX_NICKNAME } from '../../domain/schema.js';
+import { Actions } from '../../domain/timelineReducer.js';
+import { isNativeShell } from '../../lib/platform.js';
+import { usePrefs } from '../../hooks/usePrefs.js';
+import { useUpdate } from '../../hooks/useUpdate.js';
+import { Page } from '../shell/Page.jsx';
 
-function Reminders({ store }) {
+
+const APK_PAGE = 'https://levi20003.github.io/Sober/telepites.html';
+
+/** Rólad: becenév, cél, mitől maradsz távol, nehéz helyzetek. Mind a titkosított tárolóba kerül. */
+function ProfileSection() {
+  const { snapshot, dispatch } = useTimeline();
   const toast = useToast();
-  const [rem, setRem] = useState(null);
-  useEffect(() => { store.getMeta().then((m) => setRem(m.reminders)); }, [store]);
-  if (!rem) return null;
-
-  const apply = async (enabled, time) => {
-    try {
-      if (enabled) {
-        const r = await enableReminders(store, time || '20:00');
-        if (r.denied) { toast(T.remindersDenied, 'error'); return setRem({ ...rem, enabled: false, time }); }
-        toast('Emlékeztető bekapcsolva.');
-      } else {
-        await disableReminders(store);
-        toast('Emlékeztető kikapcsolva.');
-      }
-      setRem({ ...rem, enabled, time });
-    } catch (err) {
-      toast(err.message, 'error');
-      setRem({ ...rem, enabled: false });
-    }
-  };
+  const p = snapshot.data.profile;
+  const [subs, setSubs] = useState(p.substances ?? []);
+  const [trigs, setTrigs] = useState(p.triggers ?? []);
+  const save = useFormAction(async (fd) => {
+    const goal = String(fd.get('goal') ?? '').trim();
+    const n = goal === '' ? null : Number(goal);
+    if (n !== null && (!Number.isInteger(n) || n < 1 || n > MAX_GOAL_DAYS)) throw userError(ONB.goalInvalid);
+    await dispatch({ type: Actions.UPDATE_PROFILE, payload: { nickname: String(fd.get('nick') ?? '').trim() || null, goalDays: n, substances: subs, triggers: trigs } });
+    toast(T.saved_ok);
+  });
+  const flip = (list, set, id) => set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
   return (
-    <section className="card">
-      <h2>{T.remindersSection}</h2>
+    <section className="card" aria-labelledby="prof-h">
+      <h2 id="prof-h">{SP.profile}</h2>
+      <form className="stack" onSubmit={save.onSubmit} aria-busy={save.busy || undefined}>
+        <Field label={SP.nickname}><input name="nick" className="input" defaultValue={p.nickname ?? ''} maxLength={MAX_NICKNAME} autoComplete="off" /></Field>
+        <Field label={SP.goal}><input name="goal" className="input" inputMode="numeric" defaultValue={p.goalDays ?? ''} /></Field>
+        <fieldset className="chips"><legend>{SP.substances}</legend><div className="chip-row">
+          {SUBSTANCES.map((o) => <label className="chip" key={o.id}><input type="checkbox" checked={subs.includes(o.id)} onChange={() => flip(subs, setSubs, o.id)} /><span>{o.label}</span></label>)}
+        </div></fieldset>
+        <fieldset className="chips"><legend>{SP.triggers}</legend><div className="chip-row">
+          {ONBOARDING_TRIGGERS.map((id) => <label className="chip" key={id}><input type="checkbox" checked={trigs.includes(id)} onChange={() => flip(trigs, setTrigs, id)} /><span>{ONB.triggerShort[id]}</span></label>)}
+        </div></fieldset>
+        <button type="submit" className="btn btn-primary" disabled={save.busy}>{T.save}</button>
+      </form>
+    </section>
+  );
+}
+
+function AppearanceSection() {
+  const [prefs, setPrefs] = usePrefs();
+  return (
+    <section className="card" aria-labelledby="app-h">
+      <h2 id="app-h">{SP.appearance}</h2>
+      <fieldset className="chips"><legend>{SP.theme}</legend><div className="chip-row">
+        {Object.entries(SP.themeOptions).map(([id, label]) => (
+          <label className="chip" key={id}><input type="radio" name="theme" value={id} checked={prefs.theme === id} onChange={() => setPrefs({ theme: id })} /><span>{label}</span></label>
+        ))}
+      </div></fieldset>
       <div className="check">
-        <input type="checkbox" id="rem-on" role="switch" checked={rem.enabled} disabled={!remindersSupported()} onChange={(e) => apply(e.target.checked, rem.time)} />
-        <label htmlFor="rem-on">{T.remindersLabel}</label>
+        <input type="checkbox" id="motion-off" role="switch" checked={prefs.motion === 'reduced'} onChange={(e) => setPrefs({ motion: e.target.checked ? 'reduced' : 'full' })} />
+        <label htmlFor="motion-off">{SP.motion}</label>
       </div>
-      <Field label={T.remindersTimeLabel}>
-        <input type="time" className="input" value={rem.time} onChange={(e) => { setRem({ ...rem, time: e.target.value }); if (rem.enabled) apply(true, e.target.value); }} />
-      </Field>
-      <p className="hint">{T.remindersInfo}</p>
+      <p className="hint">{SP.motionHint}</p>
+    </section>
+  );
+}
+
+/** Verzió és frissítés. PWA: automatikus (service worker); Android-app: kézi, letöltési oldalról. */
+function UpdateSection() {
+  const u = useUpdate();
+  const [prefs, setPrefs] = usePrefs();
+  const native = isNativeShell();
+  return (
+    <section className="card" aria-labelledby="upd-h">
+      <h2 id="upd-h">{SP.update}</h2>
+      <p>{SP.version(__APP_VERSION__)}</p>
+      {native ? (
+        <>
+          <p className="hint">{SP.updateApkText}</p>
+          <p className="hint" role="status">{u.ready ? SP.updateApkReady : u.status === 'checking' ? SP.updateChecking : u.status === 'uptodate' ? SP.updateNone : u.status === 'error' ? SP.updateApkError : ''}</p>
+          <div className="actions">
+            {u.ready
+              ? <button type="button" className="btn btn-primary" onClick={u.apply}>{SP.updateApkDownload}</button>
+              : <button type="button" className="btn" onClick={() => u.check({ manual: true })} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
+            <a className="btn btn-ghost" href={APK_PAGE} target="_blank" rel="noopener noreferrer">{SP.updateApkLink}</a>
+          </div>
+          <div className="check">
+            <input type="checkbox" id="apk-auto" role="switch" checked={prefs.apkCheck} onChange={(e) => setPrefs({ apkCheck: e.target.checked })} />
+            <label htmlFor="apk-auto">{SP.updateApkAuto}</label>
+          </div>
+          <p className="hint">{SP.updateApkAutoHint}</p>
+        </>
+      ) : u.supported ? (
+        <>
+          <p className="hint" role="status">{u.ready ? SP.updateReady : u.status === 'checking' ? SP.updateChecking : u.status === 'uptodate' ? SP.updateNone : ''}</p>
+          <div className="actions">
+            {u.ready
+              ? <button type="button" className="btn btn-primary" onClick={u.apply}>{SP.updateApply}</button>
+              : <button type="button" className="btn" onClick={() => u.check()} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
+          </div>
+        </>
+      ) : <p className="hint">{SP.updateUnsupported}</p>}
     </section>
   );
 }
@@ -92,13 +154,11 @@ export function Settings({ onWipe, showRecoveryCode }) {
   const plain = (fn) => () => { if (confirm(T.exportPlainWarning)) fn(); };
 
   return (
-    <Screen>
-      <h1>{T.settingsTitle}</h1>
-      <section className="card">
-        <h2>{T.savingsSection}</h2>
-        <CostEditor />
-        <GoalEditor />
-      </section>
+    <Page title={SP.title}>
+      <div className="actions"><button type="button" className="btn" onClick={() => auth.lock('manual')}>{T.lockNow}</button></div>
+      <ProfileSection />
+      <AppearanceSection />
+      <UpdateSection />
       <section className="card">
         <h2>{T.journeySection}</h2>
         <form className="stack" onSubmit={prefs.onSubmit} aria-busy={prefs.busy || undefined}>
@@ -107,8 +167,6 @@ export function Settings({ onWipe, showRecoveryCode }) {
           <button type="submit" className="btn btn-primary" disabled={prefs.busy}>{T.save}</button>
         </form>
       </section>
-
-      <Reminders store={store} />
 
       <section className="card">
         <h2>{T.securitySection}</h2>
@@ -165,6 +223,6 @@ export function Settings({ onWipe, showRecoveryCode }) {
         <p>{T.privacyPromise}</p>
         <p className="hint">{`Tartalom verziója: ${CONTENT_VERSION} · ${REVIEW_STATUS}`}</p>
       </section>
-    </Screen>
+    </Page>
   );
 }

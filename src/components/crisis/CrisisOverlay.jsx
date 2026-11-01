@@ -20,10 +20,11 @@ import { BreathingExercise } from './BreathingExercise.jsx';
  * @param {object}   props
  * @param {Function} props.onClose
  * @param {object[]} [props.events]  journal events, only when already unlocked (tailors the risk note)
+ * @param {string[]} [props.reasons] the user's own reasons (profile), only when already unlocked
  * @param {Date}     [props.now]
  * @param {object}   [props.clock]   injectable clock for the breathing exercise (tests)
  */
-export function CrisisOverlay({ onClose, events = [], now = new Date(), clock }) {
+export function CrisisOverlay({ onClose, events = [], reasons = [], now = new Date(), clock }) {
   const ref = useRef(null);
   useModalDialog(ref, onClose);
   const { emergency, talk } = splitHelplines(HELPLINES);
@@ -54,6 +55,12 @@ export function CrisisOverlay({ onClose, events = [], now = new Date(), clock })
           <BreathingExercise clock={clock} />
         </section>
 
+        {reasons.length > 0 && (
+          <section className="card card-soft" aria-labelledby="reasons-h">
+            <h2 id="reasons-h">{T.crisisReasons}</h2>
+            <ul className="steps">{reasons.map((r) => <li key={r}>{r}</li>)}</ul>
+          </section>
+        )}
         <section className="card"><h2>{URGE_WAVE.title}</h2><p>{URGE_WAVE.text}</p></section>
         <section className="card">
           <h2>{T.crisisNowSteps}</h2>
