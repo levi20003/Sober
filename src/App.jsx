@@ -51,6 +51,18 @@ function Routes({ route, onWipe, showRecoveryCode }) {
   }
 }
 
+/** Minden oldalon látszik, amint új verzió van kész (a percenkénti keresés találata). */
+function UpdateBanner() {
+  const update = useUpdate();
+  if (!update.ready) return null;
+  return (
+    <div className="update-banner" role="status" style={{ maxWidth: 528, margin: '8px auto' }}>
+      <span>{UPDATE.banner}</span>
+      <button type="button" className="btn btn-primary" onClick={update.apply}>{UPDATE.apply}</button>
+    </div>
+  );
+}
+
 function UnlockedApp({ onWipe, showRecoveryCode }) {
   const { auth } = useAuth();
   const { base: route, navigate, goTab } = useHashRoute();
@@ -80,6 +92,7 @@ function UnlockedApp({ onWipe, showRecoveryCode }) {
     <>
       <AppBar title={isHome ? HOME.appbarHello(nick) : pageTitle(route)} subtitle={isHome ? formatDayHu(new Date()) : undefined}
         mood={m ? figureOf(m.mood)?.id : null} onAvatar={() => goTab('#/beallitasok')} />
+      <UpdateBanner />
       <div key={route} className="route">
         <Routes route={route} onWipe={onWipe} showRecoveryCode={showRecoveryCode} />
       </div>

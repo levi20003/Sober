@@ -1,6 +1,7 @@
 // Automatikus frissítés (PWA). Nincs saját hálózati hívás: a böngésző a service worker fájlját kéri le
 // a saját forrásáról (ugyanígy, ahogy az első telepítéskor), a CSP connect-src 'none' érintetlen marad.
 //
+// Percenként (és indításkor, előtérbe kerüléskor) keres újat.
 // Folyamat: a böngésző észleli az új sw.js-t → az telepíti és aktiválja magát (skipWaiting) →
 // ez a kezelő "ready" állapotot jelez → a héj akkor tölti újra az oldalt, amikor ez nem veszít el semmit
 // (zárolt képernyő), vagy amikor a felhasználó a "Frissítés" gombot nyomja.
@@ -9,7 +10,7 @@
 // Az Android-appban nincs service worker (a fájlok az APK-ban vannak): ott csak a verzió látszik, és a
 // letöltési oldalra mutató hivatkozás.
 
-const HOUR = 3_600_000;
+const CHECK_EVERY_MS = 60_000; // percenként
 
 export function createUpdateManager({
   sw = globalThis.navigator?.serviceWorker,
@@ -55,7 +56,7 @@ export function createUpdateManager({
       watch(reg.installing);
       reg.addEventListener('updatefound', () => watch(reg.installing));
       sw.addEventListener('controllerchange', () => { if (state.status !== 'idle') set({ ready: true, status: 'ready' }); });
-      timer = setTimer(() => api.check({ silent: true }), HOUR);
+      timer = setTimer(() => api.check({ silent: true }), CHECK_EVERY_MS);
       return reg;
     },
 

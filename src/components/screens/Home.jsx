@@ -7,14 +7,12 @@ import { uncelebratedMilestone } from '../../domain/milestones.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { CRISIS_HASH } from '../../lib/hashRouter.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
-import { useUpdate } from '../../hooks/useUpdate.js';
 import { Mascot } from '../mood/Mascot.jsx';
 import { FreshStartModal } from '../timeline/FreshStartModal.jsx';
 import { MoodCheckin } from '../home/MoodCheckin.jsx';
 import { Celebration } from '../home/Celebration.jsx';
 import { Badges, DailyThoughts, DayCounter, EnergyStress, GoalCard, SavingsCard, WeekGlance, WeekMoods } from '../home/Widgets.jsx';
 import { Page } from '../shell/Page.jsx';
-import { UPDATE } from '../../content/hu.js';
 
 const reactionFor = (figId) => {
   const v = figureOf(figId)?.valence ?? 0;
@@ -23,7 +21,6 @@ const reactionFor = (figId) => {
 
 export function Home() {
   const { snapshot, dispatch } = useTimeline();
-  const update = useUpdate();
   const [freshStart, setFreshStart] = useState(false);
   const [reaction, setReaction] = useState(null);
   const [celebrated, setCelebrated] = useState(false);
@@ -44,12 +41,6 @@ export function Home() {
 
   return (
     <Page title={T.navHome}>
-      {update.ready && (
-        <div className="update-banner" role="status">
-          <span>{UPDATE.banner}</span>
-          <button type="button" className="btn btn-primary" onClick={update.apply}>{UPDATE.apply}</button>
-        </div>
-      )}
       {risk && (
         <a className="card risk-banner" href={CRISIS_HASH}>
           <strong>{RISK_MESSAGES[risk].title}</strong><span>{RISK_MESSAGES[risk].text}</span>
