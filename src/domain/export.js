@@ -3,6 +3,7 @@
 import { labelOf } from './presets.js';
 import { MISC } from '../content/index.js';
 import { intlTag } from '../i18n/locale.js';
+import { safeJsonParse } from '../lib/safeJson.js';
 import { validateData } from './schema.js';
 
 export const CSV_BOM = '﻿';
@@ -58,8 +59,9 @@ export function toCsvExport(data) {
 export function parseJsonImport(text) {
   let obj;
   try {
-    obj = JSON.parse(String(text).replace(/^﻿/, ''));
-  } catch {
+    obj = safeJsonParse(text);
+  } catch (err) {
+    if (err?.name === 'ImportError') throw err;
     throw new Error('A fájl nem érvényes JSON.');
   }
   if (obj?.app !== 'jozansag-szamlalo' || obj?.kind !== 'plain-export') {

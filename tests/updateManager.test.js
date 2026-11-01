@@ -57,11 +57,18 @@ test('the Android shell has no service worker: unsupported, no network, only the
   assert.equal(await m.start(), null);
 });
 
-test('a background check every minute is scheduled and can be stopped', async () => {
+test('a background check every hour is scheduled and can be stopped', async () => {
   const f = fakeSw();
   const timers = [];
   const m = createUpdateManager({ sw: f.sw, setTimer: (fn, ms) => { timers.push(ms); return 7; }, clearTimer: (id) => timers.push(`clear${id}`) });
   await m.start();
   m.stop();
-  assert.deepEqual(timers, [60_000, 'clear7']);
+  assert.deepEqual(timers, [3_600_000, 'clear7']);
+});
+
+test('Trusted Types: only ./sw.js can become a script URL', async () => {
+  const { trustedSwUrl } = await import('../src/lib/updateManager.js');
+  const tt = { createPolicy: (name, rules) => ({ createScriptURL: (u) => ({ tt: rules.createScriptURL(u) }) }) };
+  assert.deepEqual(trustedSwUrl('./sw.js', tt), { tt: './sw.js' });
+  assert.throws(() => trustedSwUrl('https://evil.example/sw.js', tt));
 });

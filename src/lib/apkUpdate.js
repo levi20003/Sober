@@ -1,11 +1,17 @@
 // Android-app frissítésfigyelő. A webes változat frissítését a service worker intézi (updateManager.js);
-// az APK-ban nincs service worker, ezért itt percenként egyetlen, adatot nem küldő GET kérés megy a
+// az APK-ban nincs service worker, ezért itt (indításkor, majd naponta) egyetlen, adatot nem küldő GET kérés megy a
 // GitHub kiadási oldalára, és a kiadás leírásában szereplő "Verziókód: N" számot hasonlítja az app saját
-// verziókódjához. A kérés semmilyen személyes adatot nem tartalmaz (csak a szokásos IP-cím látszik a GitHubnak).
+// verziókódjához. A kérés semmilyen személyes adatot nem tartalmaz (csak a szokásos IP-cím és időpont látszik a GitHubnak).
+// Gyakoriság (biztonsági audit F10): indításkor és legfeljebb naponta egyszer; a Beállításokban kikapcsolható.
 // Telepíteni az Android nem engedi csendben: az "Frissítés" gomb a letöltési hivatkozást nyitja, a telepítést
 // a felhasználó hagyja jóvá, és az új APK a régi fölé települ (az adat megmarad).
 //
 // A hálózati engedélyt csak az APK kapja (scripts/android-csp.mjs); a webes változat CSP-je változatlanul 'none'.
+
+export const DAY_MS = 24 * 3600_000;
+const LAST_KEY = 'jsz-apk-last-check'; // nem személyes: csak az utolsó ellenőrzés időpontja
+function readLast() { try { return Number(globalThis.localStorage?.getItem(LAST_KEY)) || 0; } catch { return 0; } }
+function writeLast(t) { try { globalThis.localStorage?.setItem(LAST_KEY, String(t)); } catch { /* privát mód */ } }
 
 export const RELEASE_API = 'https://api.github.com/repos/levi20003/Sober/releases/tags/android-latest';
 export const APK_URL = 'https://github.com/levi20003/Sober/releases/download/android-latest/jozansag-szamlalo.apk';
@@ -23,7 +29,9 @@ export function createApkUpdateManager({
   open = (url) => globalThis.open?.(url, '_blank', 'noopener'),
   setTimer = (fn, ms) => setInterval(fn, ms),
   clearTimer = (id) => clearInterval(id),
-  everyMs = 60_000,
+  everyMs = DAY_MS,
+  lastCheck = { get: () => readLast(), set: (t) => writeLast(t) },
+  now = () => Date.now(),
 } = {}) {
   const listeners = new Set();
   let state = { supported: true, native: true, status: 'idle', ready: false, latest: null };
@@ -39,9 +47,13 @@ export function createApkUpdateManager({
       if (!current) return state; // helyi build: nincs verziókód, nincs mivel összevetni
       if (!manual && !enabled()) return state;
       if (!online()) return state;
+      // Háttérben legfeljebb naponta egyszer kérdezünk (a kézi gomb mindig kérdez).
+      if (!manual && now() - lastCheck.get() < everyMs) return state;
+      lastCheck.set(now());
       if (!silent) set({ status: 'checking' });
       try {
-        const r = await fetchFn(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' }, credentials: 'omit', referrerPolicy: 'no-referrer' });
+        // Nincs egyedi fejléc, süti vagy azonosító: csak egy szokásos, névtelen GET.
+        const r = await fetchFn(RELEASE_API, { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const latest = parseVersionCode((await r.json()).body);
         const ready = latest !== null && latest > current;

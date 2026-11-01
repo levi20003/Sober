@@ -1,7 +1,7 @@
 import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createApkUpdateManager, parseVersionCode, RELEASE_API, APK_URL } from '../src/lib/apkUpdate.js';
+import { createApkUpdateManager, parseVersionCode, RELEASE_API, APK_URL, DAY_MS } from '../src/lib/apkUpdate.js';
 import { patchCsp, ALLOWED } from '../scripts/android-csp.mjs';
 
 const resp = (body, ok = true) => ({ ok, status: ok ? 200 : 403, json: async () => ({ body }) });
@@ -50,17 +50,38 @@ test('the opt-out stops background requests; a manual check still works; local b
   assert.equal(called, 1);
 });
 
-test('checks run every minute', async () => {
+test('privacy (audit F10): checks run at start and at most once a day, with no identifying headers', async () => {
   const t = [];
-  const m = mgr({ setTimer: (fn, ms) => { t.push(ms); return 1; }, fetchFn: async () => resp('') });
+  let last = 0;
+  let clock = 10 * DAY_MS; // valós időbélyeg-szerű érték
+  const calls = [];
+  const m = mgr({
+    setTimer: (fn, ms) => { t.push(ms); return 1; },
+    fetchFn: async (url, init) => { calls.push(init); return resp(''); },
+    lastCheck: { get: () => last, set: (v) => { last = v; } },
+    now: () => clock,
+  });
   await m.start();
-  assert.deepEqual(t, [60_000]);
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(t, [DAY_MS]);
+  await m.check({ silent: true });
+  assert.equal(calls.length, 1, 'a second background check within a day sends nothing');
+  clock += DAY_MS + 1;
+  await m.check({ silent: true });
+  assert.equal(calls.length, 2);
+  await m.check({ manual: true });
+  assert.equal(calls.length, 3, 'the button always checks');
+  for (const init of calls) {
+    assert.equal(init.headers, undefined, 'no custom headers');
+    assert.equal(init.credentials, 'omit');
+  }
 });
 
 test('only the APK build is allowed to connect, and only to GitHub; the web CSP stays closed', () => {
   const html = readFileSync('index.html', 'utf8');
   const patched = patchCsp(html);
   assert.match(patched, /connect-src https:\/\/api\.github\.com;/);
+  assert.doesNotMatch(patched, /require-trusted-types-for/, 'the APK drops Trusted Types (Capacitor bridge)');
   assert.equal(ALLOWED, 'https://api.github.com');
   assert.match(html, /connect-src 'none'/, 'source/web index.html unchanged');
   assert.throws(() => patchCsp(patched), /connect-src 'none'/);

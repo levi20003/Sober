@@ -8,3 +8,4 @@ dist/
 *.p12
 release.jks.base64*
 smoke-out/
+build-report/

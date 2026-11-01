@@ -1,10 +1,10 @@
 import { locale } from '../i18n/locale.js';
 import { MISC, T } from '../content/index.js';
 
-const OWN_ERRORS = new Set(['VaultError', 'StorageError', 'SchemaError', 'AuthStateError', 'TimelineError', 'Error']);
+const OWN_ERRORS = new Set(['VaultError', 'StorageError', 'SchemaError', 'AuthStateError', 'TimelineError', 'ImportError', 'Error']);
 
 /** User-caused outcomes (wrong PIN, weak PIN, validation) are not bugs and are not logged. */
-export const EXPECTED_CODES = new Set(['WRONG_SECRET', 'WEAK_SECRET', 'USER_INPUT', 'TIMELINE']);
+export const EXPECTED_CODES = new Set(['WRONG_SECRET', 'WEAK_SECRET', 'USER_INPUT', 'TIMELINE', 'CONFLICT', 'TOO_LARGE', 'FORBIDDEN_KEY', 'TOO_DEEP', 'EMPTY']);
 
 // A belső hibaüzenetek magyarul készülnek. Angol felületen a gyakoribb, felhasználónak szóló üzeneteket lefordítjuk,
 // a ritka belső ellenőrzési hibákra (séma, formátum) az általános angol szöveg kerül. Sorrend számít.
@@ -27,6 +27,10 @@ const EN = [
   [/Jövőbeli napra nem lehet|Jövőbeli dátumtól/, 'A future date is not possible.'],
   [/nem lehet korábbi, mint az út kezdete/, 'The date cannot be earlier than the start of your journey.'],
   [/nem lehetséges ebben az állapotban/, 'That is not possible right now.'],
+  [/másik ablakban módosítottad/, 'The journal was changed in another window in the meantime. Reload the page to see the latest version.'],
+  [/túl nagy/, 'The file is too large (10 MB at most).'],
+  [/nem megengedett mezőt|túl mélyen/, 'The file has an unexpected structure and was not imported.'],
+  [/A fájl üres/, 'The file is empty.'],
 ];
 
 /** Our errors carry Hungarian messages; anything else (e.g. a JSON SyntaxError) gets a generic one. */

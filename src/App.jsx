@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { HOME, MISC, NAV_TABS, ONB, TOOLS, UPDATE, T } from './content/index.js';
+import { HOME, MISC, NAV_TABS, ONB, TOOLS, UPDATE, UX, T } from './content/index.js';
 import { AuthStatus } from './auth/appAuth.js';
 import { disableReminders } from './reminders.js';
 import { formatDayHu } from './domain/greeting.js';
@@ -52,7 +52,7 @@ function Routes({ route, onWipe, showRecoveryCode }) {
   }
 }
 
-/** Minden oldalon látszik, amint új verzió van kész (a percenkénti keresés találata). */
+/** Minden oldalon látszik, amint új verzió van kész (a háttérben futó keresés találata). */
 function UpdateBanner() {
   const update = useUpdate();
   if (!update.ready) return null;
@@ -117,6 +117,17 @@ function Shell() {
   useEffect(() => { if (state.status === AuthStatus.FIRST_TIME_SETUP) setOnbOpen(true); }, [state.status]);
   const finishOnboarding = () => { setOnbOpen(false); replace('#/'); };
 
+  // Memória-tárolónál (pl. privát mód) a lap bezárása előtt a böngésző rákérdez: semmi sem mentődött el (audit 1.3).
+  useEffect(() => {
+    if (state.persistent || !unlocked) return undefined;
+    const warn = (e) => { e.preventDefault(); e.returnValue = ''; };
+    addEventListener('beforeunload', warn);
+    return () => removeEventListener('beforeunload', warn);
+  }, [state.persistent, unlocked]);
+
+  // Zároláskor ne maradjon kint értesítés naplóból származó szöveggel (F13).
+  useEffect(() => { if (state.status === AuthStatus.LOCKED) toast.clear?.(); }, [state.status, toast]);
+
   // Auto-lock on inactivity, and immediately on pagehide (back/forward cache).
   useEffect(() => auth.attachLifecycle({ target: window, doc: document }), [auth]);
 
@@ -144,6 +155,15 @@ function Shell() {
   let screen;
   if (onbOpen || state.status === AuthStatus.FIRST_TIME_SETUP) {
     screen = <Onboarding onFinish={finishOnboarding} />;
+  } else if (state.status === AuthStatus.STORAGE_ERROR) {
+    screen = (
+      <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header>
+        <main className="screen screen-plain lock" id="main" tabIndex={-1}>
+          <h1>{UX.storageErrorTitle}</h1>
+          <p className="lead">{UX.storageErrorText}</p>
+          <button type="button" className="btn btn-primary btn-big" onClick={() => location.reload()}>{UX.retry}</button>
+        </main></>
+    );
   } else if (state.status === AuthStatus.LOCKED) {
     screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header><LockScreen onReset={wipe} /></>;
   } else if (unlocked) {
@@ -159,7 +179,9 @@ function Shell() {
 
   return (
     <>
-      {state.status !== AuthStatus.INITIALIZING && !state.persistent && <p className="banner-warn" role="status">{T.storageVolatile}</p>}
+      {state.status !== AuthStatus.INITIALIZING && !state.persistent && (
+        <p className="banner-warn" role="status">{T.storageVolatile} {unlocked && <a href="#/beallitasok">{T.exportEncrypted}</a>}</p>
+      )}
       {screen}
       {crisis.isOpen && <CrisisOverlay onClose={crisis.close} events={crisisEvents} reasons={crisisReasons} trusted={crisisTrusted} />}
       {state.status !== AuthStatus.INITIALIZING && !crisis.isOpen && <PreviewNotice />}
@@ -169,6 +191,7 @@ function Shell() {
 
 /** Új helyreállító kód (Beállítások → "Új helyreállító kód"): teljes képernyős, egyszeri megjelenítés. */
 function RecoveryOverlay({ code, onDone }) {
+  const toast = useToast();
   const [ok, setOk] = useState(false);
   const [copied, setCopied] = useState(false);
   return (
@@ -176,7 +199,7 @@ function RecoveryOverlay({ code, onDone }) {
       <h2 id="rc-h">{T.recoveryTitle}</h2>
       <p>{T.recoveryIntro}</p>
       <p className="recovery-box mono" translate="no">{code}</p>
-      <button type="button" className="btn" onClick={async () => { try { await navigator.clipboard.writeText(code); setCopied(true); } catch { /* kézi másolás */ } }}>{copied ? T.copied : T.copy}</button>
+      <button type="button" className="btn" onClick={async () => { try { await navigator.clipboard.writeText(code); setCopied(true); toast(UX.clipboardWarning); } catch { /* kézi másolás */ } }}>{copied ? T.copied : T.copy}</button>
       <div className="check" style={{ justifyContent: 'center' }}>
         <input type="checkbox" id="rc2-ok" checked={ok} onChange={(e) => setOk(e.target.checked)} />
         <label htmlFor="rc2-ok">{T.recoveryConfirm}</label>

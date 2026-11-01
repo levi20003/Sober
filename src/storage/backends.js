@@ -115,6 +115,7 @@ export class IndexedDBBackend {
     await this.#tx('readwrite', (s) => {
       for (const [k, v] of Object.entries(entries)) s.put(v, k);
     });
+    if ('vault' in entries) setIdbHint(true);
   }
   async delete(keys) {
     await this.#tx('readwrite', (s) => {
@@ -122,6 +123,7 @@ export class IndexedDBBackend {
     });
   }
   async destroy() {
+    setIdbHint(false);
     this.closed = true;
     this.db.close();
     await new Promise((resolve) => {
@@ -132,6 +134,16 @@ export class IndexedDBBackend {
 }
 
 const LS_PREFIX = 'jozansag-szamlalo:';
+
+// Nem érzékeny jelző a localStorage-ban: "az IndexedDB-ben már van napló" (F3). Ha az IndexedDB egyszer
+// ideiglenesen nem érhető el, ennek alapján NEM ajánlunk fel egy üres, új naplót a meglévő fölé.
+const IDB_HINT = `${LS_PREFIX}has-idb-vault`;
+function setIdbHint(on, ls = globalThis.localStorage) {
+  try { if (on) ls?.setItem(IDB_HINT, '1'); else ls?.removeItem(IDB_HINT); } catch { /* blokkolt tárhely: nincs mit tenni */ }
+}
+function hasIdbHint(ls) {
+  try { return ls?.getItem(IDB_HINT) === '1'; } catch { return false; }
+}
 
 /** Value returned for an entry that exists but cannot be parsed. The store reports it as CORRUPTED. */
 export const UNREADABLE = Object.freeze({ format: -1, unreadable: true });
@@ -233,7 +245,9 @@ export async function openBestBackend({
     }
     return idb;
   } catch (err) {
-    console.warn('IndexedDB nem érhető el.', err);
+    console.warn('IndexedDB nem érhető el.', err?.name ?? err);
+    // Az IndexedDB-ben már van napló: inkább hibát jelzünk (újrapróbálható), mint hogy egy üres új naplót kínáljunk fel.
+    if (hasIdbHint(ls ?? null) && !(lsBackend && (await lsBackend.get('vault')) !== undefined)) throw storageError('UNAVAILABLE', err);
   }
   if (lsBackend) return lsBackend;
   console.warn('A localStorage sem érhető el, memóriában tárolunk.');

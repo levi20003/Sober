@@ -18,7 +18,7 @@ applyPrefs(); // téma és "kevesebb mozgás" még az első kirajzolás előtt
 const auth = createAppAuth({ openBackend: openBestBackend });
 const router = createHashRouter(window);
 const native = isNativeShell();
-// Webes változat: service worker. Android-app: percenkénti kiadás-ellenőrzés (src/lib/apkUpdate.js).
+// Webes változat: service worker. Android-app: indításkor és naponta egyszeri kiadás-ellenőrzés (src/lib/apkUpdate.js).
 const updates = native
   ? createApkUpdateManager({ current: __BUILD_NUMBER__, enabled: () => getPrefs().apkCheck })
   : createUpdateManager({ native });
