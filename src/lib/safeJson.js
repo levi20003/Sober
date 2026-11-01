@@ -30,9 +30,20 @@ function checkDepth(v, depth) {
   if (v && typeof v === 'object') for (const x of Object.values(v)) checkDepth(x, depth + 1);
 }
 
-/** Fájl beolvasása a méret ELLENŐRZÉSE UTÁN (egy 2 GB-os fájlt be sem olvasunk). */
-export async function readImportFile(file, opts) {
+/**
+ * Fájl szövege a méret ELLENŐRZÉSE UTÁN (egy 2 GB-os fájlt be sem olvasunk). A kódolást a bájtsorrend-jelből
+ * (BOM) ismeri fel: UTF-8 (BOM-mal vagy anélkül), UTF-16 LE/BE (pl. a Jegyzettömb „Unicode” mentése).
+ */
+export async function readImportText(file) {
   if (!file || !file.size) throw new ImportError('EMPTY', 'A fájl üres.');
   if (file.size > MAX_IMPORT_BYTES) throw new ImportError('TOO_LARGE', 'A fájl túl nagy (legfeljebb 10 MB).');
-  return safeJsonParse(await file.text(), opts);
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const enc = bytes[0] === 0xff && bytes[1] === 0xfe ? 'utf-16le' : bytes[0] === 0xfe && bytes[1] === 0xff ? 'utf-16be' : 'utf-8';
+  // A TextDecoder alapból elhagyja a BOM-ot.
+  return new TextDecoder(enc).decode(bytes);
+}
+
+/** Fájl beolvasása és biztonságos JSON-értelmezése. */
+export async function readImportFile(file, opts) {
+  return safeJsonParse(await readImportText(file), opts);
 }

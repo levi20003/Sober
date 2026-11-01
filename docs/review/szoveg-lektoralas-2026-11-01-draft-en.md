@@ -4,7 +4,7 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 
 Állapot: **Awaiting expert review**. Tájékoztató a lektornak: [LEKTOR-TAJEKOZTATO.md](LEKTOR-TAJEKOZTATO.md). A visszajelzést a CSV-fájl üres oszlopaiban kérjük (Rendben / Módosítandó / Javasolt szöveg / Megjegyzés).
 
-Összesen 819 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
+Összesen 839 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
 
 
 ## Krízisképernyő – légzőgyakorlat
@@ -141,9 +141,9 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `HELPLINES.INT.int-emergency.name` | Emergency number (EU and many other countries) | Szám: 112; ellenőrzés: official, 2026-11-01; forrás: https://europa.eu/youreurope/citizens/travel/security-and-emergencies/emergency/index_hu.htm |
 | `HELPLINES.INT.int-emergency.hours` | Around the clock, free | Szám: 112; ellenőrzés: official, 2026-11-01; forrás: https://europa.eu/youreurope/citizens/travel/security-and-emergencies/emergency/index_hu.htm |
 | `HELPLINES.INT.int-emergency.when` | If you or someone else is in immediate danger. If you are unsure which number works where you are, 112 is forwarded to the local emergency service in many places. | Szám: 112; ellenőrzés: official, 2026-11-01; forrás: https://europa.eu/youreurope/citizens/travel/security-and-emergencies/emergency/index_hu.htm |
-| `HELPLINES.INT.findahelpline.name` | Find a Helpline: free, confidential helplines around the world | Szám: findahelpline.com; ellenőrzés: official, 2026-11-01; forrás: https://findahelpline.com |
-| `HELPLINES.INT.findahelpline.hours` | Needs an internet connection | Szám: findahelpline.com; ellenőrzés: official, 2026-11-01; forrás: https://findahelpline.com |
-| `HELPLINES.INT.findahelpline.when` | Choose your country to see helplines near you. | Szám: findahelpline.com; ellenőrzés: official, 2026-11-01; forrás: https://findahelpline.com |
+| `HELPLINES.INT.findahelpline.name` | Find a Helpline: free, confidential helplines around the world | Szám: findahelpline.com; ellenőrzés: unverified, 2026-11-01; forrás: https://findahelpline.com |
+| `HELPLINES.INT.findahelpline.hours` | Needs an internet connection | Szám: findahelpline.com; ellenőrzés: unverified, 2026-11-01; forrás: https://findahelpline.com |
+| `HELPLINES.INT.findahelpline.when` | Choose your country to see helplines near you. | Szám: findahelpline.com; ellenőrzés: unverified, 2026-11-01; forrás: https://findahelpline.com |
 
 ## Megcsúszás és új szakasz
 
@@ -621,7 +621,7 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `T.exportCsv` | Export as CSV (for spreadsheets, not encrypted) |  |
 | `T.exportPlainWarning` | This file is NOT encrypted: anyone with access can read it. Download it anyway? |  |
 | `T.importEncrypted` | Restore an encrypted backup |  |
-| `T.importEncryptedInfo` | It replaces the current journal. The backup's PIN is required. |  |
+| `T.importEncryptedInfo` | It replaces the current journal. You need the backup's PIN, or if you forgot it, your recovery code (you then set a new PIN). |  |
 | `T.deleteAll` | Delete all data |  |
 | `T.deleteAllInfo` | Permanently erases everything on this device in one step. It cannot be undone. |  |
 | `T.deleteAllConfirm` | Are you sure you want to delete all data on this device? This cannot be undone. |  |
@@ -941,6 +941,26 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `UX.storageErrorText` | The phone's storage is not responding, so we neither open nor overwrite your journal. Please try again a little later. The helplines are available in the meantime. |  |
 | `UX.retry` | Try again |  |
 | `UX.clipboardWarning` | Copied. Once you have saved it (e.g. in a password manager), copy something else so the code does not stay on the clipboard. |  |
+| `UX.backupDoneTitle` | Backup created and verified |  |
+| `UX.backupSavedDevice` | Saved to the place you chose, as "7". | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `UX.backupSavedDownload` | Downloaded as "7" (usually to your Downloads folder). | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `UX.backupEncryptedNote` | The file is encrypted: it opens only with your PIN or your recovery code. We read it back and checked that it is intact. |  |
+| `UX.backupElsewhere` | Tip: keep a copy somewhere else too (e.g. your own email or cloud), so it survives losing the phone. |  |
+| `UX.backupShare` | Share or send elsewhere |  |
+| `UX.backupCancelled` | The backup was cancelled; no file was created. |  |
+| `UX.plainSavedNote` | Note: this file is NOT encrypted. Anyone with access can read it; do not share it, and delete it when you no longer need it. |  |
+| `UX.restoreForgotPin` | I forgot my PIN: restore with the recovery code |  |
+| `UX.restoreNewPin` | New PIN for this device |  |
+| `UX.restoreNewPin2` | New PIN again |  |
+| `UX.phoneChangeTitle` | Changing phones |  |
+| `UX.phoneChangeSteps.0` | On the old phone: Settings → Data → "Encrypted backup". Choose a place (e.g. Drive or email to yourself), or share it. |  |
+| `UX.phoneChangeSteps.1` | Install the app on the new phone (from the same place) and open it. |  |
+| `UX.phoneChangeSteps.2` | On the first screen: "I have a backup from another device" → pick the file and enter your PIN. |  |
+| `UX.phoneChangeSteps.3` | If you forgot the PIN, you can restore with the recovery code instead and set a new PIN. |  |
+| `UX.phoneChangeSteps.4` | Once everything is on the new phone, you can delete the journal on the old one with Settings → "Delete all data". |  |
+| `UX.secureScreen` | Screenshot protection |  |
+| `UX.secureScreenInfo` | When on, the phone does not allow screenshots of the app, and its content is hidden in the recent apps list. Downside: you cannot send a screenshot to yourself or your supporter either. |  |
+| `UX.debugSignedWarning` | This install was signed with a temporary (developer) key. A later release will not install over it as an update: before switching, make an encrypted backup, and restore the journal from it after removing the old app. |  |
 | `UX.helplinesVerified` | Contact details last checked: 7 | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
 | `UX.offlineNote` | The attempt limit only protects the PIN typed on screen. Someone who obtains the phone's stored data or a backup file can try guesses by machine, so a longer passphrase is much safer. |  |
 | `UX.welcomeInfo` | What is this app? |  |

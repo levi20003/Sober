@@ -1,10 +1,10 @@
 import { locale } from '../i18n/locale.js';
 import { MISC, T } from '../content/index.js';
 
-const OWN_ERRORS = new Set(['VaultError', 'StorageError', 'SchemaError', 'AuthStateError', 'TimelineError', 'ImportError', 'Error']);
+const OWN_ERRORS = new Set(['VaultError', 'StorageError', 'SchemaError', 'AuthStateError', 'TimelineError', 'ImportError', 'BackupError', 'Error']);
 
 /** User-caused outcomes (wrong PIN, weak PIN, validation) are not bugs and are not logged. */
-export const EXPECTED_CODES = new Set(['WRONG_SECRET', 'WEAK_SECRET', 'USER_INPUT', 'TIMELINE', 'CONFLICT', 'TOO_LARGE', 'FORBIDDEN_KEY', 'TOO_DEEP', 'EMPTY']);
+export const EXPECTED_CODES = new Set(['WRONG_SECRET', 'WEAK_SECRET', 'USER_INPUT', 'TIMELINE', 'CONFLICT', 'TOO_LARGE', 'FORBIDDEN_KEY', 'TOO_DEEP', 'EMPTY', 'DAMAGED', 'NOT_OURS']);
 
 // A belső hibaüzenetek magyarul készülnek. Angol felületen a gyakoribb, felhasználónak szóló üzeneteket lefordítjuk,
 // a ritka belső ellenőrzési hibákra (séma, formátum) az általános angol szöveg kerül. Sorrend számít.
@@ -17,7 +17,8 @@ const EN = [
   [/Már létezik napló/, 'A journal already exists on this device.'],
   [/helyreállító kód formátuma/, 'The recovery code format is not right (32 characters).'],
   [/Web Crypto|biztonságos titkosítást/, 'This browser does not support secure encryption (Web Crypto). A secure (https) connection is required.'],
-  [/újabb verziójával készült|újabb verziója hozta létre/, 'The data was created by a newer version of the app. Please update the app.'],
+  [/A mentésfájl sérült vagy hiányos/, 'The backup file is damaged or incomplete. Try an earlier backup, or make a new one on the other device.'],
+  [/újabb verziójával készült|újabb verziója hozta létre|újabb verziója készítette/, 'The data was created by a newer version of the app. Please update the app.'],
   [/nem Józanság-számláló/, 'This file is not a Sobriety Counter file.'],
   [/nem érvényes JSON/, 'The file is not valid JSON.'],
   [/Nem található mentett napló|sérült|ismeretlen formátum/i, 'The saved data looks damaged or is in an unknown format.'],

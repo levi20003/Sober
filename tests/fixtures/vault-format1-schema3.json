@@ -1,0 +1,34 @@
+{
+  "pin": "2581-tavasz",
+  "recoveryCode": "K7M2-QW9D-3HXR-T5NB-8JCV-4PZF-6GYA-2EKS",
+  "record": {
+    "format": 1,
+    "revision": 7,
+    "slots": {
+      "pin": {
+        "kdf": {
+          "name": "PBKDF2",
+          "hash": "SHA-256",
+          "iterations": 100000,
+          "salt": "vLgiWJTflqi3nq3TUTFlMw=="
+        },
+        "iv": "XlkIDOTyj7jdvvuw",
+        "wrapped": "gk6P5XJo3Mbiy37jxMf92NnWvP3ohqJo/YcVHwZ4cs/kimL9tSz9pMmPJXxm+w/q"
+      },
+      "recovery": {
+        "kdf": {
+          "name": "PBKDF2",
+          "hash": "SHA-256",
+          "iterations": 100000,
+          "salt": "6IH9Hen40fnvIxkIos0Z0Q=="
+        },
+        "iv": "iyM36o3cZw8Oco28",
+        "wrapped": "1/vZRAczGcBcYPQ+vJKyPfeDGfanai2Fj88bodRk1/ZKPiasu9n9D77C4S0Iwqi+"
+      }
+    },
+    "payload": {
+      "iv": "ccLkRbGulh6C3Tw6",
+      "ct": "biSyX7j/Gdos4MXBfGJfEoEeMcV4n4hYRi0dmcF+xurslILc1YFpleOe35oZzXoMdV2+loVHV0Fa6sTMhlgoGX23zwZcr0tiuW9SLFmoLp6zBh+/FhQVkXqwk9lMJENXAR4erRLmk0J0TAIBgQtyOoses7tikpHgLEEIAMQQ6iSE5vN1YE+A9zih/Qvn4YxUJ5F3Nbw+2XpbQyTmbN5MBFLlJBI5CYiFnmXj4uXxmcy6sKt9zIJjxxE00DxH8GmW30uaL2hZPu/hI87+NB1h0dxa9eaWxEWmTRzivwDYLR8X0Th0ZAEUajBjVL5u8McO/Ho+eg19xLw0c4v5i3mi2USBOnPyulDXL2LOQVvE6mYDMnQEHljdpOj7zHkqyqulcvghDZEwazAzCQz3v5mzvCOuSvDocyOyT+Lz9hXm7MVk1q3KHl8vw6dV1Jf8BnidjUAuLM72l5i1C8yRiUqg9UE5CyHZzRdH9ZpT0QMdVfr8gTMLnQR8wivRYU1qzLToe7DiPoWF6NMclOSP9BdCHSzG62nn0AZHJaeMM4zhXSCVUMsynZOKdf3L3Kxy3ODqGxZKPeREOwNRcAJm1RLyqIXU5P26NkUnyZihS2VBbk87bxCEnj8z4uXLm0dGolmwkRu/m3KTwwr6mwdV4qNFpwKyrGsZiqa1DrEAmP8ARBXQHkZtDx90oJ7uds5IK1IjPIjoTJbf5hnNUDycHdU36zJe9kFcLdcHP9ZP9sHWij1YwzcKap1VSBIAuuCLh01TeRUgl1oWhCkvwswdBEf2FluDbJ8GcOJaJJ97/aZwibO8hh1fxQSRj0VJY6a1AKUpYO61QiI0A+2KopsjF3TanU0TQtRHyhG8Q7Re+Mj2J8MLyP89a78Yo7sZC05q4cAxdonNR103fFUDNCrVm/aiPjoVUxJQbRNYm+7Zs3jsa7KSra5leZoF6cwCLkxZMXabMGrUjp44Kdp56re44H5H8kpupATD0H0zfEZxM9JF+pE25HCiy1gn/s8zBvuBFNgxfxF4Guwy17v71gEZeB71hCc0c5JfLssGqU4ftNNEfzVDfG+j1nqbfmNkUGGRBRc4ccbEqxS/aByOWwhxSvvEv9xl+hZ83vXrur1ddfAs40WGmhew8887FAJSuOgnKxhB0Q/FhsNvdOByfPloHEH79c71Y5RzflI2aZSjxKNADIYO/++MjoDGTdTtnw=="
+    }
+  }
+}

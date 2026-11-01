@@ -1,0 +1,5 @@
+# A kiadási (release) aláíró tanúsítvány SHA-256 lenyomata. Nyilvános adat, nem titok.
+# A CI minden kiadási buildnél összeveti az APK tanúsítványával; eltérésnél a build elbukik
+# (más kulccsal aláírt APK nem települne frissítésként a felhasználók telefonján lévő app fölé).
+# Kulcscsere vagy -vesztés esetén: docs/DEPLOYMENT.md „Aláírókulcs” fejezet.
+3f822994ee7b45bb95905b47abedff75a39341244dcb4b410d6648d38ba66ccc

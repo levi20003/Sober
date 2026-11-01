@@ -2,7 +2,9 @@
 // Usage: npm run e2e   (SCREENSHOTS=dir to save screenshots)
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, cp, appendFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { startServer } from './serve.js';
 
 const require = createRequire(import.meta.url);
@@ -332,6 +334,44 @@ try {
   const backupPath = await bk.path();
   const backupText = await readFile(backupPath, 'utf8');
   assert.ok(!backupText.includes('megtervezem') && backupText.includes('encrypted-backup'));
+  const backupObj = JSON.parse(backupText);
+  assert.equal(backupObj.formatVersion, 2);
+  assert.match(backupObj.checksum, /^sha256:[0-9a-f]{64}$/);
+  // A mentés után megmondjuk, hová került és hogy ellenőriztük (M6).
+  const done = page.locator('dialog.sheet[open]', { has: page.getByRole('heading', { name: 'A mentés elkészült és ellenőrizve' }) });
+  await done.waitFor();
+  assert.ok(await done.getByText(/titkosított/).first().isVisible());
+  await done.getByRole('button', { name: 'Bezár', exact: true }).click();
+  step('encrypted backup v2 (checksum), verified, user told where it went');
+
+  // Két "eszköz" (M10): a mentés egy másik böngészőprofilban visszaállítható PIN-nel, egy harmadikban
+  // (elfelejtett PIN) a helyreállító kóddal és új PIN-kóddal.
+  for (const how of ['pin', 'recovery']) {
+    const dctx = await browser.newContext({ locale: 'hu-HU', viewport: { width: 390, height: 844 } });
+    const dp = await dctx.newPage();
+    await dp.goto(BASE);
+    await dp.getByRole('heading', { name: 'Szia! Ez a te csendes, privát helyed.' }).waitFor();
+    await dismissPreview(dp);
+    await dp.getByText('Van már mentésem másik eszközről').click();
+    await dp.getByLabel('Mentésfájl').setInputFiles(backupPath);
+    if (how === 'pin') {
+      await dp.getByLabel('A mentés PIN-kódja').fill(PIN);
+    } else {
+      await dp.getByText('Elfelejtettem a PIN-kódot: visszaállítás helyreállító kóddal').click();
+      await dp.getByLabel('Helyreállító kód').fill(code.toLowerCase());
+      await dp.getByLabel('Új PIN-kód ehhez az eszközhöz').fill('masik-telefon-58');
+      await dp.getByLabel('Új PIN-kód még egyszer').fill('masik-telefon-58');
+    }
+    await dp.getByRole('button', { name: 'Titkosított mentés visszaállítása' }).click();
+    try {
+      await dp.locator('.hero-value', { hasText: '30' }).waitFor({ timeout: 30000 });
+    } catch (err) {
+      await dp.screenshot({ path: '/tmp/restore-fail.png', fullPage: true });
+      throw err;
+    }
+    await dctx.close();
+  }
+  step('two-device restore: with the PIN, and with the recovery code + new PIN');
   await page.getByRole('button', { name: 'Minden adat törlése' }).click();
   await page.getByRole('heading', { name: 'Szia! Ez a te csendes, privát helyed.' }).waitFor({ timeout: 10000 });
   await page.getByText('Minden adat törölve.').waitFor();
@@ -429,6 +469,36 @@ try {
   if (SHOTS) await pz.screenshot({ path: `${SHOTS}/09-crisis-200.png` });
   await ctxZ.close();
   step('crisis screen at 200% zoom: 112 first and above the fold, no horizontal scroll, no animation');
+
+  // PWA-frissítés (M13): meglévő naplóval új kiadás jelenik meg (megváltozik a sw.js). Az új service worker
+  // átveszi az irányítást, az app zárolt állapotban újratölt, és a régi napló ugyanazzal a PIN-nel megnyílik.
+  const upRoot = await mkdtemp(join(tmpdir(), 'jsz-dist-'));
+  await cp('dist', upRoot, { recursive: true });
+  const upServer = await startServer(0, { root: upRoot });
+  const UPBASE = `http://127.0.0.1:${upServer.address().port}/`;
+  const ctxU = await browser.newContext({ locale: 'hu-HU', viewport: { width: 390, height: 844 } });
+  const pu = await ctxU.newPage();
+  await pu.goto(UPBASE);
+  await onboard(pu, { pin: 'frissites-proba-5', days: 12 });
+  await pu.evaluate(() => navigator.serviceWorker.ready);
+  await pu.reload();
+  await pu.getByLabel('PIN-kód', { exact: true }).fill('frissites-proba-5');
+  await pu.getByRole('button', { name: 'Megnyitás' }).click();
+  await pu.locator('.hero-value', { hasText: '12' }).waitFor({ timeout: 30000 });
+  await appendFile(join(upRoot, 'sw.js'), '\n// e2e: új kiadás\n');
+  const tookOver = await pu.evaluate(() => new Promise((res) => {
+    navigator.serviceWorker.addEventListener('controllerchange', () => res(true), { once: true });
+    navigator.serviceWorker.getRegistration().then((reg) => reg.update());
+    setTimeout(() => res(false), 20000);
+  }));
+  assert.ok(tookOver, 'the new service worker took control');
+  await pu.reload(); // a felhasználó később újra megnyitja: zárolt képernyő, új kiadás
+  await pu.getByLabel('PIN-kód', { exact: true }).fill('frissites-proba-5');
+  await pu.getByRole('button', { name: 'Megnyitás' }).click();
+  await pu.locator('.hero-value', { hasText: '12' }).waitFor({ timeout: 30000 });
+  await ctxU.close();
+  upServer.close();
+  step('PWA update: a new service worker takes over and the existing journal opens with the same PIN');
 
   // A broken module must not take the helplines down with it
   const ctx4 = await browser.newContext({ locale: 'hu-HU', serviceWorkers: 'block' });

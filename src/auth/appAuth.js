@@ -35,6 +35,9 @@ const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'touchstart'];
  * @param {object} [opts.storeOptions]              forwarded to VaultStore (tests lower KDF cost here)
  * @param {() => number} [opts.now]
  */
+/** Böngészőben ennyi háttérben töltött idő után zárol visszatéréskor (az Android-appban azonnal). */
+export const HIDDEN_GRACE_MS = 60_000;
+
 export function createAppAuth({ openBackend, storeOptions = {}, now = () => Date.now() }) {
   let store = null;
   let lastActive = now();
@@ -121,10 +124,11 @@ export function createAppAuth({ openBackend, storeOptions = {}, now = () => Date
       } catch (err) { return fail(err); }
     }),
 
-    restoreBackup: (backup, pin) => run(async () => {
+    /** @param {{newPin?: string}} [opts] helyreállító kódos visszaállításnál az új PIN-kód (ekkor `pin` a helyreállító kód) */
+    restoreBackup: (backup, pin, opts) => run(async () => {
       expectStatus('restoreBackup', AuthStatus.FIRST_TIME_SETUP, AuthStatus.UNLOCKED);
       try {
-        await store.importEncryptedBackup(backup, pin);
+        await store.importEncryptedBackup(backup, pin, opts);
         enterUnlocked();
       } catch (err) { return fail(err); }
     }),
@@ -195,20 +199,39 @@ export function createAppAuth({ openBackend, storeOptions = {}, now = () => Date
      * Wires browser lifecycle events. `target` is window-like, `doc` document-like.
      * Returns a detach function.
      */
-    attachLifecycle({ target, doc, intervalMs = 15_000, setIntervalFn = setInterval, clearIntervalFn = clearInterval }) {
+    attachLifecycle({
+      target, doc, intervalMs = 15_000, setIntervalFn = setInterval, clearIntervalFn = clearInterval,
+      native = false, hiddenGraceMs = HIDDEN_GRACE_MS, now: clock = now,
+    }) {
       const onActivity = () => api.touch();
-      const onVisibility = () => api.checkInactivity();
+      // Háttérbe kerülés (M9): az Android-appban azonnal zárol (a feladatváltó előnézetében se látsszon a napló);
+      // böngészőben egy rövid fülváltás még nem zárol, de ha hosszabb ideig volt háttérben, visszatéréskor igen.
+      let hiddenAt = null;
+      const onVisibility = () => {
+        if (doc.visibilityState === 'hidden') {
+          if (native) api.lock('hidden');
+          else hiddenAt = clock();
+          return;
+        }
+        if (hiddenAt !== null && clock() - hiddenAt >= hiddenGraceMs) api.lock('hidden');
+        hiddenAt = null;
+        api.checkInactivity();
+      };
       // pagehide fires on tab close, navigation away and before back/forward-cache freezing.
       // Locking here guarantees a restored page never shows decrypted data.
       const onPageHide = () => api.lock('pagehide');
+      // Capacitor: a natív bővítmény az Activity onPause-kor "pause" eseményt küld a dokumentumnak.
+      const onPause = () => api.lock('pause');
       for (const ev of ACTIVITY_EVENTS) target.addEventListener(ev, onActivity, { passive: true });
       target.addEventListener('pagehide', onPageHide);
       doc.addEventListener('visibilitychange', onVisibility);
+      if (native) doc.addEventListener('pause', onPause);
       const timer = setIntervalFn(() => api.checkInactivity(), intervalMs);
       return () => {
         for (const ev of ACTIVITY_EVENTS) target.removeEventListener(ev, onActivity);
         target.removeEventListener('pagehide', onPageHide);
         doc.removeEventListener('visibilitychange', onVisibility);
+        if (native) doc.removeEventListener('pause', onPause);
         clearIntervalFn(timer);
       };
     },

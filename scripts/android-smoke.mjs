@@ -9,13 +9,15 @@
 //
 //   --upgrade  ugyanazzal a kulccsal aláírt, nagyobb verziókódú APK: a régi fölé kell települnie,
 //              a napló pedig megmarad
+//   --old-vault  fixture JSON: régi formátumú naplót ír a telefonra, az új verziónak meg kell nyitnia
+//   --release-old / --release-new  a kiadott android-latest APK, és fölé az új (kiadási kulccsal aláírt) build
 //   --foreign  más kulccsal aláírt APK: a telepítésnek INSTALL_FAILED_UPDATE_INCOMPATIBLE
 //              hibával el kell utasulnia (ez a telefonon az "Az alkalmazás nem települt")
 //
 // Exits 1 on any failure. In GitHub Actions the verdict is also written as annotations.
 
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { connect, findPageTarget, collectProblems, sleep } from './android/cdp.mjs';
 import * as flow from './android/flow.mjs';
 
@@ -26,6 +28,9 @@ const argv = process.argv.slice(2);
 const opt = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv.splice(i, 2)[1] : undefined; };
 const upgradeApk = opt('--upgrade');
 const foreignApk = opt('--foreign');
+const fixtureFile = opt('--old-vault');        // fagyasztott régi formátumú napló (tests/fixtures/*.json)
+const releaseOld = opt('--release-old');       // a jelenlegi android-latest kiadás (kiadási kulccsal)
+const releaseNew = opt('--release-new');       // az új build, ugyanazzal a kiadási kulccsal aláírva
 const [apk, outDir = 'smoke-out'] = argv;
 if (!apk) {
   console.error('Használat: node scripts/android-smoke.mjs <app.apk> [kimeneti-mappa] [--upgrade <apk>] [--foreign <apk>]');
@@ -164,6 +169,56 @@ try {
     await flow.afterRestart(c, PIN);
     say('✓ az elutasított telepítés után az eredeti app és adata érintetlen');
     c.close();
+  }
+
+  // 6b. Régi formátumú napló a telefonon (M7): az adatot töröljük, a fagyasztott régi rekordot írjuk be,
+  //     és az új verziónak meg kell nyitnia (migráció), az idővonalon a régi bejegyzésekkel.
+  if (fixtureFile) {
+    const fx = JSON.parse(readFileSync(fixtureFile, 'utf8'));
+    sh(`pm clear ${PKG}`);
+    ({ c, problems } = await launch());
+    allProblems.push(problems);
+    (await flow.seedVault(c, fx.record)).forEach((s) => say(`✓ ${s}`));
+    c.close();
+    ({ c, problems } = await launch());
+    allProblems.push(problems);
+    (await flow.unlockOldVault(c, fx.pin)).forEach((s) => say(`✓ ${s}`));
+    screenshot('4-regi-naplo');
+    c.close();
+  }
+
+  // 6c. Elforgatás és sötét téma váltása futás közben: nem omlik össze, a feloldott állapot megmarad (configChanges).
+  {
+    adb('shell', 'settings', 'put', 'system', 'accelerometer_rotation', '0');
+    adb('shell', 'settings', 'put', 'system', 'user_rotation', '1');
+    adb('shell', 'cmd', 'uimode', 'night', 'yes');
+    await sleep(3000);
+    adb('shell', 'settings', 'put', 'system', 'user_rotation', '0');
+    adb('shell', 'cmd', 'uimode', 'night', 'no');
+    await sleep(2000);
+    if (!sh(`pidof ${PKG}`)) throw new Error('Elforgatás / téma váltás után az app folyamata leállt');
+    say('✓ elforgatás és sötét/világos téma váltása után az app fut tovább');
+  }
+
+  // 6d. Frissítés a KIADOTT verzióról (android-latest) az új buildre, ugyanazzal a kiadási kulccsal (adb install -r).
+  //     A kiadott APK nem hibakereshető, ezért ott csak a telepítést, az indulást és az összeomlásmentességet nézzük;
+  //     az adatok megmaradását a 5. és 6b. lépés igazolja (ugyanaz a tárolási kód és origin).
+  if (releaseOld && releaseNew) {
+    adb('uninstall', PKG);
+    const o = adb('install', releaseOld);
+    if (!/Success/.test(o.out)) throw new Error(`A kiadott APK nem települt: ${o.out.trim().slice(0, 300)}`);
+    const oldCode = Number(sh(`dumpsys package ${PKG}`).match(/versionCode=(\d+)/)?.[1]);
+    adb('shell', 'am', 'start', '-W', '-n', `${PKG}/.MainActivity`);
+    await poll(() => sh(`pidof ${PKG}`), { timeoutMs: 30_000, what: 'a kiadott verzió elindult' });
+    await sleep(4000);
+    const n = adb('install', '-r', releaseNew);
+    if (!/Success/.test(n.out)) throw new Error(`Az új build nem települt a kiadott verzió fölé: ${n.out.trim().slice(0, 300)}`);
+    const newCode = Number(sh(`dumpsys package ${PKG}`).match(/versionCode=(\d+)/)?.[1]);
+    if (!(newCode > oldCode)) throw new Error(`A verziókód nem nőtt: ${oldCode} -> ${newCode}`);
+    adb('shell', 'am', 'start', '-W', '-n', `${PKG}/.MainActivity`);
+    await poll(() => sh(`pidof ${PKG}`), { timeoutMs: 30_000, what: 'az új verzió elindult a frissítés után' });
+    await sleep(4000);
+    say(`✓ a kiadott android-latest (code ${oldCode}) fölé az új build frissítésként települt (code ${newCode}) és elindult`);
   }
 
   // 7. Összeomlás / hiba a naplóban és a konzolon

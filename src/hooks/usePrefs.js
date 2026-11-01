@@ -21,6 +21,8 @@ function derive(r) {
     theme: ['light', 'dark'].includes(r.theme) ? r.theme : 'system',
     motion: r.motion === 'reduced' ? 'reduced' : 'full',
     apkCheck: r.apkCheck !== false,
+    // FLAG_SECURE (Android-app). Termékdöntésre vár (docs/audit/ARGON2-DONTES.md): addig alapból kikapcsolva.
+    secureScreen: r.secureScreen === true,
     lang: LOCALES.includes(r.lang) ? r.lang : locale,
     country: COUNTRY_IDS.includes(r.country) ? r.country : detectCountry(),
     currency: CURRENCY_IDS.includes(r.currency) ? r.currency : currency,

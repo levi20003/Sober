@@ -106,7 +106,8 @@ test('K6: no cure, success-rate or diagnostic claims in any language', () => {
   const text = [hu, en].map((m) => JSON.stringify(m, (k, v) => (typeof v === 'function' ? v.toString() : v))).join('\n').toLowerCase();
   const BANNED = ['diagnóz', 'diagnosztiz', 'sikerrát', 'bizonyítottan', 'klinikailag igazolt', 'tudományosan igazolt',
     'garantáltan', 'diagnos', 'success rate', 'proven to', 'clinically proven', 'guaranteed', 'cures', 'will cure', 'treats addiction'];
-  for (const b of BANNED) assert.ok(!text.includes(b), `"${b}" found`);
+  // Szóhatárral: a „secureScreen” kulcs ne számítson „cures”-nek.
+  for (const b of BANNED) assert.ok(!new RegExp(`(^|[^\\p{L}])${b}`, 'u').test(text), `"${b}" found`);
 });
 
 test('K6: risk messages describe moments, never the person, and promise nothing', () => {

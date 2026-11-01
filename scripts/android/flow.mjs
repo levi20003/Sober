@@ -147,3 +147,33 @@ export async function wrongPinThenRight(c, pin) {
   await c.waitFor(`document.body.textContent.includes('Ez nem a megfelelő PIN-kód')`, { timeoutMs: 60_000, what: 'hibás PIN visszajelzés' });
   return ['hibás PIN elutasítva, adat érintetlen'];
 }
+
+/**
+ * Régi formátumú napló a telefonon (M7): a fagyasztott fixture rekordját közvetlenül az IndexedDB-be írjuk,
+ * pontosan úgy, ahogy egy korábbi verzió tárolta. Utána az app újraindítva zárolt képernyővel indul.
+ */
+export async function seedVault(c, record) {
+  await c.eval(`new Promise((res, rej) => {
+    const r = indexedDB.open('jozansag-szamlalo', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onerror = () => rej(r.error);
+    r.onsuccess = () => {
+      const tx = r.result.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(${j(record)}, 'vault');
+      tx.oncomplete = () => { localStorage.setItem('jozansag-szamlalo:has-idb-vault', '1'); r.result.close(); res(true); };
+      tx.onerror = () => rej(tx.error);
+    };
+  })`, { awaitPromise: true });
+  return ['régi formátumú (fixture) napló az IndexedDB-ben'];
+}
+
+/** Feloldás jelszóval (nem számbillentyűzettel), majd ellenőrzés: a régi napló bejegyzései megvannak. */
+export async function unlockOldVault(c, pin, { minEntries = 3 } = {}) {
+  await waitHeading(c, 'Üdv újra', 45_000);
+  await c.waitFor(`document.querySelector('input[name=pin]')`, { what: 'jelszómező a zárolt képernyőn' });
+  await c.eval(`__s.set(document.querySelector('input[name=pin]'), ${j(pin)}); __s.click('button', 'Megnyitás')`);
+  await c.waitFor(`document.querySelector('.hero-value')`, { timeoutMs: 90_000, what: 'a régi napló feloldása' });
+  await c.eval(`__s.click('nav.tabbar a', 'Idővonal')`);
+  await c.waitFor(`document.querySelectorAll('.entry').length >= ${minEntries}`, { what: 'a régi napló bejegyzései az idővonalon' });
+  return ['a régi formátumú napló az új verzióval megnyílt, a bejegyzések megvannak'];
+}

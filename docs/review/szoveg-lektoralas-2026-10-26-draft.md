@@ -4,7 +4,7 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 
 Állapot: **Szakmai lektorálásra vár**. Tájékoztató a lektornak: [LEKTOR-TAJEKOZTATO.md](LEKTOR-TAJEKOZTATO.md). A visszajelzést a CSV-fájl üres oszlopaiban kérjük (Rendben / Módosítandó / Javasolt szöveg / Megjegyzés).
 
-Összesen 819 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
+Összesen 839 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
 
 
 ## Krízisképernyő – légzőgyakorlat
@@ -141,9 +141,9 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `HELPLINES.INT.int-emergency.name` | Általános segélyhívó (EU és sok más ország) | Szám: 112; ellenőrzés: official, 2026-11-01; forrás: https://europa.eu/youreurope/citizens/travel/security-and-emergencies/emergency/index_hu.htm |
 | `HELPLINES.INT.int-emergency.hours` | Éjjel-nappal, ingyenes | Szám: 112; ellenőrzés: official, 2026-11-01; forrás: https://europa.eu/youreurope/citizens/travel/security-and-emergencies/emergency/index_hu.htm |
 | `HELPLINES.INT.int-emergency.when` | Ha közvetlen veszélyben vagy te vagy valaki más. Ha nem tudod, melyik szám működik a környéken, a 112 sok helyen továbbít a helyi segélyhívóhoz. | Szám: 112; ellenőrzés: official, 2026-11-01; forrás: https://europa.eu/youreurope/citizens/travel/security-and-emergencies/emergency/index_hu.htm |
-| `HELPLINES.INT.findahelpline.name` | Find a Helpline: segélyvonalak szerte a világon | Szám: findahelpline.com; ellenőrzés: official, 2026-11-01; forrás: https://findahelpline.com |
-| `HELPLINES.INT.findahelpline.hours` | Internetkapcsolat kell hozzá | Szám: findahelpline.com; ellenőrzés: official, 2026-11-01; forrás: https://findahelpline.com |
-| `HELPLINES.INT.findahelpline.when` | Válaszd ki az országodat, és megmutatja a közeli segélyvonalakat. | Szám: findahelpline.com; ellenőrzés: official, 2026-11-01; forrás: https://findahelpline.com |
+| `HELPLINES.INT.findahelpline.name` | Find a Helpline: segélyvonalak szerte a világon | Szám: findahelpline.com; ellenőrzés: unverified, 2026-11-01; forrás: https://findahelpline.com |
+| `HELPLINES.INT.findahelpline.hours` | Internetkapcsolat kell hozzá | Szám: findahelpline.com; ellenőrzés: unverified, 2026-11-01; forrás: https://findahelpline.com |
+| `HELPLINES.INT.findahelpline.when` | Válaszd ki az országodat, és megmutatja a közeli segélyvonalakat. | Szám: findahelpline.com; ellenőrzés: unverified, 2026-11-01; forrás: https://findahelpline.com |
 
 ## Megcsúszás és új szakasz
 
@@ -621,7 +621,7 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `T.exportCsv` | Export CSV-ként (táblázatkezelőhöz, nem titkosított) |  |
 | `T.exportPlainWarning` | Ez a fájl NEM titkosított: aki hozzáfér, elolvashatja. Biztosan letöltöd? |  |
 | `T.importEncrypted` | Titkosított mentés visszaállítása |  |
-| `T.importEncryptedInfo` | A jelenlegi napló helyére kerül. A mentés PIN-kódja szükséges. |  |
+| `T.importEncryptedInfo` | A jelenlegi napló helyére kerül. A mentés PIN-kódja kell hozzá, vagy ha azt elfelejtetted, a helyreállító kódod (ekkor új PIN-kódot adsz meg). |  |
 | `T.deleteAll` | Minden adat törlése |  |
 | `T.deleteAllInfo` | Egy lépésben, véglegesen töröl mindent erről az eszközről. Nem visszavonható. |  |
 | `T.deleteAllConfirm` | Biztosan törölsz minden adatot erről az eszközről? Ez nem visszavonható. |  |
@@ -941,6 +941,26 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `UX.storageErrorText` | A telefon tárhelye most nem válaszol, ezért nem nyitjuk meg és nem is írjuk felül a naplódat. Próbáld újra egy kicsit később. A segélyvonalak addig is elérhetők. |  |
 | `UX.retry` | Újrapróbálom |  |
 | `UX.clipboardWarning` | Kimásolva. Ha elmentetted (pl. jelszókezelőbe), másolj ki valami mást, hogy a kód ne maradjon a vágólapon. |  |
+| `UX.backupDoneTitle` | A mentés elkészült és ellenőrizve |  |
+| `UX.backupSavedDevice` | Elmentve a választott helyre, „7” néven. | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `UX.backupSavedDownload` | Letöltve „7” néven (általában a Letöltések mappába). | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `UX.backupEncryptedNote` | A fájl titkosított: csak a PIN-kódoddal vagy a helyreállító kódoddal nyitható meg. Visszaolvastuk és ellenőriztük, hogy ép. |  |
+| `UX.backupElsewhere` | Tipp: tarts egy példányt egy másik helyen is (pl. saját e-mail vagy felhő), hogy a telefon elvesztése után is meglegyen. |  |
+| `UX.backupShare` | Megosztás vagy küldés máshová |  |
+| `UX.backupCancelled` | A mentés megszakadt, nem készült fájl. |  |
+| `UX.plainSavedNote` | Figyelem: ez a fájl NEM titkosított. Bárki elolvashatja, aki hozzáfér; ne oszd meg, és töröld, ha már nem kell. |  |
+| `UX.restoreForgotPin` | Elfelejtettem a PIN-kódot: visszaállítás helyreállító kóddal |  |
+| `UX.restoreNewPin` | Új PIN-kód ehhez az eszközhöz |  |
+| `UX.restoreNewPin2` | Új PIN-kód még egyszer |  |
+| `UX.phoneChangeTitle` | Telefoncsere |  |
+| `UX.phoneChangeSteps.0` | A régi telefonon: Beállítások → Adatok → „Titkosított mentés”. Válassz helyet (pl. Drive vagy e-mail magadnak), vagy oszd meg. |  |
+| `UX.phoneChangeSteps.1` | Az új telefonra telepítsd az alkalmazást (ugyanarról a helyről), és nyisd meg. |  |
+| `UX.phoneChangeSteps.2` | Az első képernyőn: „Van már mentésem másik eszközről” → válaszd ki a fájlt, és add meg a PIN-kódodat. |  |
+| `UX.phoneChangeSteps.3` | Ha a PIN-kódot elfelejtetted, a helyreállító kóddal is visszaállíthatod; ekkor új PIN-kódot adsz meg. |  |
+| `UX.phoneChangeSteps.4` | Ha minden megvan az új telefonon, a régin a Beállítások → „Minden adat törlése” gombbal törölheted a naplót. |  |
+| `UX.secureScreen` | Képernyőkép-védelem |  |
+| `UX.secureScreenInfo` | Bekapcsolva a telefon nem enged képernyőképet készíteni az alkalmazásról, és a legutóbbi alkalmazások listájában sem látszik a tartalma. Hátrány: képernyőképet sem tudsz küldeni magadnak vagy a segítődnek. |  |
+| `UX.debugSignedWarning` | Ez a telepítés ideiglenes (fejlesztői) kulccsal készült. Egy későbbi kiadás nem települ fölé frissítésként: csere előtt készíts titkosított mentést, és a régi alkalmazás eltávolítása után azzal állítsd vissza a naplót. |  |
 | `UX.helplinesVerified` | Elérhetőségek utoljára ellenőrizve: 7 | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
 | `UX.offlineNote` | A próbálkozás-korlát csak a képernyőn beírt PIN-t védi. Aki a telefon tárolt adatait vagy egy mentésfájlt megszerzi, gépi erővel próbálgathat, ezért egy hosszabb jelszó sokkal biztonságosabb. |  |
 | `UX.welcomeInfo` | Mi ez az alkalmazás? |  |

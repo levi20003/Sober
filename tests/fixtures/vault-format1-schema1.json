@@ -1,0 +1,34 @@
+{
+  "pin": "2581-tavasz",
+  "recoveryCode": "K7M2-QW9D-3HXR-T5NB-8JCV-4PZF-6GYA-2EKS",
+  "record": {
+    "format": 1,
+    "revision": 7,
+    "slots": {
+      "pin": {
+        "kdf": {
+          "name": "PBKDF2",
+          "hash": "SHA-256",
+          "iterations": 100000,
+          "salt": "RYFsO51MIonepIYTXfiJYg=="
+        },
+        "iv": "J0hfacM7IBgGvTkW",
+        "wrapped": "VRCMRfKOB0nJDYR4OPCdAKyhNtNHuTJU8/3CWEBtwAWiwYxuiT3XBfj4GEh9GKml"
+      },
+      "recovery": {
+        "kdf": {
+          "name": "PBKDF2",
+          "hash": "SHA-256",
+          "iterations": 100000,
+          "salt": "9BA8LcsFwDa0uxo85KLFmg=="
+        },
+        "iv": "hA/dTRZTElAWb4wg",
+        "wrapped": "OBfywn5dBZkCQ7zAJcvUigVNyKlRgYJdegJh0PeXYhyEgdfPs7ebX+dfW/mZ9Cwu"
+      }
+    },
+    "payload": {
+      "iv": "7n5z1DXe0FnZ02ix",
+      "ct": "WVW/eLWRhqG1xMKyKu/bjZ+DfavIpG6l9rJkGUHfSyAsazp+OLA78sahySlLuP3jgKYE7Ldvdj/7afTQC6puBMkGwQy8NT+xOecTah+qhBoT7wmudTNiwt1Y6tR64VsAswUqmsAmZ4OS7nvttOjmXxd+mYswrvBDubXxnNcSNC7L2O+hl7QPt0JRl86Gtd5932Q7JCWlqNPnq/cHkvYI+b/Jcds/ZjEwCLYr5PQFZoqUetBbc2Ch2+czIiCWHrewc1+AyvJUPM6hyqkPouHjlO/wNQF6Dm3gPn7BatEbpgJV6Xmpc6XcmjUTHrhYrV7hhs5XSvJFA1CXaV24TYvxKZaWnKK5HLQSP7DarD5RPa4GTrEFIZ3DK5c3RSrQYKAIej1axg8Lmeb8XYMeAqUGAMUEyeuO7FOfK8VL//+eR8G844d6NzqTKgFIg1A+BxTVoThC48SUjrUOopUXAcCGbvlpn6Uj1fJwu1pmdIPcc5R88Pjw9PuoRAvNgjPlax8yrkQ8niDu1cGNPgsYONjk1VfkiOGIh7B0QpN36nR/c6ciPPbx0NDLOxptkoTLq7nMNP2Siv8xluqSI0pcoVJ9dYqFmGl4gJgkz84s0wr+YvEaM0dQFkYw9abSw1v5KT/F+SC1vQNvflOBV46zfA1X351CC15kmaXjz7oA4jFMw5PTqxBjzHnpbTIXGO3PYBjdQ58CJTbgLQd6jhJbRAnUwwkO0PMkbhDsPjbZDKekxqC0J/QTXIfRk927L1afMuSUa8OhekvLfIUHuCysJVkxYlErKMbOF9vH23eq2bKSR53ruTLnyfwg"
+    }
+  }
+}

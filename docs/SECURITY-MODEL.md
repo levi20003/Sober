@@ -154,3 +154,12 @@ Every path above is covered by `tests/store.test.js` and `tests/crypto.test.js`.
 A 2026. novemberi belső audit (`docs/audit/2026-11-biztonsagi-audit.md`) 3 magas és 6 közepes megállapítást javított (régi PIN a `vault.prev`-ben, próbálkozás-korlát megkerülése, üres új napló IndexedDB-időtúllépéskor, többfüles felülírás, exportálható kulcs, óra-manipuláció, iterációs DoS, import-korlátok, Trusted Types). Elfogadott maradék kockázatok: 4 jegyű PIN offline törhetősége (a felület kimondja), a meta-ban tárolt próbálkozás-korlát csak a képernyős PIN-t védi, visszagörgetés tárolóhoz írási hozzáféréssel (AAD nem köti a revíziót), az APK-ban nincs Trusted Types. Nyitott döntések: `docs/audit/ARGON2-DONTES.md`.
 
 > **Független audit: még nincs.** A Launch checklist „independent security review" pontját csak az auditor neve és dátuma mellett szabad kipipálni. **[EMBERI TEENDŐ]**
+
+## Mentés, háttérbe kerülés, képernyőkép (3. fázis)
+
+- Titkosított mentés v2 (SHA-256 ellenőrzőösszeg, verziók), ellenőrzés a mentés után; visszaállítás PIN-nel vagy helyreállító kóddal
+  (`docs/DATA-SCHEMA.md`). Az Android-app a mentést a rendszer „Mentés ide” ablakával vagy megosztással adja ki, vágólapra soha.
+- Az Android-app háttérbe kerülésekor (Activity `onPause`, `visibilitychange`) a napló azonnal zárolódik; böngészőben 60 másodpercnél
+  hosszabb háttérben töltött idő után, visszatéréskor.
+- FLAG_SECURE: kapcsoló a Beállításokban (Android), **alapból kikapcsolva**, amíg a termékgazda nem dönt (`docs/audit/ARGON2-DONTES.md`).
+- A konzolra csak `src/lib/log.js` írhat, idegen hibák üzenetét nem (az tartalmazhatja a beolvasott szöveget).

@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { listFiles, precacheList, contentVersion, renderServiceWorker } from './scripts/precache.js';
 
 const APP_VERSION = JSON.parse(readFileSync('package.json', 'utf8')).version;
+// A kiadási aláíró tanúsítvány lenyomata (nyilvános): az app ezzel ismeri fel a debug kulccsal aláírt telepítést.
+const RELEASE_CERT_SHA256 = readFileSync('android/signing-fingerprint.txt', 'utf8').split('\n').find((l) => /^[0-9a-f]{64}$/.test(l.trim())).trim();
 const CSP_META = /\s*<meta http-equiv="Content-Security-Policy"[^>]*>/;
 
 /** The dev server injects an inline React-refresh preamble, which the strict CSP forbids.
@@ -47,7 +49,7 @@ function serviceWorker() {
 
 export default defineConfig({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __BUILD_NUMBER__: JSON.stringify(Number(process.env.ANDROID_VERSION_CODE) || 0) },
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __BUILD_NUMBER__: JSON.stringify(Number(process.env.ANDROID_VERSION_CODE) || 0), __RELEASE_CERT_SHA256__: JSON.stringify(RELEASE_CERT_SHA256) },
   plugins: [react(), devOnlyRelaxCsp(), serviceWorker(), bundleReport()],
   build: {
     outDir: 'dist',

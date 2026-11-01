@@ -66,6 +66,52 @@ Ezután a GitHubon (**Settings → Secrets and variables → Actions → New rep
 - A CI minden build után kiírja az aláíró tanúsítvány SHA-256 ujjlenyomatát (`apksigner verify --print-certs`) és a kiadás leírásába is beleteszi. Két build ujjlenyomata egyezik, ha a frissítés települni fog.
 - Az első, állandó kulccsal aláírt APK telepítése előtt a telefonról **egyszer el kell távolítani** a korábbi, debug kulccsal aláírt változatot.
 
+### Kötelező kiadási kulcs és rögzített ujjlenyomat (3. fázis)
+
+- A **main ágon** a build **megáll** (`exit 1`), ha nincs `ANDROID_KEYSTORE_BASE64` titok: debug kulccsal aláírt kiadás nem kerülhet ki,
+  mert az nem települne a felhasználók telefonján lévő app fölé. PR-eken (és forkokon) továbbra is készülhet debug APK, figyelmeztetéssel.
+- A kiadási tanúsítvány SHA-256 ujjlenyomata az [`android/signing-fingerprint.txt`](../android/signing-fingerprint.txt) fájlban van
+  (nyilvános adat). A CI minden kiadási buildnél összeveti; eltérésnél a build megáll. Az app is ezt használja: ha az Android-app
+  más kulccsal van aláírva (debug telepítés), a Beállításokban figyelmeztet, hogy csere előtt titkosított mentést kell készíteni.
+- Az emulátoros próba a jelenlegi `android-latest` kiadás fölé telepíti az új buildet (`adb install -r`, a kiadási kulccsal újra aláírva).
+
+### A kulcs biztonsági mentése — [EMBERI TEENDŐ]
+
+1. A `release.jks` fájlt és a két jelszót **legalább két, egymástól független helyen** őrizd (pl. jelszókezelő + titkosított pendrive egy fiókban).
+   A repóban, e-mailben, chatben, felhőben titkosítatlanul soha.
+2. Évente egyszer ellenőrizd, hogy a mentett kulcsból az ujjlenyomat kijön:
+   `keytool -list -v -keystore release.jks -alias sober | grep SHA256` → egyezzen az `android/signing-fingerprint.txt` tartalmával
+   (a keytool kettőspontos, nagybetűs formában írja ki).
+3. A kulcsot és a jelszót AI-eszköznek (így Claude-nak sem) ne add oda; a CI a GitHub-titkokból éri el.
+
+### Ha a kulcs elveszett vagy kiszivárgott
+
+- **Elveszett:** a már telepített appokhoz többé nem adható ki frissítés. Új kulcsot kell létrehozni, frissíteni a négy titkot és az
+  `android/signing-fingerprint.txt` fájlt (külön PR, indoklással), majd **minden felhasználónak szólni**: készítsen titkosított mentést
+  (Beállítások → Adatok), távolítsa el a régi appot, telepítse az újat, és állítsa vissza a mentést. Az app a debug/idegen kulcsnál
+  ugyanezt jelzi a Beállításokban.
+- **Kiszivárgott:** ugyanez, sürgősen, mert más is aláírhat „frissítést”. A régi kiadásokat érdemes visszavonni.
+
+### Átállás debug kulcsról a kiadási kulcsra
+
+A debug kulccsal aláírt telepítés nem frissíthető a kiadási kulccsal aláírt verzióra (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, a telefonon:
+„Az alkalmazás nem települt”). Lépések a felhasználónak (az app Beállításaiban is megjelenik):
+1. Régi app: Beállítások → Adatok → **Titkosított mentés** (válassz helyet, vagy oszd meg magadnak).
+2. Régi app eltávolítása.
+3. Új (kiadási kulccsal aláírt) APK telepítése.
+4. Első képernyő: „Van már mentésem másik eszközről” → fájl + PIN (vagy helyreállító kód + új PIN).
+
+## IndexedDB és tárolási formátum frissítése
+
+- Az adatbázis neve `jozansag-szamlalo`, verziója `1`, egyetlen `kv` tárolóval (`src/storage/backends.js`). A titkosított rekord
+  formátuma (`format: 1`) és a visszafejtett adat sémája (`schemaVersion: 3`) **ettől független**: a séma a rekordon belül migrál
+  (`src/domain/schema.js`), az IndexedDB-verziót ezért eddig nem kellett emelni.
+- Ha mégis új tároló vagy index kell: emeld az `idb.open(DB_NAME, n)` verziót, és az `onupgradeneeded`-ben **csak hozzáadj**
+  (soha ne törölj tárolót, mert a régi napló benne van). A `vault` és `vault.prev` kulcsok maradjanak.
+- Visszalépés régebbi appra: ha a napló sémája újabb, mint amit az app ismer, az app **UNSUPPORTED** hibát ad („frissítsd az
+  alkalmazást, az adataid épek”), és nem ír semmit (`tests/backup.test.js` M5). Újabb rekordformátumnál ugyanígy.
+- Minden formátumváltásnál új fagyasztott fixture kell a `tests/fixtures/` mappába (`scripts/make-fixtures.mjs`), a régiek maradnak.
+
 ## Android: emulátoros próba
 
 A `.github/workflows/android.yml` `emulator-smoke` jobja egy API 35-ös emulátorra telepíti az APK-t, és a `scripts/android-smoke.mjs` a valódi WebView-t a Chrome DevTools protokollal vezérli. A próbabuild WebView-hibakeresése csak ebben a jobban van bekapcsolva (a kiadott APK-ban `webContentsDebuggingEnabled: false`). Hiba esetén a futás annotációi tartalmazzák a lépéseket és a logcat releváns sorait, a képernyőképek az `android-smoke` artifactban vannak.

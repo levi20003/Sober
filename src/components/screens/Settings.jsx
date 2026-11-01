@@ -4,11 +4,12 @@ import { lastVerified } from '../../domain/helplines.js';
 import { LOCALES } from '../../i18n/locale.js';
 import { CURRENCIES, CURRENCY_IDS } from '../../i18n/money.js';
 import { feedbackUrl } from '../../lib/feedback.js';
-import { readImportFile, safeJsonParse } from '../../lib/safeJson.js';
+import { readImportText } from '../../lib/safeJson.js';
+import { parseBackupText } from '../../domain/backupFile.js';
+import { BACKUP_ACCEPT, saveTextFile, shareTextFile, canShareFiles, setSecureScreen, signingFingerprint } from '../../lib/nativeFiles.js';
 import { toCsvExport, toJsonExport, parseJsonImport } from '../../domain/export.js';
 import { toDateKey } from '../../domain/dates.js';
-import { download } from '../../lib/format.js';
-import { userError } from '../../lib/errors.js';
+import { userError, friendlyError } from '../../lib/errors.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useHashRoute } from '../../hooks/useHashRoute.js';
@@ -23,7 +24,8 @@ import { isNativeShell } from '../../lib/platform.js';
 import { usePrefs } from '../../hooks/usePrefs.js';
 import { useUpdate } from '../../hooks/useUpdate.js';
 import { Page } from '../shell/Page.jsx';
-import { InfoButton } from '../Info.jsx';
+import { InfoButton, Sheet } from '../Info.jsx';
+import { RecoveryRestoreFields } from '../RestoreFields.jsx';
 
 
 const APK_PAGE = 'https://levi20003.github.io/Sober/telepites.html';
@@ -208,28 +210,38 @@ export function Settings({ onWipe, showRecoveryCode }) {
     const file = fd.get('file');
     const pasted = String(fd.get('paste') ?? '').trim();
     if (!pasted && !(file && file.size)) throw userError(MISC.backupFile);
-    const obj = pasted ? safeJsonParse(pasted) : await readImportFile(file);
-    const text = JSON.stringify(obj);
+    const obj = parseBackupText(pasted || await readImportText(file));
+    const code = String(fd.get('code') ?? '').trim();
+    if (code && fd.get('newpin') !== fd.get('newpin2')) throw userError(T.pinMismatch);
     if (!confirm(MISC.importConfirm)) return;
-    if (obj?.kind === 'encrypted-backup') await store.importEncryptedBackup(obj, fd.get('pin'));
-    else await store.save(parseJsonImport(text));
+    if (obj?.kind === 'encrypted-backup') {
+      await (code ? store.importEncryptedBackup(obj, code, { newPin: fd.get('newpin') }) : store.importEncryptedBackup(obj, fd.get('pin')));
+    } else await store.save(parseJsonImport(JSON.stringify(obj)));
     refresh();
     toast(MISC.backupRestored);
     navigate('#/');
   });
-  const plain = (fn) => () => { if (confirm(T.exportPlainWarning)) fn(); };
   const markBackup = () => store.setMeta({ lastBackup: new Date().toISOString(), backupSnoozeUntil: null }).then(loadMeta).catch(() => {});
-  const downloadBackup = async () => {
-    download(`jozansag-mentes-${stamp}.json`, JSON.stringify(await store.exportEncryptedBackup()), 'application/json');
-    await markBackup();
-  };
-  // Az Android-appban a WebView nem tölt le fájlt: a titkosított mentés szövegét a vágólapra másoljuk.
-  const copyBackup = async () => {
+  // Titkosított mentés (M1, M6): elkészítjük, VISSZAOLVASVA ellenőrizzük, majd a felhasználó által választott helyre
+  // mentjük (Android: a rendszer „Mentés ide” ablaka; böngésző: letöltés). Soha nem a vágólapra.
+  const [backupDone, setBackupDone] = useState(null);
+  const exportBackup = async () => {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(await store.exportEncryptedBackup()));
+      const text = JSON.stringify(await store.exportEncryptedBackup());
+      await store.verifyBackup(text);
+      const filename = `jozansag-mentes-${stamp}.json`;
+      const r = await saveTextFile({ filename, text, mime: 'application/json' });
+      if (r.where === 'cancelled') { toast(UX.backupCancelled); return; }
       await markBackup();
-      toast(UX.copyBackupDone);
-    } catch { toast(T.errGeneric, 'error'); }
+      setBackupDone({ ...r, filename, text });
+    } catch (err) { toast(friendlyError(err), 'error'); }
+  };
+  const plainExport = (filename, make, mime) => async () => {
+    if (!confirm(T.exportPlainWarning)) return;
+    try {
+      const r = await saveTextFile({ filename, text: make(), mime });
+      if (r.where !== 'cancelled') toast(UX.plainSavedNote);
+    } catch (err) { toast(friendlyError(err), 'error'); }
   };
   const setQuickPin = async (on) => {
     await store.setMeta(on ? { quickPin: true } : { quickPin: false, pinHint: null });
@@ -276,28 +288,31 @@ export function Settings({ onWipe, showRecoveryCode }) {
             <button type="submit" className="btn" disabled={recovery.busy}>{T.newRecovery}</button>
           </form>
         </details>
+        {native && <NativeSecurity />}
       </Group>
 
       <Group title={T.dataSection}>
         <div className="row-between">
-          {native
-            ? <button type="button" className="btn btn-primary" onClick={copyBackup}>{UX.copyBackup}</button>
-            : <button type="button" className="btn btn-primary" onClick={downloadBackup}>{T.exportEncrypted}</button>}
+          <button type="button" className="btn btn-primary" onClick={exportBackup}>{T.exportEncrypted}</button>
           <InfoButton title={T.exportEncrypted}><p>{T.exportEncryptedInfo}</p></InfoButton>
         </div>
-        <button type="button" className="btn" onClick={plain(() => download(`jozansag-naplo-${stamp}.csv`, toCsvExport(store.data), 'text/csv;charset=utf-8'))}>{T.exportCsv}</button>
-        <button type="button" className="btn" onClick={plain(() => download(`jozansag-naplo-${stamp}.json`, toJsonExport(store.data), 'application/json;charset=utf-8'))}>{T.exportJson}</button>
+        <button type="button" className="btn" onClick={plainExport(`jozansag-naplo-${stamp}.csv`, () => toCsvExport(store.data), 'text/csv;charset=utf-8')}>{T.exportCsv}</button>
+        <button type="button" className="btn" onClick={plainExport(`jozansag-naplo-${stamp}.json`, () => toJsonExport(store.data), 'application/json;charset=utf-8')}>{T.exportJson}</button>
         <details>
           <summary>{T.importEncrypted}<InfoButton title={T.importEncrypted}><p>{T.importEncryptedInfo}</p></InfoButton></summary>
           <form className="stack" onSubmit={importer.onSubmit} aria-busy={importer.busy || undefined}>
-            <Field label={MISC.importFileLabel}><input type="file" name="file" accept=".json,application/json" className="input" /></Field>
+            <Field label={MISC.importFileLabel}><input type="file" name="file" accept={BACKUP_ACCEPT} className="input" /></Field>
             <Field label={UX.pasteBackup}><textarea name="paste" className="input" rows={3} placeholder={UX.pasteBackupPlaceholder} /></Field>
             <Field label={MISC.importPinLabel}><input type="password" name="pin" className="input" autoComplete="off" /></Field>
+            <RecoveryRestoreFields />
             <button type="submit" className="btn" disabled={importer.busy}>{T.importEncrypted}</button>
           </form>
         </details>
+        <PhoneChange />
         <button type="button" className="btn btn-danger" onClick={async () => { if (confirm(T.deleteAllConfirm)) await onWipe(); }}>{T.deleteAll}</button>
       </Group>
+
+      {backupDone && <BackupDoneSheet done={backupDone} onClose={() => setBackupDone(null)} />}
 
       <Group title={SP.update}><UpdateSection /></Group>
 
@@ -308,5 +323,51 @@ export function Settings({ onWipe, showRecoveryCode }) {
         <p className="hint">{MISC.contentVersion(CONTENT_VERSION, REVIEW_STATUS)}</p>
       </Group>
     </Page>
+  );
+}
+
+/** A kész, ellenőrzött mentés: hová került, mi van benne, és továbbküldés máshová (M1). */
+function BackupDoneSheet({ done, onClose }) {
+  const toast = useToast();
+  const share = async () => {
+    try { await shareTextFile({ filename: done.filename, text: done.text, mime: 'application/json' }); } catch (err) { toast(friendlyError(err), 'error'); }
+  };
+  return (
+    <Sheet title={UX.backupDoneTitle} closeLabel={UX.close} onClose={onClose}
+      actions={canShareFiles() ? <button type="button" className="btn btn-primary" onClick={share}>{UX.backupShare}</button> : null}>
+      <p>{done.where === 'device' ? UX.backupSavedDevice(done.name) : UX.backupSavedDownload(done.name)}</p>
+      <p>{UX.backupEncryptedNote}</p>
+      <p className="hint">{UX.backupElsewhere}</p>
+    </Sheet>
+  );
+}
+
+/** Telefoncsere-útmutató (README „Telefoncsere” fejezet is). */
+function PhoneChange() {
+  return (
+    <details>
+      <summary>{UX.phoneChangeTitle}</summary>
+      <ol className="steps">{UX.phoneChangeSteps.map((s) => <li key={s}>{s}</li>)}</ol>
+    </details>
+  );
+}
+
+/** Csak az Android-appban: képernyőkép-védelem (FLAG_SECURE) és figyelmeztetés ideiglenes aláírókulcsnál. */
+function NativeSecurity() {
+  const [prefs, setPrefs] = usePrefs();
+  const [debugSigned, setDebugSigned] = useState(false);
+  useEffect(() => {
+    signingFingerprint().then((fp) => setDebugSigned(!!fp && fp !== __RELEASE_CERT_SHA256__)).catch(() => {});
+  }, []);
+  return (
+    <>
+      <div className="check">
+        <input type="checkbox" id="secure-screen" role="switch" checked={prefs.secureScreen}
+          onChange={(e) => { setPrefs({ secureScreen: e.target.checked }); setSecureScreen(e.target.checked).catch(() => {}); }} />
+        <label htmlFor="secure-screen">{UX.secureScreen}</label>
+        <InfoButton title={UX.secureScreen}><p>{UX.secureScreenInfo}</p></InfoButton>
+      </div>
+      {debugSigned && <p className="banner-warn" role="status">{UX.debugSignedWarning}</p>}
+    </>
   );
 }
