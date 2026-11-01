@@ -75,6 +75,11 @@ export async function firstRun(c, pin) {
   const step = async (n) => c.waitFor(`document.querySelector('[role=progressbar]')?.getAttribute('aria-valuenow') === '${n}'`, { what: `bevezető ${n}. lépés` });
   await waitHeading(c, 'Szia! Ez a te csendes, privát helyed.', 45_000);
   steps.push('bevezető 1. lépés megjelent');
+  // Az előzetes verzió közleménye felugrik (és benne is van a "Segítség most" gomb).
+  await c.waitFor(`document.querySelector('dialog.sheet[open]') && document.querySelector('dialog.sheet[open] a.btn-help')`, { what: 'előzetes verzió közlemény' });
+  await c.eval(`__s.click('dialog.sheet[open] button', 'Értem')`);
+  await c.waitFor(`!document.querySelector('dialog.sheet[open]')`, { what: 'közlemény bezárása' });
+  steps.push('előzetes verzió közlemény elfogadva');
   await next('Kezdjük'); await step(2);
   await c.eval(`__s.set(document.querySelector('input[name=nickname]'), 'Dani')`);
   await next(); await step(3);
@@ -127,8 +132,7 @@ export async function afterRestart(c, pin) {
   const steps = [];
   await waitHeading(c, 'Üdv újra', 45_000);
   steps.push('újraindítás után a zárolt képernyő jött (adat nem szivárog)');
-  await c.eval(`__s.set(__s.byLabel('PIN-kód', true), ${j(pin)})`);
-  await c.eval(`__s.click('button', 'Megnyitás')`);
+  await pressPin(c, pin);
   await c.waitFor(`document.querySelector('.hero-value')`, { timeoutMs: 60_000, what: 'feloldás utáni kezdőlap' });
   steps.push('PIN-nel feloldva');
   await c.eval(`__s.click('nav.tabbar a', 'Idővonal')`);
@@ -139,10 +143,15 @@ export async function afterRestart(c, pin) {
 }
 
 /** A wrong PIN must be rejected without destroying anything. */
+/** A számbillentyűzet gombjainak megnyomása (az utolsó számjegy után magától nyit). */
+async function pressPin(c, digits) {
+  await c.waitFor(`document.querySelector('.keypad')`, { what: 'PIN-billentyűzet' });
+  for (const d of digits) await c.eval(`[...document.querySelectorAll('.keypad .key')].find((b) => b.textContent.trim() === ${j(d)}).click()`);
+}
+
 export async function wrongPinThenRight(c, pin) {
   await waitHeading(c, 'Üdv újra', 45_000);
-  await c.eval(`__s.set(__s.byLabel('PIN-kód', true), '99999')`);
-  await c.eval(`__s.click('button', 'Megnyitás')`);
+  await pressPin(c, '99999');
   await c.waitFor(`document.body.textContent.includes('Ez nem a megfelelő PIN-kód')`, { timeoutMs: 60_000, what: 'hibás PIN visszajelzés' });
   return ['hibás PIN elutasítva, adat érintetlen'];
 }

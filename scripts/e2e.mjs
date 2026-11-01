@@ -19,6 +19,7 @@ const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); retur
 async function onboard(p, { pin, days = 0, cost = '', nick = 'Dani', screenshots = null } = {}) {
   const next = (name = 'Tovább') => p.getByRole('button', { name, exact: true }).click();
   await p.getByRole('heading', { name: 'Szia! Ez a te csendes, privát helyed.' }).waitFor();
+  await dismissPreview(p);
   await next('Kezdjük');
   await p.locator('input[name=nickname]').fill(nick); await next();
   await p.locator('label.choice', { hasText: 'Alkohol' }).click(); await next();
@@ -38,9 +39,22 @@ async function onboard(p, { pin, days = 0, cost = '', nick = 'Dani', screenshots
   await p.locator('nav.tabbar').waitFor();
   return code;
 }
+/** Összecsukható csoport kinyitása (Beállítások, Megtakarítás). */
+const openGroup = async (p, title) => {
+  const g = p.locator('details.group', { has: p.locator('summary', { hasText: title }) }).first();
+  if (!(await g.evaluate((e) => e.open))) await g.locator('> summary').click();
+};
+/** Az első indításkor felugró "előzetes verzió" közlemény elfogadása. */
+const dismissPreview = async (p) => {
+  const b = p.locator('dialog.sheet[open]').getByRole('button', { name: 'Értem' });
+  if (await b.isVisible({ timeout: 2500 }).catch(() => false)) await b.click();
+};
 const dismissCelebration = async (p) => {
   const b = p.getByRole('button', { name: 'Köszönöm' });
   if (await b.isVisible({ timeout: 1500 }).catch(() => false)) await b.click();
+  // A régi napló mentés-emlékeztetője (esedékes, ha régen volt mentés): halasztás.
+  const later = p.locator('dialog.sheet[open]').getByRole('button', { name: 'Később' });
+  if (await later.isVisible({ timeout: 1500 }).catch(() => false)) await later.click();
 };
 const tab = (p, name) => p.locator('nav.tabbar').getByRole('link', { name, exact: true }).click();
 
@@ -57,6 +71,11 @@ const step = (name) => console.log('✓', name);
 try {
   await page.goto(BASE);
   await page.getByRole('heading', { name: 'Szia! Ez a te csendes, privát helyed.' }).waitFor();
+  // Az előzetes verzió közleménye felugrik, és benne is ott a "Segítség most" gomb.
+  const notice = page.locator('dialog.sheet[open]');
+  await notice.getByRole('heading', { name: 'Előzetes verzió' }).waitFor();
+  assert.ok(await notice.getByRole('link', { name: 'Most segítségre van szükségem' }).isVisible(), 'help is reachable inside the notice');
+  await dismissPreview(page);
   await shot('01-onboarding');
 
   // Crisis overlay: one tap from the very first screen, before any data exists.
@@ -199,6 +218,7 @@ try {
 
   // Daily cost: "from now on" keeps the past; "correct everything" re-values on purpose
   await tab(page, 'Megtakarítás');
+  await openGroup(page, 'Megtakarítás');
   await page.getByLabel('Új napi összeg (Ft)').fill('3 000');
   await page.getByRole('button', { name: 'Összeg mentése' }).click();
   await page.getByText('A korábbi napok értéke nem változott.').waitFor();
@@ -235,7 +255,7 @@ try {
   await page.getByRole('button', { name: 'Zárolás' }).click();
   await page.getByLabel('PIN-kód', { exact: true }).fill('rossz-pin-00');
   await page.getByRole('button', { name: 'Megnyitás' }).click();
-  await page.getByText('Hibás PIN-kód').waitFor({ timeout: 20000 });
+  await page.getByText('Ez nem a megfelelő PIN-kód.').waitFor({ timeout: 20000 });
   await page.getByLabel('PIN-kód', { exact: true }).fill(PIN);
   await page.getByRole('button', { name: 'Megnyitás' }).click();
   await page.getByRole('heading', { name: 'Beállítások' }).first().waitFor({ timeout: 20000 }); // returns to where the user was
@@ -243,6 +263,7 @@ try {
 
   // CSV export with BOM
   await tab(page, 'Beállítások');
+  await openGroup(page, 'Adataid');
   const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /Export CSV/ }).click()]);
   const csv = await readFile(await dl.path(), 'utf8');
   assert.ok(csv.startsWith('﻿'));
@@ -278,11 +299,12 @@ try {
   await page.locator('.hero-value').waitFor({ timeout: 20000 });
   await dismissCelebration(page);
   await tab(page, 'Beállítások');
-  const [bk] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Titkosított mentés letöltése' }).click()]);
+  await openGroup(page, 'Adataid');
+  const [bk] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Titkosított mentés letöltése', exact: true }).click()]);
   const backupPath = await bk.path();
   const backupText = await readFile(backupPath, 'utf8');
   assert.ok(!backupText.includes('megtervezem') && backupText.includes('encrypted-backup'));
-  await page.locator('.card-warn').getByRole('button', { name: 'Minden adat törlése' }).click();
+  await page.getByRole('button', { name: 'Minden adat törlése' }).click();
   await page.getByRole('heading', { name: 'Szia! Ez a te csendes, privát helyed.' }).waitFor({ timeout: 10000 });
   await page.getByText('Minden adat törölve.').waitFor();
   const left = await page.evaluate(() => new Promise((res) => {
@@ -306,6 +328,7 @@ try {
   await tab(page, 'Beállítások');
   await page.getByRole('button', { name: 'Zárolás' }).click();
   assert.equal(await page.getByText('A mentett napló sérültnek tűnik').isVisible(), false, 'no false corruption warning');
+  await page.getByRole('button', { name: 'Segítség a belépéshez' }).click();
   await page.getByText('Nincs meg sem a PIN-kód, sem a helyreállító kód').click();
   await page.getByLabel(/írd be nagybetűkkel/).fill('torles');
   await page.getByRole('button', { name: /végleges törlése és újrakezdés/ }).click();
@@ -334,13 +357,13 @@ try {
   for (const secret of ['LS_TITOK', '3333', '7302']) assert.ok(!ls.includes(secret), secret);
   assert.equal(await p2.locator('.banner-warn').count(), 0, 'localStorage persists: no volatile warning');
   await p2.reload();
-  await p2.getByLabel('PIN-kód', { exact: true }).fill('7302');
-  await p2.getByRole('button', { name: 'Megnyitás' }).click();
+  await p2.locator('.keypad').waitFor();
+  await p2.keyboard.type('7302'); // a számbillentyűzet az utolsó számjegy után magától nyit
   await p2.locator('.hero-value').waitFor({ timeout: 20000 });
   // Leaving and coming back (back/forward cache or reload) must never show decrypted data.
   await p2.goto('about:blank');
   await p2.goBack();
-  await p2.getByLabel('PIN-kód', { exact: true }).waitFor();
+  await p2.locator('.keypad').waitFor();
   assert.equal(await p2.locator('.hero-value').count(), 0);
   await ctx2.close();
   step('IndexedDB unavailable → encrypted vault lives in localStorage and survives reload');

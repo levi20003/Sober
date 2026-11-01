@@ -33,11 +33,13 @@ export function SavingsPage() {
           <ul className="cost-history">{months.map((m) => <li key={m.month}>{SP.monthRow(m.label, m.days, formatHuf(m.amountHuf))}</li>)}</ul>
         </section>
       )}
-      <section className="card">
-        <h2>{T.savingsSection}</h2>
-        <CostEditor />
-        <GoalEditor />
-      </section>
+      <details className="card group">
+        <summary><h2>{T.savingsSection}</h2></summary>
+        <div className="stack group-body">
+          <CostEditor />
+          <GoalEditor />
+        </div>
+      </details>
     </Page>
   );
 }

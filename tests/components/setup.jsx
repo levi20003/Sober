@@ -10,6 +10,7 @@ import { MemoryBackend } from '../../src/storage/backends.js';
 import { VaultStore } from '../../src/storage/store.js';
 import { createInitialData } from '../../src/domain/schema.js';
 import { addDays, toDateKey } from '../../src/domain/dates.js';
+import { resetPrefsCache } from '../../src/hooks/usePrefs.js';
 
 // jsdom's window.crypto may lack SubtleCrypto; the vault needs the real Web Crypto.
 if (!globalThis.crypto?.subtle) Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
@@ -28,8 +29,17 @@ export async function makeVault({ startDaysAgo = 30, dailyCostHuf = 2500 } = {})
   return { vault, backend };
 }
 
-export function renderWithApp(ui, { vault, auth = { subscribe: () => () => {}, getState: () => ({}) } } = {}) {
+const IDLE_STATE = Object.freeze({});
+
+/** Az egyszeri tudnivalók (előzetes verzió) "már láttam" jelzése, hogy ne takarják a vizsgált képernyőt. */
+export function markNoticesSeen() {
+  localStorage.setItem('jsz-ui', JSON.stringify({ seen: ['preview'] }));
+  resetPrefsCache();
+}
+
+export function renderWithApp(ui, { vault, auth = { subscribe: () => () => {}, getState: () => IDLE_STATE } } = {}) {
   window.location.hash = '';
+  markNoticesSeen();
   const router = createHashRouter(window);
   const tree = (
     <AuthContext.Provider value={auth}>

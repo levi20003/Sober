@@ -4,6 +4,7 @@ import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { Icon } from '../icons/Icon.jsx';
+import { TitleWithInfo } from '../Info.jsx';
 import { Page } from '../shell/Page.jsx';
 
 export function Reasons() {
@@ -22,8 +23,7 @@ export function Reasons() {
   return (
     <Page title={TOOLS.reasonsTitle}>
       <section className="card tone tone-butter">
-        <h2>{TOOLS.reasonsTitle}</h2>
-        <p>{TOOLS.reasonsText}</p>
+        <TitleWithInfo title={TOOLS.reasonsTitle} info={<p>{TOOLS.reasonsText}</p>} />
         <form className="row" onSubmit={add}>
           <input className="input" aria-label={TOOLS.reasonLabel} placeholder={TOOLS.reasonLabel} value={text} maxLength={140} onChange={(e) => setText(e.target.value)} />
           <button type="submit" className="btn btn-primary">{TOOLS.reasonAdd}</button>

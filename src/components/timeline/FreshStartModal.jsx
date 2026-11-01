@@ -25,10 +25,8 @@ export function FreshStartSummary({ effects, onDone }) {
         <p className="phase-days">{T.freshClosed(closedPhase.days)}</p>
         <p className="hint">{phaseDatesText(closedPhase, '')}</p>
         <p className="hero-sub"><strong>{T.freshTotal(totalAfter)}</strong></p>
-        <p className="hint">{T.totalSoberHint}</p>
       </section>
       {note && <p className="card card-soft">{note}</p>}
-      {closedPhase.lessons.length > 0 && <p className="hint">{T.freshLessonSaved}</p>}
       {openedPhase.intentions.length > 0 && (
         <section className="card card-soft">
           <p className="stat-label">{T.freshIntention}</p>

@@ -24,7 +24,6 @@ export function Gratitude() {
     <Page title={TOOLS.gratitudeTitle}>
       <section className="card tone tone-butter">
         <h2>{TOOLS.gratitudeTitle}</h2>
-        <p>{TOOLS.gratitudeText}</p>
         <form className="stack" onSubmit={save.onSubmit} aria-busy={save.busy || undefined}>
           {[1, 2, 3].map((n) => <Field key={n} label={TOOLS.gratitudeLabel(n)}><input name={`g${n}`} className="input" maxLength={140} autoComplete="off" /></Field>)}
           <button type="submit" className="btn btn-primary" disabled={save.busy}>{TOOLS.gratitudeSave}</button>

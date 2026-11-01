@@ -94,7 +94,6 @@ test('<TimelineView />: phase cards, lesson on the closed phase, never a bare "0
   assert.ok(within(closed).getByText('Pénteken figyelek.'));
   assert.ok(within(closed).getByText('Megspórolva ebben a szakaszban: 75 000 Ft'));
   assert.ok(!screen.queryByText('0 nap'), 'no bare "0 nap" anywhere');
-  assert.ok(screen.getByText('Egy megcsúszás sem törli: minden józan napod megmarad.'));
 });
 
 test('quick log: two taps (card → Rögzítés) store a full, encrypted entry', async () => {

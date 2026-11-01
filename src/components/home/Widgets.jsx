@@ -12,6 +12,7 @@ import { useCountUp } from '../../hooks/useCountUp.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { Confetti } from '../Confetti.jsx';
+import { InfoButton } from '../Info.jsx';
 import { Icon } from '../icons/Icon.jsx';
 import { MoodFigure } from '../mood/MoodFigures.jsx';
 import { Donut, MoodBar, ProgressRing, Sparkline } from '../charts/Charts.jsx';
@@ -36,7 +37,7 @@ export function DayCounter({ stats, phases, goal, freshToday, currentSince }) {
   return (
     <section className="card hero tone tone-lavender card-rel" aria-label={HOME.totalLabel}>
       {burst && <Confetti count={28} />}
-      <p className="stat-label">{HOME.totalLabel}</p>
+      <div className="row-between"><p className="stat-label">{HOME.totalLabel}</p><InfoButton title={HOME.totalLabel}><p>{HOME.totalSub}</p></InfoButton></div>
       <ProgressRing ratio={ratio} size={250} stroke={14} color="var(--accent)" label={goal ? HOME.goalProgress(goal.shown, goal.goal) : T.days(total)}>
         <p className="hero-value" data-total={total}>{shown}</p>
         <p className="stat-label">{MISC.dayWord}</p>
@@ -44,7 +45,6 @@ export function DayCounter({ stats, phases, goal, freshToday, currentSince }) {
       <span className="visually-hidden">{`${HOME.totalLabel}: ${T.days(total)}`}</span>
       <p className="hero-sub">{freshToday ? HOME.newPhase : T.heroCurrent(stats.currentPhaseDays, currentSince)}</p>
       {stats.phaseCount > 1 && <TimelineBar phases={phases} totalSoberDays={total} />}
-      <p className="hint">{HOME.totalSub}</p>
     </section>
   );
 }

@@ -115,3 +115,39 @@
 .empty { text-align: center; padding: 24px 12px; }
 .empty .mascot { display: block; margin: 0 auto 8px; }
 .update-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--tone-sky); color: var(--card-ink); border-radius: var(--r-tile); padding: 12px 16px; margin: 10px 0; font-weight: 600; }
+
+/* Egyszerűsített felület: "i" gomb, felugró lap, belépés */
+.info-btn { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(43, 37, 64, .08); color: inherit; display: inline-grid; place-items: center; cursor: pointer; position: relative; }
+.info-btn::after { content: ""; position: absolute; inset: -6px; } /* 48 px-es érintési felület */
+.info-btn:active { transform: scale(.92); }
+.title-info { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.title-info > :first-child { margin: 0; }
+.sheet h2 { margin: 4px 0 10px; font-size: 1.35rem; }
+.sheet-body p { margin: 0; line-height: 1.5; }
+.sheet .actions { margin-top: 16px; }
+
+.lock { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); max-width: 420px; margin: 0 auto; text-align: center; }
+.lock h1 { margin: 0; font-size: 1.7rem; }
+.pin-dots { display: flex; gap: 14px; justify-content: center; min-height: 22px; }
+.pin-dots i { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--accent); background: transparent; transition: background-color 120ms var(--ease-soft), transform 120ms var(--ease-spring); }
+.pin-dots i.on { background: var(--accent); transform: scale(1.1); }
+.pin-dots.shake { animation: pin-shake 360ms var(--ease-soft); }
+@keyframes pin-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+.keypad { display: grid; grid-template-columns: repeat(3, 76px); gap: 14px; justify-content: center; }
+.key { width: 76px; height: 76px; border-radius: 50%; border: 0; font: inherit; font-size: 1.8rem; font-weight: 700; background: var(--surface-2); color: var(--text); cursor: pointer; display: grid; place-items: center; transition: transform 100ms var(--ease-soft); }
+.key:active { transform: scale(.9); }
+.key.quiet { background: transparent; }
+.lock-status { min-height: 1.5em; margin: 0; font-weight: 600; color: var(--danger); }
+.lock .secret-row { display: flex; gap: 8px; width: 100%; }
+.lock .secret-row .input { flex: 1; font-size: 1.2rem; text-align: center; }
+.lock .btn-big { width: 100%; }
+
+.group { padding: 0; }
+.group > summary { list-style: none; cursor: pointer; padding: 16px 18px; min-height: 56px; display: flex; align-items: center; }
+.group > summary::-webkit-details-marker { display: none; }
+.group > summary h2 { margin: 0; flex: 1; font-size: 1.15rem; }
+.group > summary::after { content: ""; width: 10px; height: 10px; border-right: 3px solid var(--muted); border-bottom: 3px solid var(--muted); transform: rotate(45deg); transition: transform 160ms var(--ease-soft); margin-left: 8px; }
+.group[open] > summary::after { transform: rotate(-135deg); }
+.group-body { padding: 0 18px 18px; }
+.legend-info { display: flex; align-items: center; gap: 8px; }
+details > summary .info-btn { margin-left: 8px; }

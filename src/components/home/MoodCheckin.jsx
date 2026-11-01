@@ -67,7 +67,6 @@ export function MoodCheckin({ onSaved }) {
   return (
     <section className="card tone tone-pink" aria-labelledby="mood-h">
       <h2 id="mood-h">{HOME.moodTitle}</h2>
-      <p className="hint">{HOME.moodHint}</p>
       <MoodStrip value={mood} onChange={setMood} />
       {mood && (
         <form className="stack" onSubmit={save.onSubmit} aria-busy={save.busy || undefined}>

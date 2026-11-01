@@ -4,6 +4,7 @@ import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { Icon } from '../icons/Icon.jsx';
+import { InfoButton } from '../Info.jsx';
 
 export function Challenges() {
   const { snapshot, dispatch } = useTimeline();
@@ -17,7 +18,7 @@ export function Challenges() {
   return (
     <section className="card tone tone-mint" aria-labelledby="ch-h">
       <div className="row-between">
-        <h2 id="ch-h">{TOOLS.challengesTitle}</h2>
+        <div className="title-info"><h2 id="ch-h">{TOOLS.challengesTitle}</h2><InfoButton title={TOOLS.challengesTitle}><p>{TOOLS.challengeTotal(stats.totalDays)}</p><p>{TOOLS.challengeSkipNote}</p></InfoButton></div>
         <span className="flame" data-flame={stats.flame} aria-label={TOOLS.challengeStreak(stats.last7)}>
           <Icon name="flame" size={26} />{stats.last7}
         </span>
@@ -32,8 +33,6 @@ export function Challenges() {
           </div>
         );
       })}
-      <p className="hint">{TOOLS.challengeTotal(stats.totalDays)}</p>
-      <p className="hint">{TOOLS.challengeSkipNote}</p>
     </section>
   );
 }

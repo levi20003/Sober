@@ -2,6 +2,10 @@
 
 Status: v0.2.0 draft, 2026-10-29. Not externally audited yet. An independent review is a launch blocker (see [Launch checklist](#launch-checklist)).
 
+## Quick PIN keypad (plaintext length hint)
+
+To show a number pad that opens by itself after the last digit, the unencrypted `meta` record stores `pinHint` = the number of digits of a **digits-only** PIN (never the PIN). It tells an attacker with storage access only that the PIN is 4–12 digits, which they could assume anyway; the PBKDF2 cost (600,000 rounds) and the wrong-PIN wait are unchanged. It can be switched off in Settings (`quickPin: false` also clears it). The same record holds `lastBackup` / `backupSnoozeUntil` (dates for the backup reminder).
+
 ## Goals and non-goals
 
 | | |

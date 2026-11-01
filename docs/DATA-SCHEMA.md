@@ -14,6 +14,7 @@ Source of truth: [src/domain/schema.js](../src/domain/schema.js). Validation run
     triggers?: preset ids,  customTriggers?: ≤10 × ≤30 chars,
     reasons?: ≤12 × ≤140 chars,        // "Az okaim": shown on the crisis page and in urge surfing
     lastCelebration?: 0..3650,          // highest milestone already celebrated
+    trustedContact?: { name: 1..40, phone: '+?digits/spaces, 3..20' },   // shown on the crisis page when the journal is already unlocked
   },
   settings: {
     costHistory: [{ from: 'YYYY-MM-DD', dailyCostHuf: 0..1_000_000 }],  // effective-dated, strictly ascending

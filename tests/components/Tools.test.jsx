@@ -54,5 +54,7 @@ test('daily mini challenges: completing one does not reset or lose anything, the
   await click(buttons[0]);
   await waitFor(() => assert.equal(screen.getAllByRole('button', { name: 'Megcsináltam' }).length, 2));
   assert.equal(vault.data.events.filter((e) => e.type === 'challenge').length, 1);
-  assert.ok(container.textContent.includes('Ha kihagysz egy napot, a sorozat nem törlődik'));
+  assert.ok(!container.textContent.includes('Ha kihagysz egy napot'), 'the long note is not on the page');
+  fireEvent.click(screen.getByRole('button', { name: /Tudnivalók: Mai mini-kihívások/ }));
+  assert.ok(document.body.textContent.includes('Ha kihagysz egy napot, a sorozat nem törlődik'), 'it is in the pop-up');
 });

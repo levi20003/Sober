@@ -18,7 +18,7 @@ Csak azt, amit te magad beírsz:
 |---|---|---|
 | Becenév, mitől maradsz távol, célod, nehéz helyzeteid, okaid, hangulataid, hála-jegyzeteid, leveleid, az út kezdőnapja, napi költség és annak változásai, megtakarítási cél, automatikus zárolás ideje | az eszközöd böngészőjében (IndexedDB, vagy ha az nem érhető el: localStorage) | **igen** |
 | Napi bejelentkezések (hangulat, alvás, sóvárgás), nehéz pillanatok, megcsúszások, tanulságok, jegyzetek | ugyanott | **igen** |
-| Sikertelen feloldási kísérletek száma és a várakozási idő vége | ugyanott | nem – ezek nem személyes tartalmak, de a zároláshoz olvashatónak kell lenniük |
+| Sikertelen feloldási kísérletek száma és a várakozási idő vége; a számjegyes PIN hossza (a gyors billentyűzethez, a Beállításokban kikapcsolható); a legutóbbi mentés napja | ugyanott | nem – ezek nem személyes tartalmak, de a zároláshoz olvashatónak kell lenniük. A PIN maga soha nem tárolódik |
 | Emlékeztető be/ki, időpont, utolsó megjelenés napja | ugyanott | nem – az értesítést küldő háttérfolyamat nem tudja visszafejteni a naplót |
 
 Amit **nem** tárolunk és nem gyűjtünk: nevet, e-mailt, telefonszámot, helyadatot, eszközazonosítót, IP-címet, használati statisztikát.

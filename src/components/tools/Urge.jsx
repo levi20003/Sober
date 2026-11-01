@@ -81,7 +81,6 @@ export function Urge() {
           <button type="button" className="btn btn-primary" onClick={() => answer('passed')}>{TOOLS.urgePassed}</button>
           <button type="button" className="btn" onClick={() => answer('still')}>{TOOLS.urgeStill}</button>
         </div>
-        <p className="hint center">{T.disclaimer}</p>
       </section>
     </Page>
   );

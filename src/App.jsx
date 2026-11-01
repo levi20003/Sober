@@ -25,6 +25,7 @@ import { AppBar } from './components/shell/AppBar.jsx';
 import { TabBar } from './components/shell/TabBar.jsx';
 import { QuickAddSheet } from './components/shell/QuickAddSheet.jsx';
 import { FreshStartModal } from './components/timeline/FreshStartModal.jsx';
+import { PreviewNotice } from './components/home/Notices.jsx';
 
 const SUBTITLES = { '#/eszkozok/hullam': TOOLS.urgeTitle, '#/eszkozok/hala': TOOLS.gratitudeTitle, '#/eszkozok/level': TOOLS.letterTitle, '#/eszkozok/okok': TOOLS.reasonsTitle,
   '#/rogzites/bejelentkezes': T.actionCheckin, '#/rogzites/nehez-pillanat': T.triggerTitle, '#/rogzites/jegyzet': T.noteTitle };
@@ -137,6 +138,7 @@ function Shell() {
 
   // The crisis overlay reads journal events only if the journal is ALREADY open.
   const crisisEvents = useMemo(() => (crisis.isOpen && unlocked ? auth.store.data.events : []), [crisis.isOpen, unlocked, auth.store]);
+  const crisisTrusted = useMemo(() => (crisis.isOpen && unlocked ? auth.store.data.profile.trustedContact ?? null : null), [crisis.isOpen, unlocked, auth.store]);
   const crisisReasons = useMemo(() => (crisis.isOpen && unlocked ? auth.store.data.profile.reasons ?? [] : []), [crisis.isOpen, unlocked, auth.store]);
 
   let screen;
@@ -159,7 +161,8 @@ function Shell() {
     <>
       {state.status !== AuthStatus.INITIALIZING && !state.persistent && <p className="banner-warn" role="status">{T.storageVolatile}</p>}
       {screen}
-      {crisis.isOpen && <CrisisOverlay onClose={crisis.close} events={crisisEvents} reasons={crisisReasons} />}
+      {crisis.isOpen && <CrisisOverlay onClose={crisis.close} events={crisisEvents} reasons={crisisReasons} trusted={crisisTrusted} />}
+      {state.status !== AuthStatus.INITIALIZING && !crisis.isOpen && <PreviewNotice />}
     </>
   );
 }

@@ -26,7 +26,6 @@ export function TimelineBody() {
       <section className="card">
         <h2>{T.timelineTitle}</h2>
         <p className="hero-sub">{`${T.totalSober}: `}<strong>{T.days(stats.totalSoberDays)}</strong></p>
-        <p className="hint">{T.totalSoberHint}</p>
         <TimelineBar phases={phases} totalSoberDays={stats.totalSoberDays} />
       </section>
       {empty && <p className="card">{T.journalEmpty}</p>}
