@@ -15,7 +15,7 @@
 
 **1. Megbízhatóság és adatbiztonság**
 - **Fájlletöltés az APK-ban**: a titkosított mentés és a CSV/JSON export az APK-ban valószínűleg nem tölt le (WebView). Megoldás: natív letöltéskezelő vagy a Capacitor Share/Filesystem; erre külön döntés kell, mert natív bővítmény.
-- **Mentés-emlékeztető**: havonta egy gyengéd jelzés, hogy készíts titkosított mentést. Ez védi a felhasználót az elveszett telefontól.
+- ~~Mentés-emlékeztető~~ ✔ kész (v0.9: felugró, halasztható; APK-ban a mentés a vágólapra másolódik).
 - **Importteszt az emulátoron** (a fájlválasztós visszaállítást az automatikus próba nem fedi).
 
 **2. Diszkréció (sokaknál ez a döntő)**
@@ -26,7 +26,7 @@
 **3. Termékötletek**
 - **Android kezdőképernyő-widget** a napszámmal.
 - **„Segítség most" a kezdőképernyőről** egy koppintással (ikon-gyorsmenü már van a webes változatnál, Androidra is érdemes).
-- **Megbízható személy**: egy mentett név és szám, akit a krízisoldalról egy koppintással lehet hívni.
+- ~~Megbízható személy~~ ✔ kész (v0.9: Beállítások → Rólad; a krízisoldalon, feloldott naplónál).
 - **Hetente rövid visszatekintés** („Mi segített a héten?").
 
 **4. Akadálymentesség és minőség**
