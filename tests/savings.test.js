@@ -215,13 +215,13 @@ test('migration v1 → v2 keeps every savings figure and all settings', () => {
   assert.throws(() => validateData({ ...V1, schemaVersion: 0 }), /Ismeretlen adatverzió/);
 });
 
-test('an existing encrypted v1 vault unlocks, migrates and re-saves as v2', async () => {
+test('an existing encrypted v1 vault unlocks, migrates and re-saves as the current version', async () => {
   const backend = new MemoryBackend();
   const dek = await generateDek();
   await backend.putMany({ vault: { format: VAULT_FORMAT, revision: 7, slots: { pin: await createKeySlot(dek, '2581', 1000) }, payload: await encryptPayload(dek, V1) } });
   const store = new VaultStore(backend, { pinIterations: 1000, recoveryIterations: 1000, minIterations: 1000 });
   await store.unlock('2581');
-  assert.equal(store.data.schemaVersion, 2);
+  assert.equal(store.data.schemaVersion, SCHEMA_VERSION);
   const tl = createTimelineStore(store, { now: () => at('2026-02-01') });
   assert.equal(tl.getSnapshot().savings.total, 30 * 2500);
   await tl.dispatch({ type: Actions.SET_DAILY_COST, payload: { amountHuf: 3000 } });

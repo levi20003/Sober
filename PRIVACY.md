@@ -16,7 +16,7 @@ Csak azt, amit te magad beírsz:
 
 | Adat | Hol van? | Titkosítva? |
 |---|---|---|
-| Az út kezdőnapja, napi költség és annak változásai, megtakarítási cél, automatikus zárolás ideje | az eszközöd böngészőjében (IndexedDB, vagy ha az nem érhető el: localStorage) | **igen** |
+| Becenév, mitől maradsz távol, célod, nehéz helyzeteid, okaid, hangulataid, hála-jegyzeteid, leveleid, az út kezdőnapja, napi költség és annak változásai, megtakarítási cél, automatikus zárolás ideje | az eszközöd böngészőjében (IndexedDB, vagy ha az nem érhető el: localStorage) | **igen** |
 | Napi bejelentkezések (hangulat, alvás, sóvárgás), nehéz pillanatok, megcsúszások, tanulságok, jegyzetek | ugyanott | **igen** |
 | Sikertelen feloldási kísérletek száma és a várakozási idő vége | ugyanott | nem – ezek nem személyes tartalmak, de a zároláshoz olvashatónak kell lenniük |
 | Emlékeztető be/ki, időpont, utolsó megjelenés napja | ugyanott | nem – az értesítést küldő háttérfolyamat nem tudja visszafejteni a naplót |

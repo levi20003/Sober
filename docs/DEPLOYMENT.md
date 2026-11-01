@@ -19,6 +19,10 @@ Note on CSP: the HTTP header allows `connect-src 'self'` because the **service w
 3. Dependency updates: only exact versions published ≥ 14 days earlier; keep the `overrides` entry for `vite` in sync; review `npm audit`.
 4. Deploy from a signed git tag. Publish SHA-256 hashes of the released files so the community can verify what is served.
 
+### Hogyan jut el a frissítés a felhasználókhoz (PWA)
+
+A build `sw.js`-e tartalom-hash alapú verziót kap. A telepített alkalmazás indításkor, előtérbe kerüléskor és óránként lekéri a saját `sw.js`-ét (ugyanarról a forrásról, nincs külső hívás); ha az eltér, az új worker letölti az új fájlokat, és az alkalmazás „frissítés kész” állapotot jelez (`src/lib/updateManager.js`). Zárolt képernyőn az oldal magától újratölt, egyébként a felhasználó a „Frissítés” gombbal alkalmazza. Az **Android-APK** nem frissíti magát: új APK-t kell telepíteni a régi fölé (azonos kulcs, nagyobb verziókód).
+
 ## Android APK
 
 The same `dist/` is packaged as a native Android app with [Capacitor](https://capacitorjs.com/) (`capacitor.config.json`, `android/`). The web files ship inside the APK and are served from the device, so the app works offline from the first launch. The Capacitor packages are **dev dependencies only**: nothing from them is imported by the web bundle.

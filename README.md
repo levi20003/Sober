@@ -17,11 +17,17 @@ React 19 PWA built with Vite. The shipped app has **3 runtime packages** (react,
 ```bash
 npm ci            # exact versions from package-lock.json
 npm run dev       # Vite dev server (CSP relaxed for hot reload only)
-npm test          # Vitest: 152 tests (logic + jsdom component tests, offline crisis, property tests)
+npm test          # Vitest: 233 tests (logic, jsdom components, onboarding, navigation, contrast, update manager, offline crisis)
 npm run build     # → dist/ (CSP kept, service worker generated with a content-hash version)
 npm run serve     # serve dist/ with production security headers on http://127.0.0.1:8080
-npm run e2e       # build + 20-step end-to-end run in real Chromium (Playwright)
+npm run e2e       # build + end-to-end run in real Chromium (Playwright): onboarding, five tabs, offline, lock, backup
 ```
+
+## Felület (v0.7)
+
+Játékos, színes, mégis nyugodt felület, inline SVG-vel és rendszerbetűvel (nincs új futásidejű függőség): világos (alap) és sötét téma (rendszer szerint, kézzel is váltható), „Kevesebb mozgás” kapcsoló, 10 lépéses bevezető (`#/bevezeto/N`, a válaszok a PIN-ig csak memóriában), személyre szabott főoldal, lebegő alsó navigáció öt füllel (Főoldal, Idővonal, Megtakarítás, Eszközök, Beállítások), 12 saját hangulatfigura és a kabala, Pötty. Új eszközök: hullámlovaglás (10 perces időzítő), napi mini-kihívások, hála-napló, levél önmagadnak, saját okok. A „Segítség most” gomb minden oldalon, PIN nélkül elérhető. Képernyőképek: [docs/screenshots](docs/screenshots).
+
+**Automatikus frissítés (PWA).** A service worker minden indításkor, visszatéréskor és óránként új verziót keres a saját fájljai között (nincs külső hívás). Ha van, a zárolt képernyőn magától újratölt, feloldva pedig a főoldalon és a Beállításokban a „Frissítés” gombbal lehet alkalmazni; az adatok a titkosított tárolóban maradnak. Az **Android-app** a fájljait az APK-ban hordozza, ezért ott nincs önfrissítés (az APK-nak hálózati hívást és telepítési jogot kellene kapnia, ami ellentmond az adatvédelmi elveknek): a Beállítások mutatja a verziót és a letöltési oldal hivatkozását, az új APK a régi fölé települ, az adatok megmaradnak.
 
 ## Android-alkalmazás (APK)
 
@@ -85,4 +91,4 @@ PRIVACY.md              user-facing privacy notice (Hungarian)
 
 ## Status
 
-v0.6.0, functional prototype (React). **Not for public release** until the clinical sign-off and an independent security review are done (see the launch checklist in SECURITY-MODEL.md).
+v0.7.0, functional prototype (React). **Not for public release** until the clinical sign-off and an independent security review are done (see the launch checklist in SECURITY-MODEL.md).

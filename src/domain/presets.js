@@ -1,7 +1,25 @@
 // Preset options for low-friction logging. IDs are stable and stored in the
 // vault; labels can be revised (e.g. after clinical review) without migration.
 
+// A 12 hangulatfigura (src/components/mood/MoodFigures.jsx). Az azonosítók ASCII-k, a címkék
+// magyarul. A színt a CSS adja (--mood-<id>), a számértékek a src/domain/moods.js-ben vannak.
 export const MOODS = [
+  { id: 'excited', label: 'Izgatott' },
+  { id: 'cheerful', label: 'Vidám' },
+  { id: 'grateful', label: 'Hálás' },
+  { id: 'energetic', label: 'Energikus' },
+  { id: 'sensitive', label: 'Érzékeny' },
+  { id: 'confused', label: 'Zavarodott' },
+  { id: 'bored', label: 'Unatkozó' },
+  { id: 'stressed', label: 'Stresszes' },
+  { id: 'angry', label: 'Dühös' },
+  { id: 'unsure', label: 'Bizonytalan' },
+  { id: 'hurt', label: 'Sérült' },
+  { id: 'guilty', label: 'Bűntudatos' },
+];
+
+// Az első verziók hangulatai: a már mentett naplókban és a gyors sablonokban érvényesek maradnak.
+export const LEGACY_MOODS = [
   { id: 'calm', label: 'Nyugodt' },
   { id: 'hopeful', label: 'Reménykedő' },
   { id: 'content', label: 'Elégedett' },
@@ -12,8 +30,28 @@ export const MOODS = [
   { id: 'lonely', label: 'Magányos' },
 ];
 
+// Melyik figurával jelenítjük meg a régi hangulatot.
+export const LEGACY_MOOD_FIGURE = {
+  calm: 'cheerful', hopeful: 'excited', content: 'grateful', tired: 'bored',
+  anxious: 'stressed', irritable: 'angry', sad: 'hurt', lonely: 'sensitive',
+};
+
+// Mitől szeretne távol maradni (bevezető 3. lépés).
+export const SUBSTANCES = [
+  { id: 'alcohol', label: 'Alkohol' },
+  { id: 'tobacco', label: 'Dohányzás' },
+  { id: 'gambling', label: 'Szerencsejáték' },
+  { id: 'drugs', label: 'Drog' },
+  { id: 'pills', label: 'Gyógyszer-visszaélés' },
+  { id: 'other', label: 'Egyéb' },
+];
+
+// Bevezető 7. lépés: ezek a helyzetek jelennek meg először (a TRIGGERS-ből).
+export const ONBOARDING_TRIGGERS = ['stress', 'loneliness', 'weekend', 'social', 'fatigue', 'boredom', 'conflict'];
+
 export const TRIGGERS = [
   { id: 'stress', label: 'Stressz (munka, tanulás)' },
+  { id: 'weekend', label: 'Hétvége' },
   { id: 'loneliness', label: 'Magány' },
   { id: 'boredom', label: 'Unalom' },
   { id: 'conflict', label: 'Konfliktus, vita' },
@@ -63,7 +101,8 @@ export const CRAVING_LEVELS = [
 
 const index = (list) => new Map(list.map((x) => [x.id, x.label]));
 export const LABELS = {
-  mood: index(MOODS),
+  mood: index([...MOODS, ...LEGACY_MOODS]),
+  substance: index(SUBSTANCES),
   trigger: index(TRIGGERS),
   coping: index(COPING),
   outcome: index(OUTCOMES),

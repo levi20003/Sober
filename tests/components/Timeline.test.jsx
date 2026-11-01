@@ -3,6 +3,7 @@ import { test, afterEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { screen, fireEvent, act, cleanup, within, renderHook, waitFor } from '@testing-library/react';
 import { Home } from '../../src/components/screens/Home.jsx';
+import { TimelinePage } from '../../src/components/screens/TimelinePage.jsx';
 import { TimelineView } from '../../src/components/timeline/TimelineView.jsx';
 import { TimelineProvider, useTimeline } from '../../src/hooks/useTimeline.js';
 import { Actions } from '../../src/domain/timelineReducer.js';
@@ -38,7 +39,8 @@ test('useTimeline: a failed encrypted save leaves the UI state untouched', async
 test('<FreshStartModal />: closes the phase as a growth block, keeps every sober day', async () => {
   const { vault, backend } = await makeVault({ startDaysAgo: 30 });
   renderWithApp(<Home />, { vault });
-  assert.equal(document.querySelector('.hero-value').textContent, '30 nap');
+  assert.equal(document.querySelector('.hero-value').textContent, '30');
+  assert.ok(screen.getByText('Összes józan napod: 30 nap'), 'the full count is also available as text');
 
   fireEvent.click(screen.getByRole('button', { name: 'Megcsúsztam' }));
   const dialog = document.querySelector('dialog.sheet-dialog');
@@ -56,7 +58,7 @@ test('<FreshStartModal />: closes the phase as a growth block, keeps every sober
 
   fireEvent.click(within(dialog).getByRole('button', { name: 'Tovább a kezdőlapra' }));
   await gone('dialog.sheet-dialog');
-  assert.equal(document.querySelector('.hero-value').textContent, '30 nap', 'total unchanged, never reset');
+  assert.equal(document.querySelector('.hero-value').textContent, '30', 'total unchanged, never reset');
   assert.ok(screen.getByText('Ma új szakasz kezdődött. Az eddigi utad megmaradt.'));
   assert.equal(document.querySelectorAll('.hero .tl-seg').length, 2);
 
@@ -97,7 +99,7 @@ test('<TimelineView />: phase cards, lesson on the closed phase, never a bare "0
 
 test('quick log: two taps (card → Rögzítés) store a full, encrypted entry', async () => {
   const { vault } = await makeVault();
-  renderWithApp(<Home />, { vault });
+  renderWithApp(<TimelinePage />, { vault });
   fireEvent.click(screen.getByRole('button', { name: 'Stresszes nap' }));          // tap 1
   await click(within(document.querySelector('dialog.quick-dialog')).getByRole('button', { name: 'Rögzítés' })); // tap 2
   await gone('dialog.quick-dialog');
