@@ -1,4 +1,8 @@
-# Józanság-számláló
+# Józanság-számláló / Sobriety Counter
+
+🇬🇧 English UI and privacy notice: [PRIVACY.en.md](PRIVACY.en.md) · 🇭🇺 Magyar adatvédelmi tájékoztató: [PRIVACY.md](PRIVACY.md) · Community post draft: [docs/REDDIT-POST.md](docs/REDDIT-POST.md)
+
+**Languages:** the app is available in Hungarian and English (follows the phone's language, switchable in Settings, with helplines for Hungary, the UK, the US and a worldwide directory). **Status: preview**: not yet reviewed by a professional; send feedback via the in-app button (opens a GitHub form).
 
 A private, offline-first, Hungarian-language PWA that **helps track and support** a person's sobriety journey. It is not a medical device.
 
@@ -9,6 +13,10 @@ A private, offline-first, Hungarian-language PWA that **helps track and support*
 - **HUF savings that stay honest:** the daily cost is effective-dated, so a price change "from today" never re-values past days, while "correct everything" re-values on purpose. The home screen shows tangible alcohol-free milestones and an optional personal goal.
 - **Quick log in 2 taps:** preset cards ("Stresszes nap", "Társasági nyomás", "Esti szokás", "Nyugodt / Kiegyensúlyozott", …) → "Rögzítés". Intensity and an encrypted note are optional; no typing is required.
 - **Data ownership:** encrypted backup, CSV (UTF-8 BOM, `;`) and JSON export, and single-step delete-all.
+
+## Languages and adding another one
+
+All copy lives in `src/content/locales/hu.js` and `en.js` (same keys, enforced by `tests/i18n.test.js`); `src/content/index.js` picks the language at start-up (`src/i18n/locale.js`: Settings choice, else the phone's language), and switching reloads the app. Helplines are per country in `src/content/helplines.js`. To add a language: copy `en.js`, translate, add it to `LOCALES` and `content/index.js`, add an English-style copy guard to `tests/i18n.test.js`, and have the new helplines verified.
 
 ## Run
 
@@ -91,4 +99,4 @@ PRIVACY.md              user-facing privacy notice (Hungarian)
 
 ## Status
 
-v0.7.0, functional prototype (React). **Not for public release** until the clinical sign-off and an independent security review are done (see the launch checklist in SECURITY-MODEL.md).
+v0.8.0, functional prototype (React). **Not for public release** until the clinical sign-off and an independent security review are done (see the launch checklist in SECURITY-MODEL.md).
