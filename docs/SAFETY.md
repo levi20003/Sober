@@ -45,7 +45,17 @@ The crisis module is the most safety-critical part of the app. A person opening 
 | Drog Stop segélyvonal | 06-80-505-678 | **multiple-secondary** | Five independent secondary sources agree it is a free line, some marked "Non-Stop" (PTE university page, municipal and helpline directories). The operator's own site could not be reached from the build environment. One directory lists a different number (13-770), which is **not used**. | **Required:** a test call plus confirmation on drogstoponline.hu. Hours are deliberately not claimed in the UI. |
 | Kék Vonal | 116-111 | official | Free, anonymous, for under-24s | Test call |
 
-**Release rule:** a wrong number on this screen is a P0 incident. Every release requires a test call to each number, then an update to `verified` in `src/content/hu.js`. Numbers rated `multiple-secondary` must be upgraded to `official` or removed before public launch.
+### Other countries (v0.8, English UI)
+
+The helplines are listed per country (`src/content/helplines.js`); the crisis overlay has a country picker (default from the language/region, also in Settings).
+
+| Country | Lines | `verification` | Notes |
+|---|---|---|---|
+| UK | 999 (112 also works), Samaritans 116 123, FRANK 0300 123 6600, Drinkline 0300 123 1110 | emergency: official; others **multiple-secondary** (2026-11-01 web check) | Drinkline hours 9–20 weekdays, 11–16 weekends (England). An older FRANK number (0800 77 6600) is outdated and not used. |
+| US | 911, 988 Suicide & Crisis Lifeline (call or text), SAMHSA National Helpline 1-800-662-4357 | emergency: official; others **multiple-secondary** | SAMHSA refers to treatment, it does not counsel. 988 is not an emergency line. |
+| Other | 112, findahelpline.com | 112: official; website **unverified** | The website needs internet. |
+
+**Release rule:** a wrong number on this screen is a P0 incident. Every release requires a test call to each number, then an update to `verified` in `src/content/helplines.js`. Numbers rated `multiple-secondary` must be upgraded to `official` or removed before public launch.
 
 ## 5. Breathing exercise
 

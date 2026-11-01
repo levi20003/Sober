@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { T, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, ONB } from '../../content/index.js';
+import { T, MISC, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVIEW, COUNTRIES, ONB } from '../../content/index.js';
+import { LOCALES } from '../../i18n/locale.js';
+import { CURRENCIES, CURRENCY_IDS } from '../../i18n/money.js';
+import { feedbackUrl } from '../../lib/feedback.js';
 import { toCsvExport, toJsonExport, parseJsonImport } from '../../domain/export.js';
 import { toDateKey } from '../../domain/dates.js';
 import { download } from '../../lib/format.js';
@@ -55,6 +58,19 @@ function ProfileSection() {
   );
 }
 
+/** Visszajelzés: előre kitöltött GitHub-űrlap külső böngészőben. Az app maga semmit sem küld. */
+function FeedbackSection() {
+  return (
+    <section className="card tone tone-sky" aria-labelledby="fb-h">
+      <h2 id="fb-h">{SP.feedback}</h2>
+      <span className="pill">{PREVIEW.badge}</span>
+      <p>{PREVIEW.text}</p>
+      <p className="hint">{SP.feedbackText}</p>
+      <a className="btn btn-primary" href={feedbackUrl()} target="_blank" rel="noopener noreferrer">{SP.feedbackButton}</a>
+    </section>
+  );
+}
+
 function AppearanceSection() {
   const [prefs, setPrefs] = usePrefs();
   return (
@@ -65,6 +81,21 @@ function AppearanceSection() {
           <label className="chip" key={id}><input type="radio" name="theme" value={id} checked={prefs.theme === id} onChange={() => setPrefs({ theme: id })} /><span>{label}</span></label>
         ))}
       </div></fieldset>
+      <fieldset className="chips"><legend>{SP.language}</legend><div className="chip-row">
+        {LOCALES.map((id) => (
+          <label className="chip" key={id}><input type="radio" name="lang" value={id} checked={prefs.lang === id} onChange={() => { setPrefs({ lang: id }); location.reload(); }} /><span>{id === 'hu' ? 'Magyar' : 'English'}</span></label>
+        ))}
+      </div><p className="hint">{SP.languageHint}</p></fieldset>
+      <fieldset className="chips"><legend>{SP.country}</legend><div className="chip-row">
+        {COUNTRIES.map((c) => (
+          <label className="chip" key={c.id}><input type="radio" name="country" value={c.id} checked={prefs.country === c.id} onChange={() => setPrefs({ country: c.id })} /><span>{c.label}</span></label>
+        ))}
+      </div></fieldset>
+      <fieldset className="chips"><legend>{SP.currency}</legend><div className="chip-row">
+        {CURRENCY_IDS.map((id) => (
+          <label className="chip" key={id}><input type="radio" name="currency" value={id} checked={prefs.currency === id} onChange={() => { setPrefs({ currency: id }); location.reload(); }} /><span>{CURRENCIES[id].symbol} {id}</span></label>
+        ))}
+      </div><p className="hint">{SP.currencyHint}</p></fieldset>
       <div className="check">
         <input type="checkbox" id="motion-off" role="switch" checked={prefs.motion === 'reduced'} onChange={(e) => setPrefs({ motion: e.target.checked ? 'reduced' : 'full' })} />
         <label htmlFor="motion-off">{SP.motion}</label>
@@ -135,7 +166,7 @@ export function Settings({ onWipe, showRecoveryCode }) {
     if (fd.get('pin') !== fd.get('pin2')) throw userError(T.pinMismatch);
     await store.changePin(fd.get('old'), fd.get('pin'));
     form.reset();
-    toast('A PIN-kód módosult.');
+    toast(MISC.pinChanged);
   });
   const recovery = useFormAction(async (fd) => {
     const { recoveryCode } = await store.regenerateRecoveryCode(fd.get('pin'));
@@ -144,11 +175,11 @@ export function Settings({ onWipe, showRecoveryCode }) {
   const importer = useFormAction(async (fd) => {
     const text = await fd.get('file').text();
     const obj = JSON.parse(text.replace(/^﻿/, ''));
-    if (!confirm('A jelenlegi napló helyére a mentés kerül. Folytatod?')) return;
+    if (!confirm(MISC.importConfirm)) return;
     if (obj?.kind === 'encrypted-backup') await store.importEncryptedBackup(obj, fd.get('pin'));
     else await store.save(parseJsonImport(text));
     refresh();
-    toast('A mentés visszaállítva.');
+    toast(MISC.backupRestored);
     navigate('#/');
   });
   const plain = (fn) => () => { if (confirm(T.exportPlainWarning)) fn(); };
@@ -159,6 +190,7 @@ export function Settings({ onWipe, showRecoveryCode }) {
       <ProfileSection />
       <AppearanceSection />
       <UpdateSection />
+      <FeedbackSection />
       <section className="card">
         <h2>{T.journeySection}</h2>
         <form className="stack" onSubmit={prefs.onSubmit} aria-busy={prefs.busy || undefined}>
@@ -183,7 +215,7 @@ export function Settings({ onWipe, showRecoveryCode }) {
           <summary>{T.newRecovery}</summary>
           <form className="stack" onSubmit={recovery.onSubmit} aria-busy={recovery.busy || undefined}>
             <p className="hint">{T.newRecoveryInfo}</p>
-            <Field label="PIN-kód"><PinInput name="pin" autoComplete="current-password" /></Field>
+            <Field label={MISC.pinField}><PinInput name="pin" autoComplete="current-password" /></Field>
             <button type="submit" className="btn" disabled={recovery.busy}>{T.newRecovery}</button>
           </form>
         </details>
@@ -203,8 +235,8 @@ export function Settings({ onWipe, showRecoveryCode }) {
             <summary>{T.importEncrypted}</summary>
             <form className="stack" onSubmit={importer.onSubmit} aria-busy={importer.busy || undefined}>
               <p className="hint">{T.importEncryptedInfo}</p>
-              <Field label="Mentésfájl (titkosított mentés vagy JSON-export)"><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
-              <Field label="A mentés PIN-kódja (titkosított mentésnél)"><input type="password" name="pin" className="input" autoComplete="off" /></Field>
+              <Field label={MISC.importFileLabel}><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
+              <Field label={MISC.importPinLabel}><input type="password" name="pin" className="input" autoComplete="off" /></Field>
               <button type="submit" className="btn" disabled={importer.busy}>{T.importEncrypted}</button>
             </form>
           </details>
@@ -221,7 +253,7 @@ export function Settings({ onWipe, showRecoveryCode }) {
         <h2>{T.aboutSection}</h2>
         <p>{T.disclaimer}</p>
         <p>{T.privacyPromise}</p>
-        <p className="hint">{`Tartalom verziója: ${CONTENT_VERSION} · ${REVIEW_STATUS}`}</p>
+        <p className="hint">{MISC.contentVersion(CONTENT_VERSION, REVIEW_STATUS)}</p>
       </section>
     </Page>
   );

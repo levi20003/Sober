@@ -1,0 +1,33 @@
+name: Visszajelzés / Feedback
+description: Hiba, ötlet vagy vélemény az alkalmazásról / A bug, an idea or an opinion about the app
+labels: [feedback]
+title: "[Feedback] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Kérlek, ne írj bele személyes adatot, PIN-kódot vagy helyreállító kódot.** / **Please do not include personal data, your PIN or your recovery code.**
+        Az alkalmazás magától semmit sem küld el; ez az űrlap a GitHubon nyilvános. / The app sends nothing by itself; this form is public on GitHub.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Mi ez? / What is this?
+      options: [Hiba / Bug, Ötlet / Idea, Szöveg vagy fordítás / Wording or translation, Használhatóság / Usability, Egyéb / Other]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Mit tapasztaltál, mit javasolsz? / What did you notice, what do you suggest?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Verzió / Version
+      description: A Beállításokból előre kitöltődik / Pre-filled from Settings
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Hol használod? / Where do you use it?
+      options: [Android-app (APK), Weboldal Androidon / Web on Android, Weboldal iPhone-on / Web on iPhone, Weboldal számítógépen / Web on desktop]

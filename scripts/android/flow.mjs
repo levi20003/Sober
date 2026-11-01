@@ -35,6 +35,18 @@ const j = JSON.stringify;
 
 export async function install(c) {
   await c.eval(H);
+  // A folyamat magyar szövegekre épül; az emulátor nyelve angol lehet, ezért a nyelvet magyarra állítjuk (és újratöltünk).
+  const state = await c.eval(`(() => {
+    const k = 'jsz-ui'; let o = {};
+    try { o = JSON.parse(localStorage.getItem(k) || '{}'); } catch { /* üres */ }
+    if (o.lang === 'hu') return 'ok';
+    o.lang = 'hu'; localStorage.setItem(k, JSON.stringify(o)); setTimeout(() => location.reload(), 50);
+    return 'reloading';
+  })()`);
+  if (state === 'reloading') {
+    await c.waitFor(`!window.__s && document.readyState === 'complete'`, { timeoutMs: 30_000, what: 'újratöltés a magyar nyelv beállítása után' });
+    await c.eval(H);
+  }
 }
 
 /** Facts about the environment the app actually runs in. */

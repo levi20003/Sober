@@ -6,7 +6,7 @@ The app handles people in vulnerable moments. Every user-facing string, the cris
 
 ## 1. What to review, and where it lives
 
-All copy is in one file: [`src/content/hu.js`](../src/content/hu.js). Reviewers can comment on it directly, by key.
+All copy is in one file: [`src/content/locales/hu.js` / `en.js`](../src/content/hu.js). Reviewers can comment on it directly, by key.
 
 | Area | Keys / location | Specific questions for the reviewer |
 |---|---|---|
@@ -18,7 +18,7 @@ All copy is in one file: [`src/content/hu.js`](../src/content/hu.js). Reviewers 
 | Fresh start flow | `T.slip*`, `T.fresh*`; `src/components/timeline/FreshStartModal.jsx` | Is asking for a lesson *and* an intention right after a slip too much (both are optional)? Is `freshRetro` (a late-logged slip removes that one day) clear and kind enough? |
 | Onboarding and disclaimer | `T.onboarding*`, `T.disclaimer`, `T.privacyPromise` | Does the disclaimer meet Hungarian consumer and health-claim rules? |
 | Notifications | `NOTIFICATION` | Frequency and wording. Is once a day too much for some users? |
-| Savings milestones | `SAVINGS_MILESTONES` in `content/hu.js` | Are the ideas appropriate, with no reward-by-consumption risk? Should amounts link to a goal rather than to purchases? Prices are approximate (2026). |
+| Savings milestones | `SAVINGS_MILESTONES` in `content/locales/*.js` | Are the ideas appropriate, with no reward-by-consumption risk? Should amounts link to a goal rather than to purchases? Prices are approximate (2026). |
 | Quick-log cards | `QUICK_TEMPLATES` in `src/domain/presets.js` | Right eight situations and moods? Should a negative mood card offer the crisis screen after saving? |
 | Presets | `src/domain/presets.js` (moods, triggers, coping, outcomes) | Are any coping options inadvisable? Is anything important missing (e.g. "Elmentem egy csoportfoglalkozásra")? |
 

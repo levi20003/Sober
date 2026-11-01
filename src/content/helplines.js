@@ -46,28 +46,28 @@ const UK = [
     name: L('Segélyhívó (Egyesült Királyság)', 'Emergency services (UK)'),
     hours: L('Éjjel-nappal, ingyenes (a 112 is működik)', 'Around the clock, free (112 also works)'),
     when: L('Ha közvetlen veszélyben vagy te vagy valaki más, vagy orvosi segítség kell.', 'If you or someone else is in immediate danger, or medical help is needed.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'official',
   },
   {
     id: 'samaritans', role: 'talk', number: '116 123', tel: '116123',
     name: 'Samaritans',
     hours: L('Éjjel-nappal, ingyenes', 'Around the clock, free'),
     when: L('Ha beszélgetni szeretnél valakivel, aki meghallgat. (Angol nyelvű vonal.)', 'If you want to talk to someone who will listen, about anything that is troubling you.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'multiple-secondary',
   },
   {
     id: 'frank', role: 'talk', number: '0300 123 6600', tel: '03001236600',
     name: 'FRANK',
     hours: L('Éjjel-nappal', 'Around the clock'),
     when: L('Információ és tanács drogokkal kapcsolatban. (Angol nyelvű vonal.)', 'Friendly, confidential advice about drugs.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'multiple-secondary',
   },
   {
     id: 'drinkline', role: 'talk', number: '0300 123 1110', tel: '03001231110',
     name: 'Drinkline',
     hours: L('Munkanapokon 9–20, hétvégén 11–16 (Anglia)', 'Weekdays 9am–8pm, weekends 11am–4pm (England)'),
     when: L('Ha az alkoholfogyasztásod miatt aggódsz, magad vagy más miatt. (Angol nyelvű vonal.)', 'If you are worried about your own or someone else\'s drinking.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'multiple-secondary',
   },
 ];
 
@@ -77,21 +77,21 @@ const US = [
     name: L('Segélyhívó (USA)', 'Emergency services (US)'),
     hours: L('Éjjel-nappal, ingyenes', 'Around the clock, free'),
     when: L('Ha közvetlen veszélyben vagy te vagy valaki más, vagy orvosi segítség kell.', 'If you or someone else is in immediate danger, or medical help is needed.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'official',
   },
   {
     id: 'lifeline-988', role: 'talk', number: '988', tel: '988',
     name: '988 Suicide & Crisis Lifeline',
     hours: L('Éjjel-nappal, ingyenes; hívás vagy SMS', 'Around the clock, free; call or text'),
     when: L('Ha lelki válságban vagy, vagy mélyen elkeseredtél. (Angol nyelvű vonal.)', 'If you are in emotional distress or crisis, or worried about someone else.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'multiple-secondary',
   },
   {
     id: 'samhsa', role: 'talk', number: '1-800-662-4357', tel: '18006624357',
     name: 'SAMHSA National Helpline',
     hours: L('Éjjel-nappal, ingyenes, bizalmas', 'Around the clock, free, confidential'),
     when: L('Segítség és tájékoztatás szerhasználattal és függőséggel kapcsolatban. (Angol nyelvű vonal.)', 'Treatment referrals and information about substance use and addiction.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'multiple-secondary',
   },
 ];
 
@@ -102,7 +102,7 @@ const INT = [
     hours: L('Éjjel-nappal, ingyenes', 'Around the clock, free'),
     when: L('Ha közvetlen veszélyben vagy te vagy valaki más. Ha nem tudod, melyik szám működik a környéken, a 112 sok helyen továbbít a helyi segélyhívóhoz.',
       'If you or someone else is in immediate danger. If you are unsure which number works where you are, 112 is forwarded to the local emergency service in many places.'),
-    verified: null, verification: 'unverified',
+    verified: '2026-11-01', verification: 'official',
   },
   {
     id: 'findahelpline', role: 'talk', number: 'findahelpline.com', url: 'https://findahelpline.com',

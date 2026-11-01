@@ -82,12 +82,13 @@ async function maybeRemind() {
   const [hh, mm] = String(rem.time || '20:00').split(':').map(Number);
   const due = now.getHours() > hh || (now.getHours() === hh && now.getMinutes() >= mm);
   if (!due || rem.lastShown === todayKey(now) || now.getHours() >= 23) return;
-  await self.registration.showNotification(NOTE.title, {
-    body: NOTE.body,
+  const note = meta?.notification ?? NOTE; // a felhasználó nyelvén (az app menti el az engedélyezéskor)
+  await self.registration.showNotification(note.title, {
+    body: note.body,
     icon: './icons/icon.svg',
     tag: 'gentle-checkin',
     silent: true,
-    actions: [{ action: 'open', title: NOTE.actionOpen }, { action: 'off', title: NOTE.actionOff }],
+    actions: [{ action: 'open', title: note.actionOpen }, { action: 'off', title: note.actionOff }],
   });
   await metaPatch((m) => ({ ...m, reminders: { ...m.reminders, lastShown: todayKey(now) } }));
 }

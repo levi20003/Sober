@@ -69,7 +69,7 @@ src/
   domain/helplines.js   tel: links, display/dial consistency, copy fallback
   domain/export.js      CSV (BOM, formula-safe) & JSON export/import
   domain/presets.js     mood / trigger / coping presets
-  content/hu.js         ALL user-facing copy + helplines (single review surface)
+  content/locales/{hu,en}.js  ALL user-facing copy (review surface); content/helplines.js per-country helplines
   reminders.js          server-less, neutral, one-tap-opt-out reminders
 tests/                  Vitest suites; tests/components/ = jsdom component tests
 android/, capacitor.config.json   Capacitor Android projekt (APK)

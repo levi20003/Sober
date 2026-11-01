@@ -9,10 +9,11 @@
 //  - Esc, "Vissza" or the browser Back button closes it; nothing is recorded
 
 import { useRef } from 'react';
-import { HELPLINES, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T } from '../../content/index.js';
+import { COUNTRIES, helplinesFor, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
 import { splitHelplines } from '../../domain/helplines.js';
 import { useModalDialog } from '../../hooks/useModalDialog.js';
+import { usePrefs } from '../../hooks/usePrefs.js';
 import { EmergencyBanner, HelplineList } from './HelplineList.jsx';
 import { BreathingExercise } from './BreathingExercise.jsx';
 
@@ -27,7 +28,8 @@ import { BreathingExercise } from './BreathingExercise.jsx';
 export function CrisisOverlay({ onClose, events = [], reasons = [], now = new Date(), clock }) {
   const ref = useRef(null);
   useModalDialog(ref, onClose);
-  const { emergency, talk } = splitHelplines(HELPLINES);
+  const [prefs, setPrefs] = usePrefs();
+  const { emergency, talk } = splitHelplines(helplinesFor(prefs.country));
   const risk = riskContexts(now, events)[0];
 
   return (
@@ -41,6 +43,18 @@ export function CrisisOverlay({ onClose, events = [], reasons = [], now = new Da
       <main className="screen crisis">
         <h1 id="crisis-h">{T.crisisTitle}</h1>
         <p className="lead">{T.crisisIntro}</p>
+        <fieldset className="chips country-picker">
+          <legend>{T.crisisCountry}</legend>
+          <div className="chip-row">
+            {COUNTRIES.map((c) => (
+              <label className="chip" key={c.id}>
+                <input type="radio" name="country" value={c.id} checked={prefs.country === c.id} onChange={() => setPrefs({ country: c.id })} />
+                <span>{c.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="hint">{T.crisisCountryHint}</p>
+        </fieldset>
         {emergency.map((line) => <EmergencyBanner key={line.id} line={line} />)}
         {risk && (
           <aside className="card card-soft" aria-label={RISK_MESSAGES[risk].title}>

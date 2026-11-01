@@ -41,7 +41,7 @@ Source: [src/domain/savings.js](../src/domain/savings.js).
   The history is compacted, so an entry equal to the cost already in effect is dropped. Before v2, a single number re-valued all past days on every edit, which invented or erased money.
 - Same rules as the timeline: a slip never erases money already saved, except that a late-logged slip removes that one day at that day's price.
 - `perMonth` = current daily × 30.44 and `perYear` = current daily × 365 are projections, labelled "kb.".
-- **Milestones** (`SAVINGS_MILESTONES` in `content/hu.js`) are ascending, alcohol-free ideas with approximate prices. The UI shows the last achieved one and the next one, with the remaining amount. The optional personal goal shows progress capped at 100 %.
+- **Milestones** (`SAVINGS_MILESTONES` in `content/locales/*.js`) are ascending, alcohol-free ideas with approximate prices. The UI shows the last achieved one and the next one, with the remaining amount. The optional personal goal shows progress capped at 100 %.
 
 ## Events: the timeline is the source of truth
 

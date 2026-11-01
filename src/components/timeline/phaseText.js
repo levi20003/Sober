@@ -1,4 +1,4 @@
-import { T } from '../../content/index.js';
+import { T, MISC } from '../../content/index.js';
 import { formatDateHu, addDays } from '../../domain/dates.js';
 import { labelOf } from '../../domain/presets.js';
 
@@ -17,13 +17,13 @@ export function phaseHeadline(p, today) {
 export function eventDetails(e) {
   const lines = [];
   if (e.mood) lines.push(`${T.moodLabel}: ${labelOf('mood', e.mood)}`);
-  if (e.sleep) lines.push(`Alvás: ${labelOf('sleep', e.sleep)}`);
-  if (e.craving !== undefined) lines.push(`Sóvárgás: ${labelOf('craving', e.craving)}`);
-  if (e.triggers?.length) lines.push(`Helyzet: ${e.triggers.map((t) => labelOf('trigger', t)).join(', ')}`);
-  if (e.intensity) lines.push(`Erősség: ${e.intensity}/5`);
-  if (e.coping?.length) lines.push(`Segített: ${e.coping.map((c) => labelOf('coping', c)).join(', ')}`);
+  if (e.sleep) lines.push(`${MISC.entry.sleep}: ${labelOf('sleep', e.sleep)}`);
+  if (e.craving !== undefined) lines.push(`${MISC.entry.craving}: ${labelOf('craving', e.craving)}`);
+  if (e.triggers?.length) lines.push(`${MISC.entry.situation}: ${e.triggers.map((t) => labelOf('trigger', t)).join(', ')}`);
+  if (e.intensity) lines.push(`${MISC.entry.intensity}: ${e.intensity}/5`);
+  if (e.coping?.length) lines.push(`${MISC.entry.coping}: ${e.coping.map((c) => labelOf('coping', c)).join(', ')}`);
   if (e.outcome) lines.push(labelOf('outcome', e.outcome));
-  if (e.lesson) lines.push(`Tanulság: ${e.lesson}`);
-  if (e.intention) lines.push(`Amire figyelek: ${e.intention}`);
+  if (e.lesson) lines.push(`${MISC.entry.lesson}: ${e.lesson}`);
+  if (e.intention) lines.push(`${MISC.entry.intention}: ${e.intention}`);
   return lines;
 }

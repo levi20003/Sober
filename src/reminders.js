@@ -6,6 +6,8 @@
 // - The preference lives in plaintext 'meta' (not the vault) because the
 //   service worker cannot decrypt; it reveals only "reminders on, at HH:MM".
 
+import { MISC, NOTIFICATION } from './content/index.js';
+
 export const SYNC_TAG = 'gentle-checkin';
 
 export function remindersSupported() {
@@ -13,10 +15,10 @@ export function remindersSupported() {
 }
 
 export async function enableReminders(store, time) {
-  if (!remindersSupported()) throw new Error('Ez a böngésző nem támogatja az értesítéseket.');
+  if (!remindersSupported()) throw new Error(MISC.notSupportedNotifications);
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return { enabled: false, denied: true };
-  await store.setMeta({ reminders: { enabled: true, time } });
+  await store.setMeta({ reminders: { enabled: true, time }, notification: NOTIFICATION });
   let scheduled = false;
   try {
     const reg = await navigator.serviceWorker.ready;

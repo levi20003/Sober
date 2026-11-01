@@ -1,5 +1,7 @@
+import { intlTag } from '../i18n/locale.js';
+
 export function formatTimeHu(iso) {
-  return new Date(iso).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleTimeString(intlTag, { hour: '2-digit', minute: '2-digit' });
 }
 
 export function download(filename, content, mime) {

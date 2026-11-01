@@ -1,3 +1,5 @@
+import { intlTag } from '../i18n/locale.js';
+
 // Calendar-day arithmetic on local "YYYY-MM-DD" keys.
 // Days are compared as calendar dates (not 24h spans) so DST changes and
 // late-night entries never shift a count by one.
@@ -43,7 +45,7 @@ export function compareKeys(a, b) {
 
 export function formatDateHu(key) {
   const [y, m, d] = key.split('-').map(Number);
-  return new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })
+  return new Intl.DateTimeFormat(intlTag, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })
     .format(new Date(Date.UTC(y, m - 1, d)));
 }
 
@@ -60,6 +62,6 @@ export function addMonths(key, n) {
 /** "november", "2026. november" – for chart axes and month lists. */
 export function monthNameHu(key, { year = false } = {}) {
   const [y, m] = key.split('-').map(Number);
-  return new Intl.DateTimeFormat('hu-HU', year ? { year: 'numeric', month: 'long', timeZone: 'UTC' } : { month: 'long', timeZone: 'UTC' })
+  return new Intl.DateTimeFormat(intlTag, year ? { year: 'numeric', month: 'long', timeZone: 'UTC' } : { month: 'long', timeZone: 'UTC' })
     .format(new Date(Date.UTC(y, m - 1, 1)));
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TOOLS } from '../../content/index.js';
+import { MISC, TOOLS } from '../../content/index.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';
@@ -33,7 +33,7 @@ export function Reasons() {
         <ul className="entries">
           {reasons.map((r) => (
             <li className="entry row-between" key={r}><span>{r}</span>
-              <button type="button" className="btn-link" aria-label={`Törlés: ${r}`} onClick={() => write(reasons.filter((x) => x !== r))}><Icon name="trash" size={20} /></button>
+              <button type="button" className="btn-link" aria-label={MISC.reasonDelete(r)} onClick={() => write(reasons.filter((x) => x !== r))}><Icon name="trash" size={20} /></button>
             </li>
           ))}
         </ul>

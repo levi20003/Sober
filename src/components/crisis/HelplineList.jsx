@@ -8,7 +8,7 @@ import { useToast } from '../../hooks/useToast.jsx';
 
 function CallLink({ line, primary }) {
   return (
-    <a className={`btn btn-call${primary ? ' btn-primary' : ''}`} href={telHref(line)}>
+    <a className={`btn btn-call${primary ? ' btn-primary' : ''}`} href={line.url ?? telHref(line)} {...(line.url ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
       <span className="call-number">{line.number}</span>
       <span>{line.name}</span>
     </a>
@@ -53,7 +53,7 @@ export function HelplineList({ lines, copy = copyNumber }) {
         {lines.map((line, i) => (
           <li key={line.id}>
             <CallLink line={line} primary={i === 0} />
-            <p className="hint">{`${line.hours}. ${line.when} `}<CopyButton line={line} copy={copy} /></p>
+            <p className="hint">{`${line.hours}. ${line.when} `}{!line.url && <CopyButton line={line} copy={copy} />}</p>
           </li>
         ))}
       </ul>

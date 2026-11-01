@@ -1,6 +1,6 @@
 // A főoldal kártyái. Minden szám a titkosított napló eseményeiből és a fázisokból számolódik (src/domain/*).
 import { useEffect, useRef, useState } from 'react';
-import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, T, TIPS } from '../../content/index.js';
+import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, MISC, T, TIPS } from '../../content/index.js';
 import { MOODS } from '../../domain/presets.js';
 import { energyStress, weekDigest, weekMoods } from '../../domain/moods.js';
 import { goalProgress, milestoneStatus } from '../../domain/milestones.js';
@@ -37,9 +37,9 @@ export function DayCounter({ stats, phases, goal, freshToday, currentSince }) {
     <section className="card hero tone tone-lavender card-rel" aria-label={HOME.totalLabel}>
       {burst && <Confetti count={28} />}
       <p className="stat-label">{HOME.totalLabel}</p>
-      <ProgressRing ratio={ratio} size={250} stroke={14} color="var(--accent)" label={goal ? HOME.goalProgress(goal.shown, goal.goal) : `${total} nap`}>
+      <ProgressRing ratio={ratio} size={250} stroke={14} color="var(--accent)" label={goal ? HOME.goalProgress(goal.shown, goal.goal) : T.days(total)}>
         <p className="hero-value" data-total={total}>{shown}</p>
-        <p className="stat-label">nap</p>
+        <p className="stat-label">{MISC.dayWord}</p>
       </ProgressRing>
       <span className="visually-hidden">{`${HOME.totalLabel}: ${T.days(total)}`}</span>
       <p className="hero-sub">{freshToday ? HOME.newPhase : T.heroCurrent(stats.currentPhaseDays, currentSince)}</p>
@@ -77,7 +77,7 @@ export function GoalCard({ total, goalDays }) {
 
 export function SavingsCard({ savings, today }) {
   if (!savings.configured) {
-    return <section className="card tone tone-mint"><h2>{HOME.savingsLabel}</h2><p>{HOME.savingsSetup}</p><a className="btn" href="#/megtakaritas">Megtakarítás</a></section>;
+    return <section className="card tone tone-mint"><h2>{HOME.savingsLabel}</h2><p>{HOME.savingsSetup}</p><a className="btn" href="#/megtakaritas">{MISC.savingsTab}</a></section>;
   }
   const fun = funConversion(savings.total, FUN_ITEMS, today);
   return (
@@ -86,7 +86,7 @@ export function SavingsCard({ savings, today }) {
       <p className="meter-num" style={{ fontSize: 'clamp(2rem, 10vw, 3rem)' }}>{formatHuf(savings.total)}</p>
       {fun && <p><strong>{HOME.savingsFun(fun.count, fun.item.label)}</strong></p>}
       {savings.goal && <p>{`${savings.goal.label}: ${Math.round(savings.goal.progress * 100)}%`}</p>}
-      <a className="btn" href="#/megtakaritas">{'Részletek'}</a>
+      <a className="btn" href="#/megtakaritas">{MISC.details}</a>
     </section>
   );
 }
@@ -143,7 +143,7 @@ export function EnergyStress({ events, today }) {
       {es[key] === null ? <p className="hint">{HOME.trendNone}</p> : (
         <>
           <p className="meter-num">{es[key]}<span className="stat-label"> {HOME.outOf100}</span></p>
-          <Sparkline values={es.series.map((d) => d[key])} color={color} label={`${title}: 7 napos alakulás`} />
+          <Sparkline values={es.series.map((d) => d[key])} color={color} label={MISC.trendAria(title)} />
         </>
       )}
     </div>
@@ -158,7 +158,7 @@ export function Badges({ total }) {
       <h2 id="badges-h">{HOME.badgesTitle}</h2>
       <ul className="badges">
         {ms.badges.map((b) => (
-          <li key={b.days} className={`badge${b.achieved ? '' : ' locked'}`} aria-label={`${HOME.badgeLabel(b.days)}${b.achieved ? '' : ' (még nem érted el)'}`}>
+          <li key={b.days} className={`badge${b.achieved ? '' : ' locked'}`} aria-label={`${HOME.badgeLabel(b.days)}${b.achieved ? '' : MISC.badgeLocked}`}>
             <span className="medal" aria-hidden="true">{b.achieved ? b.days : <Icon name="lock" size={18} />}</span>
             <span aria-hidden="true">{b.days} nap</span>
           </li>

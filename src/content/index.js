@@ -33,6 +33,7 @@ export const CELEBRATE = L.CELEBRATE;
 export const QUICK_ADD = L.QUICK_ADD;
 export const CHALLENGE_CATALOG = L.CHALLENGE_CATALOG;
 export const A11Y = L.A11Y;
+export const MISC = L.MISC;
 
 // Az ötlet-listák árai a választott pénznemben (forint-alapról átszámítva, kerekítve).
 export const SAVINGS_MILESTONES = convertAmounts(L.SAVINGS_MILESTONES, 'amountHuf');
