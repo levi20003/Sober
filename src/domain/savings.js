@@ -12,19 +12,21 @@
 // (1 000 000 Ft/day × 100 years ≈ 3.7·10¹⁰ < 2⁵³).
 
 import { diffDays } from './dates.js';
+import { formatMoney } from '../i18n/money.js';
+import { locale } from '../i18n/locale.js';
 import { validateCostHistory } from './schema.js';
 
-const fmt = new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 });
 
 export function formatHuf(amount) {
   // Normalize narrow/no-break spaces so output is stable across ICU versions.
-  return fmt.format(Math.round(amount)).replace(/[  ]/g, ' ');
+  return formatMoney(Math.round(amount)).replace(/[\u202f\u00a0]/g, ' ');
 }
 
 /** Accepts "2 500", "2500 Ft", "2.500", "2,5e3"-free plain input. Returns integer HUF, 0 for empty, NaN if invalid. */
 export function parseHufInput(text, max = 1_000_000) {
   if (text === '' || text === null || text === undefined) return 0;
-  let t = String(text).replace(/[\s  ]|Ft|HUF/gi, '');
+  let t = String(text).replace(/[\s\u00a0\u202f£$€]|Ft|HUF|GBP|USD|EUR/gi, '');
+  if (locale !== 'hu' && /^\d{1,3}(,\d{3})+$/.test(t)) t = t.replace(/,/g, ''); // "2,500" = angol ezreselválasztó
   if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, ''); // "2.500" = Hungarian thousands separator
   t = t.replace(',', '.');
   if (!/^\d+(\.\d+)?$/.test(t)) return NaN;

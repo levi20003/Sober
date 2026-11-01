@@ -1,7 +1,7 @@
 // "Hogy vagy ma?": 12 hangulatfigura. Egy koppintás kiválaszt, az erősség (1–5) és egy gondolat opcionális.
 // Naponta egyszer kínáljuk fel, de később bármikor átírható (a nap utolsó bejegyzése számít).
 import { useState } from 'react';
-import { HOME } from '../../content/hu.js';
+import { HOME, T } from '../../content/index.js';
 import { MOODS } from '../../domain/presets.js';
 import { figureOf, moodOnDay } from '../../domain/moods.js';
 import { Actions } from '../../domain/timelineReducer.js';
@@ -81,7 +81,7 @@ export function MoodCheckin({ onSaved }) {
           </label>
           <div className="actions">
             <button type="submit" className="btn btn-primary" disabled={save.busy}>{HOME.moodSave}</button>
-            {editing && <button type="button" className="btn btn-ghost" onClick={() => { setEditing(false); setMood(null); }}>{`${'Mégse'}`}</button>}
+            {editing && <button type="button" className="btn btn-ghost" onClick={() => { setEditing(false); setMood(null); }}>{T.cancel}</button>}
           </div>
         </form>
       )}

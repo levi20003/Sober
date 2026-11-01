@@ -1,4 +1,4 @@
-import { CHALLENGE_CATALOG, TOOLS } from '../../content/hu.js';
+import { CHALLENGE_CATALOG, TOOLS } from '../../content/index.js';
 import { challengeStats, challengesOfDay } from '../../domain/challenges.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';

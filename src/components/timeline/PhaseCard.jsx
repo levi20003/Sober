@@ -1,4 +1,4 @@
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { formatDateHu } from '../../domain/dates.js';
 import { formatHuf } from '../../domain/savings.js';
 import { formatTimeHu } from '../../lib/format.js';

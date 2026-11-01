@@ -1,4 +1,4 @@
-import { TOOLS } from '../../content/hu.js';
+import { TOOLS } from '../../content/index.js';
 import { Icon } from '../icons/Icon.jsx';
 import { Reminders } from '../Reminders.jsx';
 import { useAuth } from '../../hooks/useAuth.js';

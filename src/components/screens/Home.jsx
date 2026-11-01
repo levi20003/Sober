@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RISK_MESSAGES, HOME, T } from '../../content/hu.js';
+import { RISK_MESSAGES, HOME, T } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
 import { formatDateHu } from '../../domain/dates.js';
 import { figureOf, moodOnDay } from '../../domain/moods.js';

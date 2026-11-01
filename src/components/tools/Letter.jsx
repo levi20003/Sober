@@ -1,5 +1,5 @@
 // Levél önmagadnak: titkosított esemény. Nehéz pillanatban vagy mérföldkőnél előbukkan.
-import { TOOLS } from '../../content/hu.js';
+import { TOOLS } from '../../content/index.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { formatDateHu } from '../../domain/dates.js';
 import { useTimeline } from '../../hooks/useTimeline.js';

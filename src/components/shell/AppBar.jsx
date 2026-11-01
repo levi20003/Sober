@@ -1,5 +1,5 @@
 // Fejléc: oldalcím (a főoldalon köszönés + dátum), "Segítség most" és avatar. A segítség gomb minden oldalon, PIN nélkül elérhető.
-import { A11Y, HOME, NAV_TABS, T } from '../../content/hu.js';
+import { A11Y, HOME, NAV_TABS, T } from '../../content/index.js';
 import { CrisisButton } from '../crisis/CrisisButton.jsx';
 import { MoodFigure } from '../mood/MoodFigures.jsx';
 import { Mascot } from '../mood/Mascot.jsx';

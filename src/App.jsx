@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { HOME, NAV_TABS, TOOLS, UPDATE, T } from './content/hu.js';
+import { HOME, MISC, NAV_TABS, ONB, TOOLS, UPDATE, T } from './content/index.js';
 import { AuthStatus } from './auth/appAuth.js';
 import { disableReminders } from './reminders.js';
 import { formatDayHu } from './domain/greeting.js';
@@ -152,7 +152,7 @@ function Shell() {
       </TimelineProvider>
     );
   } else {
-    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header><main className="screen screen-plain" id="main" tabIndex={-1}><p>Betöltés…</p></main></>;
+    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header><main className="screen screen-plain" id="main" tabIndex={-1}><p>{MISC.loading}</p></main></>;
   }
 
   return (
@@ -178,7 +178,7 @@ function RecoveryOverlay({ code, onDone }) {
         <input type="checkbox" id="rc2-ok" checked={ok} onChange={(e) => setOk(e.target.checked)} />
         <label htmlFor="rc2-ok">{T.recoveryConfirm}</label>
       </div>
-      <button type="button" className="btn btn-primary btn-big" disabled={!ok} onClick={onDone}>Tovább</button>
+      <button type="button" className="btn btn-primary btn-big" disabled={!ok} onClick={onDone}>{ONB.next}</button>
     </div>
   );
 }

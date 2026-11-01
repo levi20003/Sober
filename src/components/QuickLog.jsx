@@ -3,7 +3,7 @@
 // optional (intensity for difficult moments, an encrypted note).
 
 import { useRef, useState } from 'react';
-import { T } from '../content/hu.js';
+import { T } from '../content/index.js';
 import { QUICK_TEMPLATES, quickLogAction } from '../domain/presets.js';
 import { useTimeline } from '../hooks/useTimeline.js';
 import { useToast } from '../hooks/useToast.jsx';

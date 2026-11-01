@@ -2,7 +2,7 @@
 // and are named plainly; see domain/savings.js updateCostHistory.
 
 import { useState } from 'react';
-import { T } from '../../content/hu.js';
+import { T, MISC } from '../../content/index.js';
 import { formatHuf, parseHufInput } from '../../domain/savings.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { formatDateHu, toDateKey } from '../../domain/dates.js';
@@ -22,7 +22,7 @@ export function CostEditor() {
 
   const { onSubmit, busy } = useFormAction(async (fd, form) => {
     const amountHuf = parseHufInput(fd.get('amount'));
-    if (Number.isNaN(amountHuf)) throw userError('A napi költség 0 és 1 000 000 Ft közötti szám legyen.');
+    if (Number.isNaN(amountHuf)) throw userError(MISC.costRangeInvalid);
     await dispatch({ type: Actions.SET_DAILY_COST, payload: { amountHuf, mode, from: fd.get('from') || today } });
     toast(mode === 'all' ? T.costSavedAll : T.costSavedFrom);
     form.reset();
@@ -66,7 +66,7 @@ export function GoalEditor() {
   const goal = snapshot.data.settings.savingsGoal;
   const { onSubmit, busy } = useFormAction(async (fd) => {
     const amountHuf = parseHufInput(fd.get('amount'), MAX_GOAL);
-    if (Number.isNaN(amountHuf) || amountHuf < 1) throw userError('Adj meg egy pozitív összeget forintban.');
+    if (Number.isNaN(amountHuf) || amountHuf < 1) throw userError(MISC.goalAmountInvalid);
     await dispatch({ type: Actions.SET_SAVINGS_GOAL, payload: { goal: { label: fd.get('label'), amountHuf } } });
     toast(T.saved_ok);
   });
@@ -79,7 +79,7 @@ export function GoalEditor() {
       <summary>{T.goalTitle}</summary>
       <form className="stack" onSubmit={onSubmit} aria-busy={busy || undefined} key={goal ? `${goal.label}|${goal.amountHuf}` : 'none'}>
         <Field label={T.goalLabelLabel}>
-          <input type="text" name="label" className="input" maxLength={60} defaultValue={goal?.label ?? ''} placeholder="pl. új bicikli" required />
+          <input type="text" name="label" className="input" maxLength={60} defaultValue={goal?.label ?? ''} placeholder={MISC.goalPlaceholder} required />
         </Field>
         <Field label={T.goalAmountLabel}>
           <input type="text" name="amount" className="input" inputMode="numeric" defaultValue={goal ? String(goal.amountHuf) : ''} required />

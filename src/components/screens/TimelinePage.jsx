@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TIMELINE_PAGE as TP, T } from '../../content/hu.js';
+import { TIMELINE_PAGE as TP, T } from '../../content/index.js';
 import { MOODS } from '../../domain/presets.js';
 import { moodPatterns } from '../../domain/moods.js';
 import { timelineSeries } from '../../domain/series.js';

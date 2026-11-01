@@ -1,7 +1,7 @@
 // <TimelineView />: the journal as a continuous growth history – total sober days,
 // a proportional timeline bar, and one card per phase (newest first).
 
-import { T } from '../../content/hu.js';
+import { T, MISC } from '../../content/index.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';
@@ -17,7 +17,7 @@ export function TimelineBody() {
   const onDelete = async (e) => {
     if (!confirm(T.deleteEntryConfirm)) return;
     await dispatch({ type: Actions.DELETE_ENTRY, payload: { id: e.id } });
-    toast('Bejegyzés törölve.');
+    toast(MISC.entryDeleted);
   };
 
   const empty = phases.every((p) => p.entries.length === 0);

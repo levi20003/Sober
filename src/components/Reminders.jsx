@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { T } from '../content/hu.js';
+import { T, MISC } from '../content/index.js';
 import { enableReminders, disableReminders, remindersSupported } from '../reminders.js';
 import { useToast } from '../hooks/useToast.jsx';
 import { Field } from './ui.jsx';
@@ -15,10 +15,10 @@ export function Reminders({ store }) {
       if (enabled) {
         const r = await enableReminders(store, time || '20:00');
         if (r.denied) { toast(T.remindersDenied, 'error'); return setRem({ ...rem, enabled: false, time }); }
-        toast('Emlékeztető bekapcsolva.');
+        toast(MISC.remindersOn);
       } else {
         await disableReminders(store);
-        toast('Emlékeztető kikapcsolva.');
+        toast(MISC.remindersOff);
       }
       setRem({ ...rem, enabled, time });
     } catch (err) {

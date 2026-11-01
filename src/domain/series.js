@@ -1,6 +1,7 @@
 // Diagramok és bontások adatai: józan napok / hangulat az időben, havi megtakarítás.
 // Minden szám a fázisokból és az eseményekből számolódik (nincs tárolt számláló).
 
+import { pick } from '../i18n/locale.js';
 import { addDays, addMonths, diffDays, monthNameHu, startOfMonth } from './dates.js';
 import { savingsBetween } from './savings.js';
 import { valenceBetween } from './moods.js';
@@ -17,7 +18,7 @@ export function soberDaysIn(phases, from, toExclusive, today) {
   return n;
 }
 
-const DOW_HU = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
+const DOW_HU = pick(['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'], ['S', 'M', 'T', 'W', 'T', 'F', 'S']);
 
 /**
  * Buckets for the Idővonal chart.

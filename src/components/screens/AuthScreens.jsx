@@ -3,11 +3,11 @@
 // Every transition goes through the auth state machine (src/auth/appAuth.js).
 
 import { useState } from 'react';
-import { T } from '../../content/hu.js';
+import { T, MISC, ONB } from '../../content/index.js';
 import { createInitialData } from '../../domain/schema.js';
 import { toDateKey } from '../../domain/dates.js';
 import { parseHufInput } from '../../domain/savings.js';
-import { userError } from '../../lib/errors.js';
+import { friendlyError, userError } from '../../lib/errors.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { useFormAction } from '../../hooks/useFormAction.js';
@@ -19,7 +19,7 @@ export function Onboarding({ onCreated, onRestored }) {
   const create = useFormAction(async (fd) => {
     if (fd.get('pin') !== fd.get('pin2')) throw userError(T.pinMismatch);
     const cost = parseHufInput(fd.get('cost'));
-    if (Number.isNaN(cost)) throw userError('A napi költség 0 és 1 000 000 Ft közötti szám legyen.');
+    if (Number.isNaN(cost)) throw userError(MISC.costRangeInvalid);
     const { recoveryCode } = await auth.setup(fd.get('pin'), createInitialData({ journeyStart: fd.get('start'), dailyCostHuf: cost }));
     onCreated(recoveryCode);
   });
@@ -45,10 +45,10 @@ export function Onboarding({ onCreated, onRestored }) {
         </form>
       </section>
       <details className="card">
-        <summary>Van már mentésem másik eszközről</summary>
+        <summary>{MISC.haveBackup}</summary>
         <form className="stack" onSubmit={restore.onSubmit} aria-busy={restore.busy || undefined}>
-          <Field label="Mentésfájl"><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
-          <Field label="A mentés PIN-kódja"><PinInput name="pin" autoComplete="current-password" /></Field>
+          <Field label={MISC.backupFile}><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
+          <Field label={MISC.backupPin}><PinInput name="pin" autoComplete="current-password" /></Field>
           <button type="submit" className="btn" disabled={restore.busy}>{T.importEncrypted}</button>
         </form>
       </details>
@@ -71,7 +71,7 @@ export function RecoveryCode({ code, onDone }) {
         <input type="checkbox" id="rc-ok" checked={ok} onChange={(e) => setOk(e.target.checked)} />
         <label htmlFor="rc-ok">{T.recoveryConfirm}</label>
       </div>
-      <button type="button" className="btn btn-primary" disabled={!ok} onClick={onDone}>Tovább</button>
+      <button type="button" className="btn btn-primary" disabled={!ok} onClick={onDone}>{ONB.next}</button>
     </Screen>
   );
 }
@@ -89,17 +89,17 @@ export function LockScreen({ onReset }) {
     } catch (err) {
       setLastPin(fd.get('pin'));
       // Clear, persistent feedback in addition to the toast. Nothing is ever deleted on a wrong PIN.
-      if (err.code === 'WRONG_SECRET') setStatus(err.retryAfterMs ? err.message : T.errWrongPin);
+      if (err.code === 'WRONG_SECRET') setStatus(err.retryAfterMs ? friendlyError(err) : T.errWrongPin);
       throw err;
     }
   });
   const recover = useFormAction(async (fd) => {
     await auth.recover(fd.get('code'), fd.get('pin'));
-    toast('A PIN-kód módosult. A naplód megmaradt.');
+    toast(MISC.pinChangedKept);
   });
   const repair = useFormAction(async () => {
     await auth.restorePrevious(lastPin);
-    toast('A korábbi mentés visszaállítva.');
+    toast(MISC.previousRestored);
   });
   // Zero-knowledge reset: the only way forward without PIN and recovery code.
   const reset = useFormAction(async (fd) => {
@@ -112,7 +112,7 @@ export function LockScreen({ onReset }) {
       <h1>{T.lockTitle}</h1>
       <section className="card">
         <form className="stack" onSubmit={unlock.onSubmit} aria-busy={unlock.busy || undefined}>
-          <Field label="PIN-kód"><PinInput name="pin" autoComplete="current-password" /></Field>
+          <Field label={MISC.pinField}><PinInput name="pin" autoComplete="current-password" /></Field>
           <button type="submit" className="btn btn-primary" disabled={unlock.busy}>{T.unlockButton}</button>
           <p className="hint" aria-live="polite">{status}</p>
         </form>

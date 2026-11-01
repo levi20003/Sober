@@ -1,3 +1,5 @@
+import { intlTag, locale } from '../i18n/locale.js';
+
 // Napszak szerinti köszönés és magyar dátumformátum. Tiszta függvények (az órát kívülről kapják).
 
 /** 'reggel' (5–9), 'nap' (10–17), 'este' (18–21), 'ejszaka' (22–4). */
@@ -11,7 +13,8 @@ export function dayPart(date) {
 
 /** "vasárnap, november 1." (az Intl alapértelmezett sorrendje "november 1., vasárnap" lenne) */
 export function formatDayHu(date) {
-  const part = (opts) => new Intl.DateTimeFormat('hu-HU', opts).format(date);
+  if (locale !== 'hu') return new Intl.DateTimeFormat(intlTag, { weekday: 'long', day: 'numeric', month: 'long' }).format(date);
+  const part = (opts) => new Intl.DateTimeFormat(intlTag, opts).format(date);
   return `${part({ weekday: 'long' })}, ${part({ month: 'long' })} ${part({ day: 'numeric' })}.`;
 }
 

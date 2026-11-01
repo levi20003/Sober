@@ -1,7 +1,7 @@
 // The always-visible one-tap trigger. A plain link to #/segitseg: it works before
 // the app has finished loading and needs no state.
 
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { CRISIS_HASH } from '../../lib/hashRouter.js';
 
 export function CrisisButton() {

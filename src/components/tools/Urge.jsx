@@ -1,6 +1,6 @@
 // "Most nagyon kívánom": 10 perces hullám-időzítő, légzés, elterelések, saját okok. Az "Elmúlt?" válasz győzelemként kerül az idővonalra.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { TOOLS, T } from '../../content/hu.js';
+import { TOOLS, T, MISC } from '../../content/index.js';
 import { createCountdown, formatClock, URGE_DURATION_MS } from '../../domain/countdown.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
@@ -55,7 +55,7 @@ export function Urge() {
       <section className="card tone tone-lavender urge" aria-labelledby="urge-h">
         <h2 id="urge-h">{TOOLS.urgeTitle}</h2>
         <p>{TOOLS.urgeText}</p>
-        <p className="urge-clock" role="timer" aria-label={`${state.secondsLeft} másodperc van hátra`}>{formatClock(state.secondsLeft)}</p>
+        <p className="urge-clock" role="timer" aria-label={MISC.urgeTimer(state.secondsLeft)}>{formatClock(state.secondsLeft)}</p>
         <div className="wave-bar" aria-hidden="true"><i style={{ transform: `scaleX(${Math.max(0.02, state.progress ?? 0)})` }} /></div>
         {started && <p aria-live="polite"><strong>{TOOLS.urgeLevels[state.level] ?? ''}</strong></p>}
         <div className="breath-blob" aria-hidden="true" />
@@ -67,7 +67,7 @@ export function Urge() {
         </div>
       </section>
       {started && (
-        <section className="card tone tone-peach"><p className="stat-label">Próbáld ki</p><p className="quote">{tip}</p></section>
+        <section className="card tone tone-peach"><p className="stat-label">{MISC.urgeTry}</p><p className="quote">{tip}</p></section>
       )}
       {reasons.length > 0 && (
         <section className="card tone tone-butter" aria-labelledby="why-h">

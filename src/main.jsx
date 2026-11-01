@@ -8,8 +8,11 @@ import { createHashRouter } from './lib/hashRouter.js';
 import { createUpdateManager } from './lib/updateManager.js';
 import { createApkUpdateManager } from './lib/apkUpdate.js';
 import { applyPrefs, getPrefs } from './hooks/usePrefs.js';
+import { A11Y, T } from './content/index.js';
 import { isNativeShell } from './lib/platform.js';
 
+document.title = T.appName;
+document.querySelector('.skip')?.replaceChildren(A11Y.skipLink);
 applyPrefs(); // téma és "kevesebb mozgás" még az első kirajzolás előtt
 
 const auth = createAppAuth({ openBackend: openBestBackend });

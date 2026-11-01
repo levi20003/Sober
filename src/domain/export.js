@@ -1,23 +1,22 @@
 // Plaintext exports (user-initiated, with warning in UI) and JSON import.
 
 import { labelOf } from './presets.js';
+import { MISC } from '../content/index.js';
+import { intlTag } from '../i18n/locale.js';
 import { validateData } from './schema.js';
 
 export const CSV_BOM = '﻿';
 const SEP = ';'; // Hungarian Excel uses ';' as list separator (decimal comma locale)
 
-const TYPE_LABELS = {
-  checkin: 'Napi bejelentkezés', trigger: 'Nehéz pillanat', slip: 'Megcsúszás, új szakasz', note: 'Jegyzet',
-  urge: 'Sóvárgás-túlélő', challenge: 'Napi kihívás', gratitude: 'Hála', letter: 'Levél',
-};
+const TYPE_LABELS = MISC.export.types;
 
 /** Type-specific content of the newer event kinds, in one human-readable cell. */
 function details(e) {
   switch (e.type) {
     case 'gratitude': return e.items.join(', ');
-    case 'urge': return `${Math.round(e.seconds / 60)} perc, ${e.outcome === 'passed' ? 'elmúlt' : 'még tart'}`;
+    case 'urge': return MISC.export.urge(Math.round(e.seconds / 60), e.outcome === 'passed');
     case 'challenge': return e.challengeId;
-    case 'letter': return e.when === 'milestone' ? `mérföldkőnél${e.milestoneDays ? ` (${e.milestoneDays} nap)` : ''}` : 'nehéz pillanatban';
+    case 'letter': return e.when === 'milestone' ? MISC.export.letterMilestone(e.milestoneDays) : MISC.export.letterHard;
     default: return '';
   }
 }
@@ -36,10 +35,10 @@ export function csvCell(value) {
 }
 
 export function toCsvExport(data) {
-  const header = ['Dátum', 'Időpont', 'Típus', 'Hangulat', 'Alvás', 'Sóvárgás', 'Kiváltó helyzetek', 'Erősség', 'Megküzdés', 'Kimenet', 'Tanulság', 'Jegyzet', 'Részletek'];
+  const header = MISC.export.header;
   const rows = data.events.map((e) => [
     e.date,
-    new Date(e.at).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }),
+    new Date(e.at).toLocaleTimeString(intlTag, { hour: '2-digit', minute: '2-digit' }),
     TYPE_LABELS[e.type],
     e.mood && labelOf('mood', e.mood),
     e.sleep && labelOf('sleep', e.sleep),

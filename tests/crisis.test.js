@@ -3,7 +3,7 @@ import { test, beforeEach, afterEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
-import { HELPLINES, BREATHING } from '../src/content/hu.js';
+import { HELPLINES, BREATHING } from '../src/content/index.js';
 import { telHref, displayMatchesTel, splitHelplines, copyNumber, digitsOf } from '../src/domain/helplines.js';
 import {
   breathingStateAt, createBreathingController, validatePattern, cycleMs, totalMs, MIN_SCALE, MAX_SCALE,
@@ -217,4 +217,27 @@ test('static HTML fallback lists every helpline (works if a JS module fails to l
     assert.ok(html.includes(`href="tel:${l.tel}"`), `${l.id} tel link missing from index.html fallback`);
     assert.ok(html.includes(l.number), `${l.id} number missing from index.html fallback`);
   }
+});
+
+// --- Országonkénti segélyvonalak (v0.8) ---
+import { HELPLINES_BY_COUNTRY, helplinesFor } from '../src/content/index.js';
+
+test('every country has an emergency line and calling lines with consistent numbers', () => {
+  for (const [country, lines] of Object.entries(HELPLINES_BY_COUNTRY)) {
+    const { emergency, talk } = splitHelplines(lines);
+    assert.equal(emergency.length, 1, `${country}: one emergency line`);
+    assert.ok(talk.length >= 1, `${country}: at least one talk line`);
+    for (const l of lines) {
+      assert.ok(['official', 'multiple-secondary', 'unverified'].includes(l.verification), `${country}/${l.id}`);
+      if (l.url) { assert.match(l.url, /^https:\/\//); continue; }
+      assert.ok(displayMatchesTel(l), `${country}/${l.id}: shown number equals dialled number`);
+      assert.doesNotThrow(() => telHref(l));
+    }
+  }
+  assert.equal(helplinesFor('nowhere'), helplinesFor('INT'), 'unknown country falls back to international');
+});
+
+test('numbers that are only secondarily verified are listed, so a pre-launch test call cannot be forgotten', () => {
+  const pending = Object.values(HELPLINES_BY_COUNTRY).flat().filter((l) => l.verification !== 'official').map((l) => l.id).sort();
+  assert.deepEqual(pending, ['drinkline', 'drog-stop', 'findahelpline', 'frank', 'lifeline-988', 'samaritans', 'samhsa']);
 });

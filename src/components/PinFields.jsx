@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { T } from '../content/hu.js';
+import { T } from '../content/index.js';
 import { assessSecret, MIN_SECRET_LENGTH } from '../crypto/vault.js';
 import { Field } from './ui.jsx';
 

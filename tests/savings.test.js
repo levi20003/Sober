@@ -9,7 +9,7 @@ import { derivePhases } from '../src/domain/timeline.js';
 import { validateData, migrate, SCHEMA_VERSION } from '../src/domain/schema.js';
 import { addDays } from '../src/domain/dates.js';
 import { parseJsonImport } from '../src/domain/export.js';
-import { SAVINGS_MILESTONES } from '../src/content/hu.js';
+import { SAVINGS_MILESTONES } from '../src/content/index.js';
 import { QUICK_TEMPLATES, quickLogAction } from '../src/domain/presets.js';
 import { createTimelineStore } from '../src/state/timelineStore.js';
 import { MemoryBackend } from '../src/storage/backends.js';

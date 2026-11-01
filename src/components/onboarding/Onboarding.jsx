@@ -5,7 +5,10 @@
 // Ha a felhasználó közben kilép, a következő megnyitáskor az 1. lépéstől indul, és nem maradt utána semmi.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ONB, T } from '../../content/hu.js';
+import { MISC, ONB, PREVIEW, T } from '../../content/index.js';
+import { LOCALES } from '../../i18n/locale.js';
+import { usePrefs } from '../../hooks/usePrefs.js';
+import { feedbackUrl } from '../../lib/feedback.js';
 import { MAX_GOAL_DAYS, MAX_NICKNAME, createInitialData } from '../../domain/schema.js';
 import { GOAL_OPTIONS } from '../../domain/milestones.js';
 import { LABELS, ONBOARDING_TRIGGERS, SUBSTANCES } from '../../domain/presets.js';
@@ -95,11 +98,19 @@ function ChoiceGrid({ legend, options, selected, onToggle, multiple = true, name
 }
 
 function Welcome({ onRestore }) {
+  const [prefs, setPrefs] = usePrefs();
   return (
     <>
+      <div className="chip-row" role="group" aria-label={ONB.languageLabel}>
+        {LOCALES.map((id) => (
+          <button key={id} type="button" className={`btn${prefs.lang === id ? ' btn-primary' : ''}`} aria-pressed={prefs.lang === id}
+            onClick={() => { if (prefs.lang !== id) { setPrefs({ lang: id }); location.reload(); } }}>{id === 'hu' ? 'Magyar' : 'English'}</button>
+        ))}
+      </div>
       <h1>{ONB.welcomeTitle}</h1>
       <p className="lead">{ONB.welcomeText}</p>
       <p className="card card-soft">{T.privacyPromise}</p>
+      <p className="card card-soft"><span className="pill">{PREVIEW.badge}</span> {PREVIEW.text} <a href={feedbackUrl()} target="_blank" rel="noopener noreferrer">{PREVIEW.feedback}</a></p>
       <details className="card">
         <summary>{ONB.welcomeRestore}</summary>
         <RestoreForm onRestored={onRestore} />
@@ -117,8 +128,8 @@ function RestoreForm({ onRestored }) {
   });
   return (
     <form className="stack" onSubmit={restore.onSubmit} aria-busy={restore.busy || undefined}>
-      <Field label="Mentésfájl"><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
-      <Field label="A mentés PIN-kódja"><PinInput name="pin" autoComplete="current-password" /></Field>
+      <Field label={MISC.backupFile}><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
+      <Field label={MISC.backupPin}><PinInput name="pin" autoComplete="current-password" /></Field>
       <button type="submit" className="btn" disabled={restore.busy}>{T.importEncrypted}</button>
     </form>
   );
