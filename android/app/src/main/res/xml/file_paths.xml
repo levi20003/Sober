@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Csak a megosztásra szánt mentésfájl ideiglenes helye (cache/backups) érhető el FileProvideren át;
+<!-- Csak a megosztásra szánt mentésfájl (cache/backups) és a frissítés APK-ja (cache/updates) érhető el FileProvideren át;
      a külső tárhely és az app többi fájlja nem. -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <cache-path name="backups" path="backups/" />
+    <!-- A frissítő modul letöltött, ellenőrzött APK-ja (csak a rendszer telepítője kap olvasási jogot). -->
+    <cache-path name="updates" path="updates/" />
 </paths>

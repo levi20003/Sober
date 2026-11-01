@@ -27,6 +27,7 @@ import { QuickAddSheet } from './components/shell/QuickAddSheet.jsx';
 import { FreshStartModal } from './components/timeline/FreshStartModal.jsx';
 import { PreviewNotice } from './components/home/Notices.jsx';
 import { isNativeShell } from './lib/platform.js';
+import { ApkUpdateStatus, apkBusy } from './components/ApkUpdateStatus.jsx';
 
 const SUBTITLES = { '#/eszkozok/hullam': TOOLS.urgeTitle, '#/eszkozok/hala': TOOLS.gratitudeTitle, '#/eszkozok/level': TOOLS.letterTitle, '#/eszkozok/okok': TOOLS.reasonsTitle,
   '#/rogzites/bejelentkezes': T.actionCheckin, '#/rogzites/nehez-pillanat': T.triggerTitle, '#/rogzites/jegyzet': T.noteTitle };
@@ -56,11 +57,18 @@ function Routes({ route, onWipe, showRecoveryCode }) {
 /** Minden oldalon látszik, amint új verzió van kész (a háttérben futó keresés találata). */
 function UpdateBanner() {
   const update = useUpdate();
-  if (!update.ready) return null;
+  const native = update?.native;
+  if (!update?.ready && !(native && ['downloading', 'installing', 'permission', 'error'].includes(update?.status))) return null;
+  if (native && update.status === 'error' && update.errorCode === 'NOT_NEWER') return null;
   return (
     <div className="update-banner" role="status" style={{ maxWidth: 528, margin: '8px auto' }}>
-      <span>{update.native ? UPDATE.apkBanner : UPDATE.banner}</span>
-      <button type="button" className="btn btn-primary" onClick={update.apply}>{update.native ? UPDATE.apkApply : UPDATE.apply}</button>
+      <div className="stack" style={{ flex: 1 }}>
+        <span>{native ? UPDATE.apkBanner : UPDATE.banner}</span>
+        {native && <ApkUpdateStatus update={update} />}
+      </div>
+      <button type="button" className="btn btn-primary" onClick={update.apply} disabled={native && apkBusy(update)}>
+        {native ? (update.status === 'error' ? UPDATE.apkRetry : UPDATE.apkApply) : UPDATE.apply}
+      </button>
     </div>
   );
 }
@@ -134,10 +142,11 @@ function Shell() {
 
   // Automatikus frissítés: zárolt képernyőn (nincs elveszíthető félkész munka) azonnal, egyébként a felhasználó kérésére.
   useEffect(() => {
-    if (update.ready && state.status === AuthStatus.LOCKED && !onbOpen) update.apply();
+    // Csak a webes változat (service worker) frissül magától zárolt képernyőn; az APK-t a felhasználó indítja.
+    if (update.ready && !update.native && state.status === AuthStatus.LOCKED && !onbOpen) update.apply();
   }, [update.ready, state.status, onbOpen]);
   const toasted = useRef(false);
-  useEffect(() => { if (update.ready && unlocked && !toasted.current) { toasted.current = true; toast(UPDATE.toast); } }, [update.ready, unlocked, toast]);
+  useEffect(() => { if (update.ready && !update.native && unlocked && !toasted.current) { toasted.current = true; toast(UPDATE.toast); } }, [update.ready, update.native, unlocked, toast]);
 
   const wipe = async () => {
     await disableReminders(auth.store).catch(() => {});
