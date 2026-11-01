@@ -405,7 +405,7 @@ export const ONB = {
 
 export const HOME = {
   hello: (greeting, name) => (name ? `${greeting}, ${name}` : greeting),
-  appbarHello: (name) => (name ? `Hi, ${name} 👋` : 'Hi 👋'),
+  appbarHello: (name) => (name ? `Hi, ${name}` : 'Hi'),
   totalLabel: 'Your total sober days',
   totalSub: 'A slip does not erase them: all your sober days stay.',
   newPhase: 'A new chapter began today. Your path so far is kept.',
@@ -477,13 +477,13 @@ export const TIPS = [
 ];
 
 export const FUN_ITEMS = [
-  { id: 'pizza', label: 'pizzas 🍕', priceHuf: 3500 },
-  { id: 'cinema', label: 'cinema tickets 🎬', priceHuf: 3500 },
-  { id: 'coffee', label: 'coffees ☕', priceHuf: 900 },
-  { id: 'book', label: 'good books 📚', priceHuf: 6000 },
-  { id: 'icecream', label: 'ice creams 🍦', priceHuf: 800 },
-  { id: 'bike', label: 'bike tune-ups 🚲', priceHuf: 25000 },
-  { id: 'trip', label: 'weekend trips 🏞️', priceHuf: 60000 },
+  { id: 'pizza', label: 'pizzas', priceHuf: 3500 },
+  { id: 'cinema', label: 'cinema tickets', priceHuf: 3500 },
+  { id: 'coffee', label: 'coffees', priceHuf: 900 },
+  { id: 'book', label: 'good books', priceHuf: 6000 },
+  { id: 'icecream', label: 'ice creams', priceHuf: 800 },
+  { id: 'bike', label: 'bike tune-ups', priceHuf: 25000 },
+  { id: 'trip', label: 'weekend trips', priceHuf: 60000 },
 ];
 
 export const TIMELINE_PAGE = {
@@ -735,4 +735,23 @@ export const UX = {
   moreSettings: 'More',
   welcomeInfo: 'What is this app?',
   welcomeInfoText: 'A few questions and we will make it yours. You can skip any question and change everything later. If you leave during the questions, we start over, and nothing is saved until then.',
+};
+
+// Short onboarding and the "Make it yours" card on the home screen (v1.0).
+export const SETUP = {
+  nickLabel: 'What should I call you? (optional)',
+  title: 'Make it yours',
+  progress: (a, b) => `${a} / ${b} done`,
+  goal: 'Set a goal',
+  cost: 'How much did you spend on it a day?',
+  triggers: 'When is it harder?',
+  notNow: 'Not now',
+  save: 'Save',
+  stats: 'Statistics',
+  nextBadge: 'Next milestone',
+  badgeIn: (n) => `in ${n} days`,
+  badgeDone: 'All earned',
+  goalLine: (left) => (left > 0 ? `${left} days to your goal` : 'Goal reached'),
+  thought: 'Thought for today',
+  moodLogged: 'Today\'s mood',
 };

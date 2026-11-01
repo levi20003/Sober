@@ -38,7 +38,7 @@ test('useTimeline: a failed encrypted save leaves the UI state untouched', async
 
 test('<FreshStartModal />: closes the phase as a growth block, keeps every sober day', async () => {
   const { vault, backend } = await makeVault({ startDaysAgo: 30 });
-  renderWithApp(<Home />, { vault });
+  renderWithApp(<><Home /><TimelinePage /></>, { vault }); // a "Megcsúsztam" az Idővonalon és a + lapon van
   assert.equal(document.querySelector('.hero-value').textContent, '30');
   assert.ok(screen.getByText('Összes józan napod: 30 nap'), 'the full count is also available as text');
 
@@ -60,7 +60,7 @@ test('<FreshStartModal />: closes the phase as a growth block, keeps every sober
   await gone('dialog.sheet-dialog');
   assert.equal(document.querySelector('.hero-value').textContent, '30', 'total unchanged, never reset');
   assert.ok(screen.getByText('Ma új szakasz kezdődött. Az eddigi utad megmaradt.'));
-  assert.equal(document.querySelectorAll('.hero .tl-seg').length, 2);
+  assert.equal(document.querySelectorAll('.hero-card .tl-seg').length, 2);
 
   // Persisted encrypted: a fresh unlock sees the same history.
   assert.ok(!JSON.stringify([...backend.map]).includes('Korán'));
@@ -71,7 +71,7 @@ test('<FreshStartModal />: closes the phase as a growth block, keeps every sober
 
 test('<FreshStartModal />: Esc cancels without logging anything', async () => {
   const { vault } = await makeVault();
-  renderWithApp(<Home />, { vault });
+  renderWithApp(<TimelinePage />, { vault });
   fireEvent.click(screen.getByRole('button', { name: 'Megcsúsztam' }));
   fireEvent(document.querySelector('dialog.sheet-dialog'), new Event('cancel', { cancelable: true }));
   await gone('dialog.sheet-dialog');

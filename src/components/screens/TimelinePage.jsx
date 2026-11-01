@@ -9,6 +9,8 @@ import { QuickLog } from '../QuickLog.jsx';
 import { FreshStartModal } from '../timeline/FreshStartModal.jsx';
 import { TimelineBody } from '../timeline/TimelineView.jsx';
 import { Page } from '../shell/Page.jsx';
+import { Badges, EnergyStress, WeekMoods } from '../home/Widgets.jsx';
+import { SETUP } from '../../content/index.js';
 
 const NAMES = Object.fromEntries(MOODS.map((m) => [m.id, m.label]));
 
@@ -53,6 +55,11 @@ export function TimelinePage() {
           </ul>
         </section>
       )}
+
+      <h2 className="section-title">{SETUP.stats}</h2>
+      <WeekMoods events={data.events} today={today} />
+      <EnergyStress events={data.events} today={today} />
+      <Badges total={snapshot.stats.totalSoberDays} />
 
       <QuickLog />
       <div className="actions"><button type="button" className="btn btn-ghost" onClick={() => setFresh(true)}>{T.actionSlip}</button></div>

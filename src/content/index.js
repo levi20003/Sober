@@ -35,6 +35,7 @@ export const CHALLENGE_CATALOG = L.CHALLENGE_CATALOG;
 export const A11Y = L.A11Y;
 export const MISC = L.MISC;
 export const UX = L.UX;
+export const SETUP = L.SETUP;
 
 // Az ötlet-listák árai a választott pénznemben (forint-alapról átszámítva, kerekítve).
 export const SAVINGS_MILESTONES = convertAmounts(L.SAVINGS_MILESTONES, 'amountHuf');

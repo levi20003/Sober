@@ -10,7 +10,7 @@ export function ToastProvider({ children }) {
   const toast = useCallback((message, kind = 'info') => {
     setMsg({ message, kind, key: Date.now() });
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setMsg(null), 6000);
+    timer.current = setTimeout(() => setMsg(null), 3500);
   }, []);
   useEffect(() => () => clearTimeout(timer.current), []);
 
