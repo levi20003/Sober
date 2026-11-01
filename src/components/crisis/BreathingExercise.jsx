@@ -4,7 +4,7 @@
 // Keeps the screen awake while running (Screen Wake Lock, where supported).
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { T, BREATHING } from '../../content/hu.js';
+import { T, BREATHING } from '../../content/index.js';
 import { MIN_SCALE } from '../../domain/breathing.js';
 import { useBreathing } from '../../hooks/useBreathing.js';
 import { Chips } from '../ui.jsx';

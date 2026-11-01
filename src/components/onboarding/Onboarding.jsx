@@ -5,7 +5,7 @@
 // Ha a felhasználó közben kilép, a következő megnyitáskor az 1. lépéstől indul, és nem maradt utána semmi.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ONB, T } from '../../content/hu.js';
+import { ONB, T } from '../../content/index.js';
 import { MAX_GOAL_DAYS, MAX_NICKNAME, createInitialData } from '../../domain/schema.js';
 import { GOAL_OPTIONS } from '../../domain/milestones.js';
 import { LABELS, ONBOARDING_TRIGGERS, SUBSTANCES } from '../../domain/presets.js';

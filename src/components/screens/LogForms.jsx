@@ -1,6 +1,6 @@
 // Full logging forms (the quick-log cards on Home cover the 2-tap path).
 
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { MOODS, TRIGGERS, COPING, OUTCOMES, SLEEP_LEVELS, CRAVING_LEVELS } from '../../domain/presets.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { userError } from '../../lib/errors.js';

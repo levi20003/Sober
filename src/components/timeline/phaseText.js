@@ -1,4 +1,4 @@
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { formatDateHu, addDays } from '../../domain/dates.js';
 import { labelOf } from '../../domain/presets.js';
 

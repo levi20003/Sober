@@ -12,7 +12,7 @@
 import { timelineReducer } from '../domain/timelineReducer.js';
 import { computeStats, phaseSummaries } from '../domain/timeline.js';
 import { computeSavings } from '../domain/savings.js';
-import { SAVINGS_MILESTONES } from '../content/hu.js';
+import { SAVINGS_MILESTONES } from '../content/index.js';
 import { toDateKey } from '../domain/dates.js';
 
 export function createTimelineStore(vault, { now = () => new Date() } = {}) {

@@ -1,6 +1,6 @@
 // A főoldal kártyái. Minden szám a titkosított napló eseményeiből és a fázisokból számolódik (src/domain/*).
 import { useEffect, useRef, useState } from 'react';
-import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, T, TIPS } from '../../content/hu.js';
+import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, T, TIPS } from '../../content/index.js';
 import { MOODS } from '../../domain/presets.js';
 import { energyStress, weekDigest, weekMoods } from '../../domain/moods.js';
 import { goalProgress, milestoneStatus } from '../../domain/milestones.js';

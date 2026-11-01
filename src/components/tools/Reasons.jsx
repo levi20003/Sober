@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TOOLS } from '../../content/hu.js';
+import { TOOLS } from '../../content/index.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';

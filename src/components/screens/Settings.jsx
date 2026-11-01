@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { T, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, ONB } from '../../content/hu.js';
+import { T, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, ONB } from '../../content/index.js';
 import { toCsvExport, toJsonExport, parseJsonImport } from '../../domain/export.js';
 import { toDateKey } from '../../domain/dates.js';
 import { download } from '../../lib/format.js';

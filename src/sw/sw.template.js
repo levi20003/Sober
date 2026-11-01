@@ -8,7 +8,7 @@ const VERSION = '__SW_VERSION__';
 const CACHE = `jsz-shell-${VERSION}`;
 const SHELL = __SW_PRECACHE__;
 
-// Kept in sync with src/content/hu.js NOTIFICATION (classic SW cannot import ES modules everywhere).
+// Kept in sync with src/content/index.js NOTIFICATION (classic SW cannot import ES modules everywhere).
 const NOTE = {
   title: 'Egy perc magadra',
   body: 'Hogy telik a napod? Ha van kedved, nézz be.',

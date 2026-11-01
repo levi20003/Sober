@@ -2,7 +2,7 @@
 // On devices that cannot call (desktop), a copy button appears via CSS media query.
 
 import { useRef, useState } from 'react';
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { telHref, copyNumber } from '../../domain/helplines.js';
 import { useToast } from '../../hooks/useToast.jsx';
 

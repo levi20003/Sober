@@ -1,6 +1,6 @@
 // Mérföldkő-ünneplés: teljes képernyő, konfetti, táncoló Pötty és rövid rezgés (ha van és a mozgás nem csökkentett).
 import { useEffect, useRef } from 'react';
-import { CELEBRATE } from '../../content/hu.js';
+import { CELEBRATE } from '../../content/index.js';
 import { useReducedMotion } from '../../hooks/useReducedMotion.js';
 import { Confetti } from '../Confetti.jsx';
 import { Mascot } from '../mood/Mascot.jsx';

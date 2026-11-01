@@ -2,7 +2,7 @@
 // and are named plainly; see domain/savings.js updateCostHistory.
 
 import { useState } from 'react';
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { formatHuf, parseHufInput } from '../../domain/savings.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { formatDateHu, toDateKey } from '../../domain/dates.js';

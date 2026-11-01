@@ -1,4 +1,4 @@
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 
 /**
  * Proportional bar: one segment per phase (width ∝ days, min. visible), slip days

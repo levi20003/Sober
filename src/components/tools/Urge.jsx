@@ -1,6 +1,6 @@
 // "Most nagyon kívánom": 10 perces hullám-időzítő, légzés, elterelések, saját okok. Az "Elmúlt?" válasz győzelemként kerül az idővonalra.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { TOOLS, T } from '../../content/hu.js';
+import { TOOLS, T } from '../../content/index.js';
 import { createCountdown, formatClock, URGE_DURATION_MS } from '../../domain/countdown.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';

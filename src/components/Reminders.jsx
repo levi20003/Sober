@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { T } from '../content/hu.js';
+import { T } from '../content/index.js';
 import { enableReminders, disableReminders, remindersSupported } from '../reminders.js';
 import { useToast } from '../hooks/useToast.jsx';
 import { Field } from './ui.jsx';

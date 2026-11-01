@@ -5,7 +5,7 @@ import { render, screen, fireEvent, within, act, cleanup } from '@testing-librar
 import { CrisisOverlay } from '../../src/components/crisis/CrisisOverlay.jsx';
 import { CrisisButton } from '../../src/components/crisis/CrisisButton.jsx';
 import { ToastProvider } from '../../src/hooks/useToast.jsx';
-import { HELPLINES } from '../../src/content/hu.js';
+import { HELPLINES } from '../../src/content/index.js';
 import './setup.jsx';
 
 // Offline: the browser reports offline and every network API fails loudly.

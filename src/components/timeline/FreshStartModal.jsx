@@ -3,7 +3,7 @@
 // Step 2: a growth summary of the archived phase. Never a bare toast, never a reset.
 
 import { useRef, useState } from 'react';
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { TRIGGERS } from '../../domain/presets.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { toDateKey } from '../../domain/dates.js';

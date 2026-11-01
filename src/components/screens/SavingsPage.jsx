@@ -1,4 +1,4 @@
-import { SAVINGS_PAGE as SP, T } from '../../content/hu.js';
+import { SAVINGS_PAGE as SP, T } from '../../content/index.js';
 import { formatHuf } from '../../domain/savings.js';
 import { savingsByMonth } from '../../domain/series.js';
 import { useTimeline } from '../../hooks/useTimeline.js';

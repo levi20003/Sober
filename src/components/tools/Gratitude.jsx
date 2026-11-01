@@ -1,4 +1,4 @@
-import { TOOLS } from '../../content/hu.js';
+import { TOOLS } from '../../content/index.js';
 import { Actions } from '../../domain/timelineReducer.js';
 import { hash } from '../../domain/daily.js';
 import { useTimeline } from '../../hooks/useTimeline.js';

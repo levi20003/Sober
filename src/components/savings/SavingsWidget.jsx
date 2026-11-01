@@ -1,4 +1,4 @@
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { formatHuf } from '../../domain/savings.js';
 import { Progress } from '../ui.jsx';
 

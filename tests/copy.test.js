@@ -3,7 +3,7 @@ import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import * as content from '../src/content/hu.js';
+import * as content from '../src/content/index.js';
 
 // Stems, matched case-insensitively anywhere in a word.
 const BANNED = [

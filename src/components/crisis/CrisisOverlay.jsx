@@ -9,7 +9,7 @@
 //  - Esc, "Vissza" or the browser Back button closes it; nothing is recorded
 
 import { useRef } from 'react';
-import { HELPLINES, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T } from '../../content/hu.js';
+import { HELPLINES, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
 import { splitHelplines } from '../../domain/helplines.js';
 import { useModalDialog } from '../../hooks/useModalDialog.js';

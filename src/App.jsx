@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { HOME, NAV_TABS, TOOLS, UPDATE, T } from './content/hu.js';
+import { HOME, NAV_TABS, TOOLS, UPDATE, T } from './content/index.js';
 import { AuthStatus } from './auth/appAuth.js';
 import { disableReminders } from './reminders.js';
 import { formatDayHu } from './domain/greeting.js';

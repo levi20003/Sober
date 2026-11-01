@@ -3,7 +3,7 @@
 // Every transition goes through the auth state machine (src/auth/appAuth.js).
 
 import { useState } from 'react';
-import { T } from '../../content/hu.js';
+import { T } from '../../content/index.js';
 import { createInitialData } from '../../domain/schema.js';
 import { toDateKey } from '../../domain/dates.js';
 import { parseHufInput } from '../../domain/savings.js';

@@ -1,6 +1,6 @@
 // Középső "+" gomb: alulról felcsúszó lap a leggyakoribb rögzítésekkel. A "Megcsúsztam" itt és az Idővonalon is elérhető.
 import { useRef } from 'react';
-import { QUICK_ADD, T } from '../../content/hu.js';
+import { QUICK_ADD, T } from '../../content/index.js';
 import { useModalDialog } from '../../hooks/useModalDialog.js';
 import { Icon } from '../icons/Icon.jsx';
 

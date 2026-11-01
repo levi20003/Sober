@@ -1,5 +1,5 @@
 // Lebegő alsó navigáció: 5 fül, min. 48×48 px érintési felület, aria-current, safe-area. Ikonok: saját inline SVG.
-import { A11Y, NAV_TABS } from '../../content/hu.js';
+import { A11Y, NAV_TABS } from '../../content/index.js';
 import { Icon } from '../icons/Icon.jsx';
 import { tabOf } from '../../lib/hashRouter.js';
 import { withTransition } from '../../lib/transition.js';

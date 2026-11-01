@@ -46,6 +46,7 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.{js,jsx}'],
     environment: 'node',
+    env: { VITE_LOCALE: 'hu' }, // a tesztek magyar felületet várnak; az angolt külön tesztek töltik be
     restoreMocks: true,
   },
 });

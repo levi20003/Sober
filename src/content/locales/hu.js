@@ -7,61 +7,10 @@
 //  - never promise a cure: the app "segít követni és támogatni"
 //  - no alcohol imagery (glass, bottle) and no identity labels
 
+import { currencySymbol as CUR, formatMoney } from '../../i18n/money.js';
+
 export const CONTENT_VERSION = '2026-10-26-draft';
 export const REVIEW_STATUS = 'Szakmai lektorálásra vár'; // set to the reviewer + date after sign-off
-
-// Helplines. `role: 'emergency'` is shown as a separate banner above the talk lines.
-// `verification` records HOW each number was checked (see docs/SAFETY.md):
-//   'official'          – confirmed on the operator's own or an official source
-//   'multiple-secondary'– several independent secondary sources agree; a test call is
-//                         REQUIRED before public launch (tracked in docs/CLINICAL-REVIEW.md)
-// Order matters: the first talk line is the primary (highlighted) one.
-export const HELPLINES = [
-  {
-    id: 'emergency',
-    role: 'emergency',
-    name: 'Általános segélyhívó',
-    number: '112',
-    tel: '112',
-    hours: 'Éjjel-nappal, ingyenes',
-    when: 'Ha közvetlen veszélyben vagy te vagy valaki más, vagy orvosi segítség kell (pl. súlyos elvonási tünetek, görcsroham, zavartság).',
-    verified: '2026-10-26',
-    verification: 'official',
-  },
-  {
-    id: 'lesz',
-    role: 'talk',
-    name: 'S.O.S. Lelki Elsősegély Telefonszolgálat',
-    number: '116-123',
-    tel: '116123',
-    hours: 'Éjjel-nappal, belföldről ingyenes, névtelenül hívható',
-    when: 'Ha beszélgetni szeretnél valakivel, aki meghallgat, bármilyen nehéz pillanatban.',
-    verified: '2026-10-29',
-    verification: 'official',
-  },
-  {
-    id: 'drog-stop',
-    role: 'talk',
-    name: 'Drog Stop segélyvonal',
-    number: '06-80-505-678',
-    tel: '0680505678',
-    hours: 'Ingyenesen hívható',
-    when: 'Ha szerhasználattal kapcsolatban szeretnél beszélni valakivel – magad vagy egy hozzátartozód miatt.',
-    verified: '2026-10-29',
-    verification: 'multiple-secondary',
-  },
-  {
-    id: 'kek-vonal',
-    role: 'talk',
-    name: 'Kék Vonal (gyerekeknek és fiataloknak)',
-    number: '116-111',
-    tel: '116111',
-    hours: 'Ingyenes, nem kell megmondanod a neved',
-    when: 'Ha fiatal vagy (24 év alatt), és jól jönne egy beszélgetés.',
-    verified: '2026-10-26',
-    verification: 'official',
-  },
-];
 
 // Breathing patterns. Each step has an explicit `kind` (in | hold | out) that drives
 // the animation, so reviewers can reword labels freely without breaking anything.
@@ -152,7 +101,7 @@ export const SAVINGS_MILESTONES = [
   { id: 'trip', label: 'Egy hétvégi kirándulás', amountHuf: 90_000 },
   { id: 'wellness', label: 'Egy hosszú hétvége wellness szállodában', amountHuf: 180_000 },
   { id: 'holiday', label: 'Egy nyaralás', amountHuf: 400_000 },
-  { id: 'million', label: 'Egymillió forint – te döntöd el, mire', amountHuf: 1_000_000 },
+  { id: 'million', label: 'Egy nagy, fontos cél – te döntöd el, mire', amountHuf: 1_000_000 },
 ];
 
 export const NOTIFICATION = {
@@ -182,7 +131,7 @@ export const T = {
     strong: 'Erős védelem.',
   },
   startDateLabel: 'Mikor kezdődött az utad?',
-  dailyCostLabel: 'Napi költség, amit így megspórolsz (Ft, nem kötelező)',
+  dailyCostLabel: `Napi költség, amit így megspórolsz (${CUR}, nem kötelező)`,
   dailyCostHint: 'Becslés is elég. Bármikor módosíthatod.',
   createButton: 'Kezdjük',
 
@@ -210,6 +159,9 @@ export const T = {
   storageVolatile: 'Figyelem: a böngésző nem engedi a tartós tárolást (pl. privát mód), ezért az adataid a lap bezárásakor elvesznek. Készíts titkosított mentést.',
 
   crisisReasons: 'Ezért csinálod',
+  crisisCountry: 'Ország',
+  crisisCountryHint: 'Válaszd ki, hol vagy: a segélyvonalak országonként mások.',
+  crisisNeedsInternet: 'Ehhez internet kell',
   navHome: 'Kezdőlap',
   navJournal: 'Napló',
   navLog: 'Rögzítés',
@@ -238,7 +190,7 @@ export const T = {
   savingsPhase: (x) => `Megspórolva ebben a szakaszban: ${x}`,
   costTitle: 'Napi költség',
   costNow: (x) => `Jelenleg: ${x} / nap`,
-  costNewLabel: 'Új napi összeg (Ft)',
+  costNewLabel: `Új napi összeg (${CUR})`,
   costModeLegend: 'Mire vonatkozik a változás?',
   costModeFrom: 'Mostantól változott – a korábbi napok a régi összeggel maradnak',
   costModeAll: 'Visszamenőleg javítom – eddig rosszul becsültem',
@@ -250,7 +202,7 @@ export const T = {
   costSavedAll: 'Elmentve. A teljes időszakot az új összeggel számoljuk.',
   goalTitle: 'Megtakarítási cél (nem kötelező)',
   goalLabelLabel: 'Mire gyűjtesz?',
-  goalAmountLabel: 'Cél összege (Ft)',
+  goalAmountLabel: `Cél összege (${CUR})`,
   goalSave: 'Cél mentése',
   goalClear: 'Cél törlése',
   quickTitle: 'Gyors rögzítés',
@@ -443,9 +395,9 @@ export const ONB = {
   goalInvalid: 'A cél 1 és 3650 nap között lehet.',
   costTitle: 'Mennyit költöttél erre egy átlagos napon?',
   costText: 'Becslés is elég. Ebből számoljuk, mennyit tartasz meg. Nem kötelező.',
-  costLabel: 'Napi költség (Ft)',
+  costLabel: `Napi költség (${CUR})`,
   costMonthly: (monthly) => `Ez havonta kb. ${monthly}.`,
-  costInvalid: 'A napi költség 0 és 1 000 000 Ft közötti szám legyen.',
+  costInvalid: `A napi költség 0 és ${formatMoney(1_000_000)} közötti szám legyen.`,
   triggersTitle: 'Melyik helyzetek a nehezebbek?',
   triggersText: 'Ha tudjuk, mikor vagy sebezhetőbb, jobb ötleteket tudunk adni. Többet is választhatsz.',
   triggerShort: { stress: 'Stressz', loneliness: 'Magány', weekend: 'Hétvége', social: 'Buli', fatigue: 'Fáradtság', boredom: 'Unalom', conflict: 'Veszekedés' },
@@ -460,6 +412,7 @@ export const ONB = {
   recoveryConfirm: 'Elmentettem biztonságos helyre',
   doneTitle: (name) => (name ? `Szép munka, ${name}!` : 'Szép munka!'),
   doneText: 'Elkészült a saját helyed. Innentől itt vagyok veled: minden nap számít, és ha egy nap nehezebb, az sem töröl semmit.',
+  languageLabel: 'Nyelv / Language',
   restartNote: 'Ha kilépsz a kérdések közben, a következő megnyitáskor elölről kezdjük. Addig semmi sem mentődik el.',
   noName: 'Barátom',
 };
@@ -655,6 +608,20 @@ export const SETTINGS_PAGE = {
   updateApkAutoHint: 'Kikapcsolva az app semmilyen hálózati kérést nem küld, és csak a gombbal keres.',
   updateApkLink: 'Letöltési oldal megnyitása',
   updateUnsupported: 'Ez a böngésző nem támogatja az automatikus frissítést.',
+  language: 'Nyelv / Language',
+  languageHint: 'Váltáskor az alkalmazás újratölt. Az adataid nem változnak.',
+  country: 'Ország (segélyvonalak)',
+  currency: 'Pénznem',
+  currencyHint: 'Csak a kijelzést érinti, az összegeket nem váltja át. Váltáskor az alkalmazás újratölt.',
+  feedback: 'Visszajelzés',
+  feedbackText: 'Hibát találtál, vagy van ötleted? Egy előre kitöltött GitHub-űrlapot nyitunk meg. Az app magától semmit sem küld el, és ne írj bele személyes adatot.',
+  feedbackButton: 'Visszajelzés küldése',
+};
+
+export const PREVIEW = {
+  badge: 'Előzetes verzió',
+  text: 'Ez az alkalmazás még fejlesztés alatt áll, és a tartalmát szakember még nem lektorálta. Nem orvosi eszköz, és nem helyettesíti a szakember segítségét. Ha nehéz, a sárga gomb mindig elérhető.',
+  feedback: 'Visszajelzés küldése',
 };
 
 export const UPDATE = {

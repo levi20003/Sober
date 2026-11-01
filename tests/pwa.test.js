@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { NOTIFICATION } from '../src/content/hu.js';
+import { NOTIFICATION } from '../src/content/index.js';
 import { listFiles, precacheList, contentVersion, renderServiceWorker } from '../scripts/precache.js';
 
 const template = readFileSync('src/sw/sw.template.js', 'utf8');

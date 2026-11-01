@@ -3,7 +3,7 @@ import { test, beforeEach, afterEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
-import { HELPLINES, BREATHING } from '../src/content/hu.js';
+import { HELPLINES, BREATHING } from '../src/content/index.js';
 import { telHref, displayMatchesTel, splitHelplines, copyNumber, digitsOf } from '../src/domain/helplines.js';
 import {
   breathingStateAt, createBreathingController, validatePattern, cycleMs, totalMs, MIN_SCALE, MAX_SCALE,
