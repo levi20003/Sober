@@ -1,6 +1,6 @@
 // A főoldal kártyái. Minden szám a titkosított napló eseményeiből és a fázisokból számolódik (src/domain/*).
 import { useEffect, useRef, useState } from 'react';
-import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, MISC, T, TIPS } from '../../content/index.js';
+import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, MISC, SETUP, T, TIPS } from '../../content/index.js';
 import { MOODS } from '../../domain/presets.js';
 import { energyStress, weekDigest, weekMoods } from '../../domain/moods.js';
 import { goalProgress, milestoneStatus } from '../../domain/milestones.js';
@@ -21,8 +21,10 @@ import { TimelineBar } from '../timeline/TimelineBar.jsx';
 const MOOD_NAMES = Object.fromEntries(MOODS.map((m) => [m.id, m.label]));
 export const moodName = (id) => MOOD_NAMES[id] ?? '';
 
-/** Nagy napszámláló: az összes józan nap (sosem csökken egy megcsúszástól), gyűrű a cél felé, konfetti új napnál. */
-export function DayCounter({ stats, phases, goal, freshToday, currentSince }) {
+/** Hős-kártya: az összes józan nap (egy megcsúszás nem törli), körülötte a cél felé haladás gyűrűje. */
+export function Hero({ stats, phases, goalDays, freshToday, currentSince }) {
+  const { dispatch } = useTimeline();
+  const toast = useToast();
   const total = stats.totalSoberDays;
   const shown = useCountUp(total);
   const prev = useRef(total);
@@ -32,61 +34,65 @@ export function DayCounter({ stats, phases, goal, freshToday, currentSince }) {
     prev.current = total;
     return undefined;
   }, [total]);
+  const g = goalProgress(total, goalDays);
   const ms = milestoneStatus(total);
-  const ratio = goal ? goal.ratio : ms.progressToNext;
+  const ratio = g ? g.ratio : ms.progressToNext;
+  const setNext = async () => { await dispatch({ type: Actions.UPDATE_PROFILE, payload: { goalDays: g.nextSuggestion } }); toast(HOME.goalProgress(total, g.nextSuggestion)); };
   return (
-    <section className="card hero tone tone-lavender card-rel" aria-label={HOME.totalLabel}>
+    <section className="hero-card" aria-label={HOME.totalLabel}>
       {burst && <Confetti count={28} />}
-      <div className="row-between"><p className="stat-label">{HOME.totalLabel}</p><InfoButton title={HOME.totalLabel}><p>{HOME.totalSub}</p></InfoButton></div>
-      <ProgressRing ratio={ratio} size={250} stroke={14} color="var(--accent)" label={goal ? HOME.goalProgress(goal.shown, goal.goal) : T.days(total)}>
+      <div className="row-between">
+        <p className="eyebrow">{HOME.totalLabel}</p>
+        <InfoButton title={HOME.totalLabel}><p>{HOME.totalSub}</p></InfoButton>
+      </div>
+      <ProgressRing ratio={ratio} size={232} stroke={10} color="var(--accent)" label={g ? HOME.goalProgress(g.shown, g.goal) : T.days(total)}>
         <p className="hero-value" data-total={total}>{shown}</p>
-        <p className="stat-label">{MISC.dayWord}</p>
+        <p className="hero-unit">{MISC.dayWord}</p>
       </ProgressRing>
       <span className="visually-hidden">{`${HOME.totalLabel}: ${T.days(total)}`}</span>
-      <p className="hero-sub">{freshToday ? HOME.newPhase : T.heroCurrent(stats.currentPhaseDays, currentSince)}</p>
+      {g && <p className="hero-goal"><strong>{HOME.goalProgress(g.shown, g.goal)}</strong> · {SETUP.goalLine(g.remaining)}</p>}
+      {g?.reached && (
+        <div className="hero-reached">
+          <p>{HOME.goalReached(g.goal)}</p>
+          <button type="button" className="btn btn-primary" onClick={setNext}>{HOME.goalNext(g.nextSuggestion)}</button>
+        </div>
+      )}
+      {(freshToday || stats.phaseCount > 1) && <p className="hero-sub">{freshToday ? HOME.newPhase : T.heroCurrent(stats.currentPhaseDays, currentSince)}</p>}
       {stats.phaseCount > 1 && <TimelineBar phases={phases} totalSoberDays={total} />}
     </section>
   );
 }
 
-export function GoalCard({ total, goalDays }) {
-  const { dispatch } = useTimeline();
-  const toast = useToast();
-  const g = goalProgress(total, goalDays);
-  if (!g) {
-    return (
-      <section className="card tone tone-peach"><h2>{HOME.goalLabel}</h2><p>{HOME.goalNone}</p><a className="btn" href="#/beallitasok">{HOME.goalSet}</a></section>
-    );
-  }
-  const setNext = async () => { await dispatch({ type: Actions.UPDATE_PROFILE, payload: { goalDays: g.nextSuggestion } }); toast(HOME.goalProgress(total, g.nextSuggestion)); };
+/** Két kis csempe: megtakarítás és a következő mérföldkő. */
+export function Tiles({ savings, total, today }) {
+  const fun = savings.configured ? funConversion(savings.total, FUN_ITEMS, today) : null;
+  const ms = milestoneStatus(total);
   return (
-    <section className="card tone tone-peach" aria-labelledby="goal-h">
-      <h2 id="goal-h">{HOME.goalLabel}</h2>
-      <p className="meter-num">{HOME.goalProgress(g.shown, g.goal)}</p>
-      <progress className="savings-progress" max="1" value={g.ratio} aria-label={HOME.goalProgress(g.shown, g.goal)} />
-      {g.reached && (
-        <>
-          <p><strong>{HOME.goalReached(g.goal)}</strong></p>
-          <p>{HOME.goalNext(g.nextSuggestion)}</p>
-          <button type="button" className="btn btn-primary" onClick={setNext}>{HOME.goalProgress(total, g.nextSuggestion)}</button>
-        </>
-      )}
-    </section>
+    <div className="tiles">
+      <a className="tile press" href="#/megtakaritas">
+        <span className="tile-icon"><Icon name="savings" size={20} /></span>
+        <span className="eyebrow">{HOME.savingsLabel}</span>
+        <span className="tile-value">{savings.configured ? formatHuf(savings.total) : '–'}</span>
+        {fun && <span className="tile-sub">{HOME.savingsFun(fun.count, fun.item.label)}</span>}
+      </a>
+      <a className="tile press" href="#/idovonal">
+        <span className="tile-icon"><Icon name="star" size={20} /></span>
+        <span className="eyebrow">{SETUP.nextBadge}</span>
+        <span className="tile-value">{ms.next ? T.days(ms.next) : SETUP.badgeDone}</span>
+        {ms.next && <span className="tile-sub">{SETUP.badgeIn(ms.remaining)}</span>}
+      </a>
+    </div>
   );
 }
 
-export function SavingsCard({ savings, today }) {
-  if (!savings.configured) {
-    return <section className="card tone tone-mint"><h2>{HOME.savingsLabel}</h2><p>{HOME.savingsSetup}</p><a className="btn" href="#/megtakaritas">{MISC.savingsTab}</a></section>;
-  }
-  const fun = funConversion(savings.total, FUN_ITEMS, today);
+/** Egyetlen napi gondolat (a célhoz és a nehéz helyzetekhez igazítva, naponta változik). */
+export function DailyThought({ today, tags }) {
+  const item = pickDaily([...ENCOURAGEMENTS, ...TIPS], { date: today, tags, count: 1 })[0];
+  if (!item) return null;
   return (
-    <section className="card tone tone-mint card-rel" aria-labelledby="sav-h">
-      <p className="stat-label" id="sav-h">{HOME.savingsLabel}</p>
-      <p className="meter-num" style={{ fontSize: 'clamp(2rem, 10vw, 3rem)' }}>{formatHuf(savings.total)}</p>
-      {fun && <p><strong>{HOME.savingsFun(fun.count, fun.item.label)}</strong></p>}
-      {savings.goal && <p>{`${savings.goal.label}: ${Math.round(savings.goal.progress * 100)}%`}</p>}
-      <a className="btn" href="#/megtakaritas">{MISC.details}</a>
+    <section className="card thought" aria-label={SETUP.thought}>
+      <p className="eyebrow">{item.title ?? SETUP.thought}</p>
+      <p className="quote">{item.text}</p>
     </section>
   );
 }
@@ -169,28 +175,5 @@ export function Badges({ total }) {
   );
 }
 
-/** Lapozható napi gondolatok: a célhoz és a megadott nehéz helyzetekhez igazítva, naponta változnak. */
-export function DailyThoughts({ today, tags }) {
-  const items = [
-    ...pickDaily(ENCOURAGEMENTS, { date: today, tags, count: 1 }).map((e) => ({ id: e.id, title: null, text: e.text })),
-    ...pickDaily(TIPS, { date: today, tags, count: 2 }),
-  ];
-  const [i, setI] = useState(0);
-  return (
-    <section className="card tone tone-sky" aria-labelledby="th-h">
-      <h2 id="th-h">{HOME.thoughtsTitle}</h2>
-      <div className="swipe" tabIndex={0} aria-label={HOME.thoughtsTitle}
-        onScroll={(e) => setI(Math.round(e.currentTarget.scrollLeft / Math.max(1, e.currentTarget.clientWidth)))}>
-        {items.map((it) => (
-          <article key={it.id}>
-            {it.title && <p className="stat-label">{it.title}</p>}
-            <p className="quote">{it.text}</p>
-          </article>
-        ))}
-      </div>
-      <div className="swipe-dots" aria-hidden="true">{items.map((it, k) => <i key={it.id} className={k === i ? 'on' : ''} />)}</div>
-    </section>
-  );
-}
 
 export { CHALLENGE_CATALOG };

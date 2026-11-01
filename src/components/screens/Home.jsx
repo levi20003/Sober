@@ -1,3 +1,5 @@
+// Főoldal: egyértelmű hierarchia. Fent a legfontosabb szám (összes józan nap a cél felé), alatta egy gyors hangulat-rögzítés,
+// két kis csempe (megtakarítás, következő mérföldkő), a hét, és egy napi gondolat. A részletes statisztika az Idővonalon van.
 import { useState } from 'react';
 import { RISK_MESSAGES, HOME, T } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
@@ -9,10 +11,10 @@ import { CRISIS_HASH } from '../../lib/hashRouter.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { Mascot } from '../mood/Mascot.jsx';
 import { BackupNotice } from '../home/Notices.jsx';
-import { FreshStartModal } from '../timeline/FreshStartModal.jsx';
 import { MoodCheckin } from '../home/MoodCheckin.jsx';
+import { SetupCard } from '../home/SetupCard.jsx';
 import { Celebration } from '../home/Celebration.jsx';
-import { Badges, DailyThoughts, DayCounter, EnergyStress, GoalCard, SavingsCard, WeekGlance, WeekMoods } from '../home/Widgets.jsx';
+import { DailyThought, Hero, Tiles, WeekGlance } from '../home/Widgets.jsx';
 import { Page } from '../shell/Page.jsx';
 
 const reactionFor = (figId) => {
@@ -22,7 +24,6 @@ const reactionFor = (figId) => {
 
 export function Home() {
   const { snapshot, dispatch } = useTimeline();
-  const [freshStart, setFreshStart] = useState(false);
   const [reaction, setReaction] = useState(null);
   const [celebrated, setCelebrated] = useState(false);
   const { data, stats: s, phases, savings, today } = snapshot;
@@ -31,14 +32,10 @@ export function Home() {
   const freshToday = s.currentPhaseDays === 0 && s.phaseCount > 1;
   const todayMood = moodOnDay(data.events, today);
   const milestone = celebrated ? null : uncelebratedMilestone(s.totalSoberDays, profile.lastCelebration ?? 0);
-  const goal = profile.goalDays ? { goal: profile.goalDays, shown: Math.min(s.totalSoberDays, profile.goalDays), ratio: Math.min(1, s.totalSoberDays / profile.goalDays) } : null;
-  const tags = [...(profile.triggers ?? [])];
 
-  const bubble = freshToday ? HOME.pottyReact.slip
-    : reaction ? HOME.pottyReact[reaction]
-    : todayMood ? HOME.pottyReact[reactionFor(todayMood.mood)]
-    : HOME.helloBubble(profile.nickname, false);
-  const look = freshToday ? 'comfort' : (reaction ?? (todayMood && reactionFor(todayMood.mood))) === 'hard' ? 'comfort' : (reaction || todayMood) ? 'cheer' : 'wave';
+  const mood = reaction ?? (todayMood && reactionFor(todayMood.mood));
+  const bubble = freshToday ? HOME.pottyReact.slip : mood ? HOME.pottyReact[mood] : HOME.helloBubble(profile.nickname, false);
+  const look = freshToday || mood === 'hard' ? 'comfort' : mood ? 'cheer' : 'wave';
 
   return (
     <Page title={T.navHome}>
@@ -48,29 +45,25 @@ export function Home() {
         </a>
       )}
       <div className="hello rise-in">
-        <Mascot look={look} size={72} label={null} />
+        <Mascot look={look} size={48} label={null} />
         <p className="bubble" aria-live="polite">{bubble}</p>
       </div>
-      <div className="rise-in" style={{ '--d': '60ms' }}>
-        <DayCounter stats={s} phases={phases} goal={goal} freshToday={freshToday} currentSince={formatDateHu(s.currentPhaseStart)} />
+      <div className="rise-in" style={{ '--d': '40ms' }}>
+        <Hero stats={s} phases={phases} goalDays={profile.goalDays} freshToday={freshToday} currentSince={formatDateHu(s.currentPhaseStart)} />
       </div>
-      <GoalCard total={s.totalSoberDays} goalDays={profile.goalDays} />
-      <SavingsCard savings={savings} today={today} />
-      <MoodCheckin onSaved={(fig) => setReaction(reactionFor(fig))} />
-      <WeekGlance events={data.events} today={today} journeyStart={profile.journeyStart} />
-      <WeekMoods events={data.events} today={today} />
-      <EnergyStress events={data.events} today={today} />
-      <Badges total={s.totalSoberDays} />
-      <DailyThoughts today={today} tags={tags} />
-      {freshToday && <p className="card card-soft">{HOME.slipKind}</p>}
-      <div className="actions">
-        <button type="button" className="btn btn-ghost" onClick={() => setFreshStart(true)}>{T.actionSlip}</button>
+      <div className="rise-in" style={{ '--d': '80ms' }}>
+        <SetupCard profile={profile} savingsConfigured={savings.configured} />
+        <MoodCheckin onSaved={(fig) => setReaction(reactionFor(fig))} />
       </div>
-      {freshStart && <FreshStartModal onClose={() => setFreshStart(false)} />}
-      <BackupNotice data={data} suppressed={Boolean(milestone) || freshStart} />
+      <div className="rise-in" style={{ '--d': '120ms' }}>
+        <Tiles savings={savings} total={s.totalSoberDays} today={today} />
+        <WeekGlance events={data.events} today={today} journeyStart={profile.journeyStart} />
+        <DailyThought today={today} tags={profile.triggers ?? []} />
+      </div>
       {milestone && (
         <Celebration days={milestone} onClose={async () => { setCelebrated(true); await dispatch({ type: Actions.UPDATE_PROFILE, payload: { lastCelebration: milestone } }).catch(() => {}); }} />
       )}
+      <BackupNotice data={data} suppressed={Boolean(milestone)} />
     </Page>
   );
 }

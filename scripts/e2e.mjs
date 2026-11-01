@@ -15,29 +15,47 @@ const PIN = 'nyugodt-ut-73';
 const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toLocaleDateString('sv-SE'); };
 
 
-/** Végigmegy a 10 lépéses bevezetőn (a PIN-lépésig a válaszok csak memóriában vannak). */
-async function onboard(p, { pin, days = 0, cost = '', nick = 'Dani', screenshots = null } = {}) {
+/** Végigmegy az 5 lépéses bevezetőn (a PIN-lépésig a válaszok csak memóriában vannak), majd a főoldali
+ *  "Tedd a sajátoddá" kártyán megadja a napi költséget, a célt és a nehéz helyzetet. */
+async function onboard(p, { pin, days = 0, cost = '', nick = 'Dani' } = {}) {
   const next = (name = 'Tovább') => p.getByRole('button', { name, exact: true }).click();
   await p.getByRole('heading', { name: 'Szia! Ez a te csendes, privát helyed.' }).waitFor();
   await dismissPreview(p);
+  await p.locator('input[name=nickname]').fill(nick);
   await next('Kezdjük');
-  await p.locator('input[name=nickname]').fill(nick); await next();
   await p.locator('label.choice', { hasText: 'Alkohol' }).click(); await next();
   if (days > 0) { await p.locator('label.choice', { hasText: 'Korábban kezdtem' }).click(); await p.locator('input[type=date]').fill(daysAgo(days)); }
   await next();
-  await p.locator('label.choice', { hasText: '90 nap' }).click(); await next();
-  if (cost) await p.locator('input[name=cost]').fill(cost);
-  await next();
-  await p.locator('label.choice', { hasText: 'Hétvége' }).click(); await next();
   await p.locator('input[name=pin]').fill(pin);
   await p.locator('input[name=pin2]').fill(pin);
-  await p.getByRole('button', { name: 'Tovább', exact: true }).click();
+  await next();
   const code = (await p.getByTestId('recovery-code').textContent({ timeout: 30000 })).trim();
   await p.getByLabel('Elmentettem biztonságos helyre').check();
-  await next();
   await next('Irány a főoldal');
   await p.locator('nav.tabbar').waitFor();
+  await dismissCelebration(p);
+  await personalize(p, { cost });
   return code;
+}
+/** A főoldali "Tedd a sajátoddá" lapok: költség, cél, nehéz helyzet. */
+async function personalize(p, { cost = '', goal = '90 nap', trigger = 'Hétvége' } = {}) {
+  const sheet = p.locator('dialog.sheet[open]');
+  if (cost) {
+    await p.locator('.setup-item', { hasText: 'költöttél' }).click();
+    await sheet.locator('input[name=cost]').fill(cost);
+    await sheet.getByRole('button', { name: 'Mentés' }).click();
+    await sheet.waitFor({ state: 'detached' });
+  }
+  await p.locator('.setup-item', { hasText: 'célt' }).click();
+  await sheet.locator('label.choice', { hasText: goal }).click();
+  await sheet.getByRole('button', { name: 'Mentés' }).click();
+  await sheet.waitFor({ state: 'detached' });
+  if (await p.locator('.setup-item', { hasText: 'nehezebb' }).isEnabled().catch(() => false)) {
+    await p.locator('.setup-item', { hasText: 'nehezebb' }).click();
+    await sheet.locator('label.choice', { hasText: trigger }).click();
+    await sheet.getByRole('button', { name: 'Mentés' }).click();
+    await sheet.waitFor({ state: 'detached' });
+  }
 }
 /** Összecsukható csoport kinyitása (Beállítások, Megtakarítás). */
 const openGroup = async (p, title) => {
@@ -80,7 +98,6 @@ try {
 
   // Crisis overlay: one tap from the very first screen, before any data exists.
   assert.equal(await page.locator('.boot-fallback').count(), 0, 'static fallback replaced once the app boots');
-  await page.getByRole('button', { name: 'Kezdjük' }).click();
   await page.locator('input[name=nickname]').fill('félig-beírt'); // unfinished work underneath
   await page.getByRole('link', { name: 'Most segítségre van szükségem' }).click();
   const crisis = page.locator('dialog.crisis-overlay[open]');
@@ -115,27 +132,22 @@ try {
   await page.keyboard.press('Escape');
   await page.locator('dialog.crisis-overlay').waitFor({ state: 'detached' });
   assert.equal(await page.locator('input[name=nickname]').inputValue(), 'félig-beírt', 'overlay kept the unfinished form intact');
-  assert.equal(new URL(page.url()).hash, '#/bevezeto/2', 'Esc went back in history (URL restored)');
+  assert.equal(new URL(page.url()).hash, '', 'Esc went back in history (URL restored)');
   step('crisis overlay: one tap, modal, 112 banner, S.O.S. + addiction line, 4-7-8 timing, pause/resume, Esc keeps the form');
 
-  // Onboarding: back button works, a 4-digit PIN is allowed, and its limits are stated honestly
-  await page.goBack();
-  await page.getByRole('heading', { name: 'Szia! Ez a te csendes, privát helyed.' }).waitFor();
-  await page.getByRole('button', { name: 'Kezdjük' }).click();
+  // Onboarding: 5 short steps; back button works, a 4-digit PIN is allowed, and its limits are stated honestly
   await page.locator('input[name=nickname]').fill('Dani');
-  await page.getByRole('button', { name: 'Tovább', exact: true }).click();
+  await page.getByRole('button', { name: 'Kezdjük' }).click();
   await page.locator('label.choice', { hasText: 'Alkohol' }).click();
+  await page.getByRole('button', { name: 'Tovább', exact: true }).click();
+  await page.locator('[role=progressbar][aria-valuenow="3"]').waitFor(); // a nézetátmenet után lép tovább
+  await page.goBack();
+  await page.locator('[role=progressbar][aria-valuenow="2"]').waitFor();
+  assert.equal(await page.locator('label.choice', { hasText: 'Alkohol' }).locator('input').isChecked(), true, 'back keeps the answer (in memory)');
   await page.getByRole('button', { name: 'Tovább', exact: true }).click();
   await page.locator('label.choice', { hasText: 'Korábban kezdtem' }).click();
   await page.locator('input[type=date]').fill(daysAgo(30));
   await shot('01a-onboarding-start');
-  await page.getByRole('button', { name: 'Tovább', exact: true }).click();
-  await page.locator('label.choice', { hasText: '90 nap' }).click();
-  await page.getByRole('button', { name: 'Tovább', exact: true }).click();
-  await page.locator('input[name=cost]').fill('2 500');
-  await page.getByText(/Ez havonta kb\. 75.000 Ft/).waitFor();
-  await page.getByRole('button', { name: 'Tovább', exact: true }).click();
-  await page.locator('label.choice', { hasText: 'Hétvége' }).click();
   await page.getByRole('button', { name: 'Tovább', exact: true }).click();
   await page.locator('input[name=pin]').fill('2581');
   await page.getByText(/Alapszintű védelem/).waitFor();
@@ -146,25 +158,33 @@ try {
   const code = (await page.getByTestId('recovery-code').textContent({ timeout: 20000 })).trim();
   assert.match(code, /^([0-9A-Z]{4}-){7}[0-9A-Z]{4}$/);
   await shot('03-recovery');
-  assert.equal(await page.getByRole('button', { name: 'Tovább', exact: true }).isDisabled(), true, 'recovery checkbox required');
+  assert.equal(await page.getByRole('button', { name: 'Irány a főoldal' }).isDisabled(), true, 'recovery checkbox required');
   await page.getByLabel('Elmentettem biztonságos helyre').check();
-  await page.getByRole('button', { name: 'Tovább', exact: true }).click();
-  await shot('03a-onboarding-done');
   await page.getByRole('button', { name: 'Irány a főoldal' }).click();
   await page.locator('nav.tabbar').waitFor();
   await page.locator('.hero-value', { hasText: '30' }).waitFor();
   await dismissCelebration(page);
-  assert.equal(await page.locator('.savings-total').count(), 0);
-  assert.ok(await page.getByText('75 000 Ft').first().isVisible(), '30 days × 2 500 Ft');
+  assert.ok(await page.locator('.setup-card').isVisible(), 'goal, cost and hard situations are offered on the home screen');
+  // Napi költség a "Tedd a sajátoddá" lapon: a havi becslés azonnal látszik.
+  await page.locator('.setup-item', { hasText: 'költöttél' }).click();
+  await page.locator('dialog.sheet[open] input[name=cost]').fill('2 500');
+  await page.getByText(/Ez havonta kb\. 75.000 Ft/).waitFor();
+  await page.locator('dialog.sheet[open]').getByRole('button', { name: 'Mentés' }).click();
+  await page.locator('dialog.sheet[open]').waitFor({ state: 'detached' });
+  await personalize(page, {});
+  assert.equal(await page.locator('.setup-card').count(), 0, 'the card disappears once everything is set');
+  await page.locator('.tile', { hasText: '75 000 Ft' }).waitFor();
   assert.ok(await page.getByRole('heading', { name: /Szia, Dani/ }).isVisible(), 'personalised greeting');
+  assert.ok(await page.getByText('30 / 90 nap').isVisible(), 'goal progress in the hero card');
   await shot('04-home');
-  step('onboarding (10 steps) created the vault: 30 days, 75 000 Ft, personalised home');
+  step('onboarding (5 steps) + "Make it yours" card: 30 days, 75 000 Ft, goal, personalised home');
 
   // Mood check-in
-  await page.getByLabel(/^Stresszes/).check({ force: true });
-  await page.getByLabel('Egy gondolat hozzá (nem kötelező)').fill('TITKOS_TESZT_JEGYZET <script>alert(1)</script>');
-  await page.getByRole('button', { name: 'Mentés', exact: true }).click();
-  await page.getByText('Ma ez van: Stresszes').waitFor();
+  await page.locator('.mood-row .mood-chip', { hasText: 'Stresszes' }).click();
+  const moodSheet = page.locator('dialog.sheet[open]');
+  await moodSheet.getByLabel('Egy gondolat hozzá (nem kötelező)').fill('TITKOS_TESZT_JEGYZET <script>alert(1)</script>');
+  await moodSheet.getByRole('button', { name: 'Mentés' }).click();
+  await page.locator('.mood-today', { hasText: 'Stresszes' }).waitFor();
   step('mood check-in with one of the 12 figures saved');
 
   // Quick log (on the Idővonal tab): exactly two taps, no typing
@@ -196,7 +216,7 @@ try {
   await tab(page, 'Főoldal');
   await page.locator('.hero-value', { hasText: '30' }).waitFor();
   assert.ok(await page.getByText('Ma új szakasz kezdődött. Az eddigi utad megmaradt.').first().isVisible());
-  assert.equal(await page.locator('.hero .tl-seg').count(), 2, 'timeline bar shows both phases');
+  assert.equal(await page.locator('.hero-card .tl-seg').count(), 2, 'timeline bar shows both phases');
   for (const banned of ['kudarc', 'nulláz']) assert.equal(await page.getByText(banned).count(), 0, banned);
   await shot('05a-home-after-slip');
   step('fresh start: growth summary, total (30) never resets, Pötty is kind');

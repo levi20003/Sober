@@ -419,7 +419,7 @@ export const ONB = {
 
 export const HOME = {
   hello: (greeting, name) => (name ? `${greeting}, ${name}` : greeting),
-  appbarHello: (name) => (name ? `Szia, ${name} 👋` : 'Szia 👋'),
+  appbarHello: (name) => (name ? `Szia, ${name}` : 'Szia'),
   totalLabel: 'Összes józan napod',
   totalSub: 'Egy megcsúszás sem törli: minden józan napod megmarad.',
   newPhase: 'Ma új szakasz kezdődött. Az eddigi utad megmaradt.',
@@ -491,13 +491,13 @@ export const TIPS = [
 ];
 
 export const FUN_ITEMS = [
-  { id: 'pizza', label: 'pizza 🍕', priceHuf: 3500 },
-  { id: 'cinema', label: 'mozijegy 🎬', priceHuf: 3500 },
-  { id: 'coffee', label: 'kávé ☕', priceHuf: 900 },
-  { id: 'book', label: 'jó könyv 📚', priceHuf: 6000 },
-  { id: 'icecream', label: 'fagyi 🍦', priceHuf: 800 },
-  { id: 'bike', label: 'városi bicikli-szerviz 🚲', priceHuf: 25000 },
-  { id: 'trip', label: 'hétvégi kirándulás 🏞️', priceHuf: 60000 },
+  { id: 'pizza', label: 'pizza', priceHuf: 3500 },
+  { id: 'cinema', label: 'mozijegy', priceHuf: 3500 },
+  { id: 'coffee', label: 'kávé', priceHuf: 900 },
+  { id: 'book', label: 'jó könyv', priceHuf: 6000 },
+  { id: 'icecream', label: 'fagyi', priceHuf: 800 },
+  { id: 'bike', label: 'városi bicikli-szerviz', priceHuf: 25000 },
+  { id: 'trip', label: 'hétvégi kirándulás', priceHuf: 60000 },
 ];
 
 export const TIMELINE_PAGE = {
@@ -749,4 +749,23 @@ export const UX = {
   moreSettings: 'Továbbiak',
   welcomeInfo: 'Mi ez az alkalmazás?',
   welcomeInfoText: 'Pár kérdéssel összerakjuk, hogy neked szóljon. Bármikor kihagyhatsz egy kérdést, és később mindent átírhatsz. Ha kilépsz a kérdések közben, elölről kezdjük, és addig semmi sem mentődik el.',
+};
+
+// Rövid bevezető és a főoldali "Tedd a sajátoddá" kártya (v1.0).
+export const SETUP = {
+  nickLabel: 'Hogy szólíthatlak? (nem kötelező)',
+  title: 'Tedd a sajátoddá',
+  progress: (a, b) => `${a} / ${b} kész`,
+  goal: 'Tűzz ki egy célt',
+  cost: 'Mennyit költöttél rá naponta?',
+  triggers: 'Mikor nehezebb?',
+  notNow: 'Most nem',
+  save: 'Mentés',
+  stats: 'Statisztika',
+  nextBadge: 'Következő mérföldkő',
+  badgeIn: (n) => `${n} nap múlva`,
+  badgeDone: 'Minden megvan',
+  goalLine: (left) => (left > 0 ? `még ${left} nap a célig` : 'Elérted a célod'),
+  thought: 'Mai gondolat',
+  moodLogged: 'Mai hangulat',
 };

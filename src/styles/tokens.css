@@ -69,14 +69,32 @@
   --r-input: 16px;
   --r-pill: 999px;
   --tap: 48px;
-  --shadow-sm: 0 6px 16px -8px rgba(76, 52, 140, 0.35);
-  --shadow-md: 0 14px 30px -14px rgba(76, 52, 140, 0.45);
+  --shadow-sm: 0 1px 2px rgba(43, 37, 64, 0.04), 0 8px 22px -14px rgba(76, 52, 140, 0.28);
+  --shadow-md: 0 2px 6px rgba(43, 37, 64, 0.05), 0 18px 36px -18px rgba(76, 52, 140, 0.38);
   --shadow-nav: 0 16px 32px -10px rgba(43, 37, 64, 0.55);
 
   /* mozgás */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --dur: 260ms;
+
+  /* tipográfiai skála (egy helyen, minden képernyő ezt használja) */
+  --fs-xs: 0.78rem;
+  --fs-sm: 0.9rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.15rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.85rem;
+  --fs-display: clamp(4rem, 21vw, 5.4rem);
+  /* térközök: 4 px-es rács */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 28px;
+  --hairline: rgba(43, 37, 64, 0.07);
+  --tint: rgba(107, 63, 224, 0.09);
 
   /* betűk: rendszer-betűkészlet, offline, nincs külső font */
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", sans-serif;
@@ -86,10 +104,10 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #14201f;
-    --surface: #1c2b2a;
-    --surface-2: #233534;
-    --line: #2f4543;
+    --bg: #0f1a19;
+    --surface: #172422;
+    --surface-2: #1f2e2c;
+    --line: #2a3d3a;
     --text: #e9efec;
     --muted: #a9bab5;
     --accent: #7fb8a8;
@@ -103,12 +121,14 @@
     --good: #3dd9a0;
     --card-ink: #f2eef8;
     --card-muted: #cfc6dd;
-    --tone-peach: #5b3a30;
-    --tone-lavender: #3f3566;
-    --tone-mint: #1f4d3e;
-    --tone-pink: #5a3045;
-    --tone-butter: #5a4e22;
-    --tone-sky: #1f4160;
+    --tone-peach: #3a2b2a;
+    --tone-lavender: #2b2847;
+    --tone-mint: #17332c;
+    --tone-pink: #372331;
+    --tone-butter: #34311c;
+    --tone-sky: #172c3f;
+    --hairline: rgba(255, 255, 255, 0.06);
+    --tint: rgba(127, 184, 168, 0.12);
     --nav-bg: #0e1716;
     --nav-fg: #b7c6c2;
     --nav-active-bubble: #7fb8a8;
@@ -121,10 +141,10 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #14201f;
-  --surface: #1c2b2a;
-  --surface-2: #233534;
-  --line: #2f4543;
+  --bg: #0f1a19;
+  --surface: #172422;
+  --surface-2: #1f2e2c;
+  --line: #2a3d3a;
   --text: #e9efec;
   --muted: #a9bab5;
   --accent: #7fb8a8;
@@ -138,12 +158,14 @@
   --good: #3dd9a0;
   --card-ink: #f2eef8;
   --card-muted: #cfc6dd;
-  --tone-peach: #5b3a30;
-  --tone-lavender: #3f3566;
-  --tone-mint: #1f4d3e;
-  --tone-pink: #5a3045;
-  --tone-butter: #5a4e22;
-  --tone-sky: #1f4160;
+  --tone-peach: #3a2b2a;
+  --tone-lavender: #2b2847;
+  --tone-mint: #17332c;
+  --tone-pink: #372331;
+  --tone-butter: #34311c;
+  --tone-sky: #172c3f;
+  --hairline: rgba(255, 255, 255, 0.06);
+  --tint: rgba(127, 184, 168, 0.12);
   --nav-bg: #0e1716;
   --nav-fg: #b7c6c2;
   --nav-active-bubble: #7fb8a8;

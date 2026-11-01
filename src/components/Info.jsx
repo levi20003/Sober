@@ -17,7 +17,7 @@ export function Sheet({ title, children, actions, closeLabel, onClose }) {
       <div className="sheet-body stack">{children}</div>
       <div className="actions">
         {actions}
-        <button type="button" className={actions ? 'btn btn-ghost' : 'btn btn-primary'} onClick={onClose}>{closeLabel ?? (actions ? UX.close : UX.gotIt)}</button>
+        <button type="button" className={actions || closeLabel ? 'btn btn-ghost' : 'btn btn-primary'} onClick={onClose}>{closeLabel ?? (actions ? UX.close : UX.gotIt)}</button>
       </div>
     </dialog>
   );

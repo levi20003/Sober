@@ -68,7 +68,7 @@ export async function waitHeading(c, text, timeoutMs = 30_000) {
   await c.waitFor(`document.querySelector('h1')?.textContent.trim() === ${j(text)}`, { timeoutMs, what: `"${text}" főcím` });
 }
 
-/** First launch: the 10-step onboarding creates the vault, then quick-log, crisis overlay, timeline. */
+/** First launch: the 5-step onboarding creates the vault, then quick-log, crisis overlay, timeline. */
 export async function firstRun(c, pin) {
   const steps = [];
   const next = async (label = 'Tovább') => c.eval(`__s.click('button', ${j(label)})`);
@@ -80,25 +80,17 @@ export async function firstRun(c, pin) {
   await c.eval(`__s.click('dialog.sheet[open] button', 'Értem')`);
   await c.waitFor(`!document.querySelector('dialog.sheet[open]')`, { what: 'közlemény bezárása' });
   steps.push('előzetes verzió közlemény elfogadva');
-  await next('Kezdjük'); await step(2);
   await c.eval(`__s.set(document.querySelector('input[name=nickname]'), 'Dani')`);
-  await next(); await step(3);
+  await next('Kezdjük'); await step(2);
   await c.eval(`__s.click('label.choice', 'Alkohol')`);
+  await next(); await step(3); // "Ma kezdem" az alapértelmezés
   await next(); await step(4);
-  await next(); await step(5); // "Ma kezdem" az alapértelmezés
-  await c.eval(`__s.click('label.choice', '30 nap')`);
-  await next(); await step(6);
-  await c.eval(`__s.set(document.querySelector('input[name=cost]'), '2500')`);
-  await next(); await step(7);
-  await c.eval(`__s.click('label.choice', 'Stressz')`);
-  await next(); await step(8);
   await c.eval(`__s.set(document.querySelector('input[name=pin]'), ${j(pin)})`);
   await c.eval(`__s.set(document.querySelector('input[name=pin2]'), ${j(pin)})`);
   await next();
   await c.waitFor(`document.querySelector('[data-testid=recovery-code]')?.textContent.trim().length > 30`, { timeoutMs: 60_000, what: 'helyreállító kód (PBKDF2 számítás)' });
   steps.push('PIN beállítva, helyreállító kód megjelent');
   await c.eval(`document.getElementById('rc-ok').click()`);
-  await next(); await step(10);
   await next('Irány a főoldal');
   await c.waitFor(`document.querySelector('.hero-value') && document.querySelector('nav.tabbar')`, { what: 'főoldal az alsó navigációval' });
   steps.push('főoldal megnyílt, alsó navigáció látszik');

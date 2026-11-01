@@ -67,23 +67,40 @@ test('home: personalised greeting, goal progress and total that never resets', a
   await bootUnlocked({ days: 12 });
   assert.ok(screen.getByRole('heading', { name: /Szia, Dani/ }));
   assert.equal(document.querySelector('.hero-value').textContent, '12');
-  assert.ok(screen.getByText('12 / 30 nap'));
+  assert.ok(screen.getByText('12 / 30 nap'), 'goal progress sits inside the hero card');
   assert.ok(screen.getByRole('heading', { name: 'Hogy vagy ma?' }));
-  assert.equal(document.querySelectorAll('.mood-opt').length, 12);
+  assert.equal(document.querySelectorAll('.mood-row .mood-chip').length, 12, 'all 12 figures, each named');
 });
 
 test('home: mood check-in saves a figure with intensity and can be changed', async () => {
   const { auth } = await bootUnlocked();
-  fireEvent.click(screen.getByLabelText(/^Stresszes/));
-  fireEvent.change(screen.getByRole('slider'), { target: { value: '4' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Mentés' }));
-  await screen.findByText('Ma ez van: Stresszes');
+  fireEvent.click(screen.getByRole('button', { name: 'Stresszes' }));       // a sorban: megnyitja a lapot
+  const sheet = () => document.querySelector('dialog.sheet');
+  fireEvent.change(within(sheet()).getByRole('slider'), { target: { value: '4' } });
+  fireEvent.click(within(sheet()).getByRole('button', { name: 'Mentés' }));
+  await waitFor(() => assert.equal(document.querySelector('.mood-today')?.textContent, 'Stresszes'));
   const [e] = auth.store.data.events;
   assert.deepEqual([e.type, e.mood, e.intensity], ['checkin', 'stressed', 4]);
   fireEvent.click(screen.getByRole('button', { name: 'Átírom' }));
-  fireEvent.click(screen.getByLabelText(/^Vidám/));
-  fireEvent.click(screen.getByRole('button', { name: 'Mentés' }));
-  await screen.findByText('Ma ez van: Vidám');
+  fireEvent.click(within(sheet()).getByRole('button', { name: 'Vidám' }));
+  fireEvent.click(within(sheet()).getByRole('button', { name: 'Mentés' }));
+  await waitFor(() => assert.equal(document.querySelector('.mood-today')?.textContent, 'Vidám'));
+});
+
+test('home: "Make it yours" sets the goal, the daily cost and hard situations in sheets, then disappears', async () => {
+  const { auth } = await bootUnlocked({ days: 12, extra: { goalDays: undefined, triggers: undefined } });
+  const card = () => document.querySelector('.setup-card');
+  assert.ok(card(), 'shown while something is missing');
+  fireEvent.click(within(card()).getByRole('button', { name: /Tűzz ki egy célt/ }));
+  fireEvent.click(within(document.querySelector('dialog.sheet')).getByLabelText('30 nap'));
+  fireEvent.click(within(document.querySelector('dialog.sheet')).getByRole('button', { name: 'Mentés' }));
+  await waitFor(() => assert.equal(auth.store.data.profile.goalDays, 30));
+  fireEvent.click(within(card()).getByRole('button', { name: /Mikor nehezebb/ }));
+  fireEvent.click(within(document.querySelector('dialog.sheet')).getByLabelText('Hétvége'));
+  fireEvent.click(within(document.querySelector('dialog.sheet')).getByRole('button', { name: 'Mentés' }));
+  await waitFor(() => assert.deepEqual(auth.store.data.profile.triggers, ['weekend']));
+  // A költség már meg van adva (2500 Ft) ebben a tesztben, így a kártya eltűnik.
+  await waitFor(() => assert.equal(card(), null));
 });
 
 test('milestone celebration appears once and is remembered', async () => {
@@ -124,7 +141,7 @@ test('reduced motion: no confetti, no view transition, and the CSS switches anim
 });
 
 test('only transform and opacity are animated', () => {
-  const css = ['anim', 'figures', 'widgets', 'layout'].map((f) => readFileSync(`src/styles/${f}.css`, 'utf8')).join('\n');
+  const css = ['anim', 'figures', 'widgets', 'layout', 'premium'].map((f) => readFileSync(`src/styles/${f}.css`, 'utf8')).join('\n');
   // brace-matched @keyframes bodies
   const frames = [];
   for (const m of css.matchAll(/@keyframes [\w-]+ \{/g)) {

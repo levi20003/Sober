@@ -34,7 +34,7 @@ export function applyPrefs(prefs = getPrefs(), root = document.documentElement) 
   root.setAttribute('lang', locale);
   const dark = prefs.theme === 'dark' || (prefs.theme === 'system' && globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches);
   if (prefs.theme !== 'system') {
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m, i) => { if (i) m.remove(); else { m.removeAttribute('media'); m.setAttribute('content', dark ? '#14201f' : '#fbf7f2'); } });
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m, i) => { if (i) m.remove(); else { m.removeAttribute('media'); m.setAttribute('content', dark ? '#0f1a19' : '#fbf7f2'); } });
   }
 }
 
