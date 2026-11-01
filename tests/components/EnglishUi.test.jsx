@@ -11,10 +11,10 @@ import { createAppAuth } from '../../src/auth/appAuth.js';
 import { createHashRouter } from '../../src/lib/hashRouter.js';
 import { MemoryBackend } from '../../src/storage/backends.js';
 import { createInitialData } from '../../src/domain/schema.js';
-import { daysAgo, PIN } from './setup.jsx';
+import { daysAgo, markNoticesSeen, PIN } from './setup.jsx';
 
 afterEach(cleanup);
-beforeEach(() => { document.body.innerHTML = '<div id="toast"></div>'; localStorage.clear(); });
+beforeEach(() => { document.body.innerHTML = '<div id="toast"></div>'; localStorage.clear(); markNoticesSeen(); });
 
 const HUNGARIAN = /[áéíóöőúüűÁÉÍÓÖŐÚÜŰ]/;
 

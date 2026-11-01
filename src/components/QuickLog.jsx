@@ -46,7 +46,6 @@ export function QuickLog() {
   return (
     <section className="card quick-log" aria-labelledby="quick-h">
       <h2 id="quick-h">{T.quickTitle}</h2>
-      <p className="hint">{T.quickHint}</p>
       <p className="stat-label">{T.quickTriggerGroup}</p>
       <div className="quick-grid">{QUICK_TEMPLATES.filter((t) => t.kind === 'trigger').map(card)}</div>
       <p className="stat-label">{T.quickMoodGroup}</p>

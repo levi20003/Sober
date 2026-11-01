@@ -11,10 +11,10 @@ import { createInitialData } from '../../src/domain/schema.js';
 import { setPrefs, resetPrefsCache } from '../../src/hooks/usePrefs.js';
 import { withTransition } from '../../src/lib/transition.js';
 import { Confetti } from '../../src/components/Confetti.jsx';
-import { daysAgo, PIN } from './setup.jsx';
+import { daysAgo, markNoticesSeen, PIN } from './setup.jsx';
 
 afterEach(() => { cleanup(); document.documentElement.removeAttribute('data-motion'); resetPrefsCache(); });
-beforeEach(() => { document.body.innerHTML = '<div id="toast"></div>'; });
+beforeEach(() => { document.body.innerHTML = '<div id="toast"></div>'; markNoticesSeen(); });
 
 async function bootUnlocked({ days = 12, extra = {} } = {}) {
   window.location.hash = '';
@@ -102,7 +102,7 @@ test('settings: theme and reduced-motion switches change the root attributes and
   fireEvent.click(screen.getByLabelText('Kevesebb mozgás'));
   assert.equal(document.documentElement.getAttribute('data-motion'), 'reduced');
   const stored = JSON.parse(localStorage.getItem('jsz-ui'));
-  assert.deepEqual(stored, { theme: 'dark', motion: 'reduced' });
+  assert.deepEqual(stored, { seen: ['preview'], theme: 'dark', motion: 'reduced' });
   assert.ok(!localStorage.getItem('jsz-ui').includes('Dani'));
   setPrefs({ theme: 'system', motion: 'full' });
   document.documentElement.removeAttribute('data-theme');

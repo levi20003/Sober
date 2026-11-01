@@ -2,6 +2,8 @@
 
 🇬🇧 English UI and privacy notice: [PRIVACY.en.md](PRIVACY.en.md) · 🇭🇺 Magyar adatvédelmi tájékoztató: [PRIVACY.md](PRIVACY.md) · Community post draft: [docs/REDDIT-POST.md](docs/REDDIT-POST.md)
 
+**Simple by design:** screens show only what matters; explanations sit behind a small "i" button, and what is current pops up once (first-run preview notice, backup reminder). Sign-in uses a number pad that opens by itself (switchable), or one big field for a passphrase.
+
 **Languages:** the app is available in Hungarian and English (follows the phone's language, switchable in Settings, with helplines for Hungary, the UK, the US and a worldwide directory). **Status: preview**: not yet reviewed by a professional; send feedback via the in-app button (opens a GitHub form).
 
 A private, offline-first, Hungarian-language PWA that **helps track and support** a person's sobriety journey. It is not a medical device.
@@ -99,4 +101,4 @@ PRIVACY.md              user-facing privacy notice (Hungarian)
 
 ## Status
 
-v0.8.0, functional prototype (React). **Not for public release** until the clinical sign-off and an independent security review are done (see the launch checklist in SECURITY-MODEL.md).
+v0.9.0, functional prototype (React). **Not for public release** until the clinical sign-off and an independent security review are done (see the launch checklist in SECURITY-MODEL.md).

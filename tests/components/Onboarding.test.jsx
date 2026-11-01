@@ -7,10 +7,10 @@ import { createAppAuth, AuthStatus } from '../../src/auth/appAuth.js';
 import { createHashRouter } from '../../src/lib/hashRouter.js';
 import { MemoryBackend } from '../../src/storage/backends.js';
 import { toDateKey, addDays } from '../../src/domain/dates.js';
-import './setup.jsx';
+import { markNoticesSeen } from './setup.jsx';
 
 afterEach(cleanup);
-beforeEach(() => { document.body.innerHTML = '<div id="toast"></div>'; });
+beforeEach(() => { document.body.innerHTML = '<div id="toast"></div>'; markNoticesSeen(); });
 
 async function boot() {
   window.location.hash = '';

@@ -5,10 +5,10 @@
 // Ha a felhasználó közben kilép, a következő megnyitáskor az 1. lépéstől indul, és nem maradt utána semmi.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MISC, ONB, PREVIEW, T } from '../../content/index.js';
+import { MISC, ONB, T, UX } from '../../content/index.js';
+import { TitleWithInfo } from '../Info.jsx';
 import { LOCALES } from '../../i18n/locale.js';
 import { usePrefs } from '../../hooks/usePrefs.js';
-import { feedbackUrl } from '../../lib/feedback.js';
 import { MAX_GOAL_DAYS, MAX_NICKNAME, createInitialData } from '../../domain/schema.js';
 import { GOAL_OPTIONS } from '../../domain/milestones.js';
 import { LABELS, ONBOARDING_TRIGGERS, SUBSTANCES } from '../../domain/presets.js';
@@ -107,10 +107,7 @@ function Welcome({ onRestore }) {
             onClick={() => { if (prefs.lang !== id) { setPrefs({ lang: id }); location.reload(); } }}>{id === 'hu' ? 'Magyar' : 'English'}</button>
         ))}
       </div>
-      <h1>{ONB.welcomeTitle}</h1>
-      <p className="lead">{ONB.welcomeText}</p>
-      <p className="card card-soft">{T.privacyPromise}</p>
-      <p className="card card-soft"><span className="pill">{PREVIEW.badge}</span> {PREVIEW.text} <a href={feedbackUrl()} target="_blank" rel="noopener noreferrer">{PREVIEW.feedback}</a></p>
+      <TitleWithInfo as="h1" title={ONB.welcomeTitle} infoTitle={UX.welcomeInfo} info={<><p>{UX.welcomeInfoText}</p><p>{T.privacyPromise}</p></>} />
       <details className="card">
         <summary>{ONB.welcomeRestore}</summary>
         <RestoreForm onRestored={onRestore} />
@@ -142,12 +139,10 @@ function Pin({ onCreate, busy }) {
   });
   return (
     <>
-      <h1>{ONB.pinTitle}</h1>
-      <p className="lead">{ONB.pinText}</p>
+      <TitleWithInfo as="h1" title={ONB.pinTitle} infoTitle={UX.pinInfoTitle} info={<><p>{ONB.pinText}</p><p>{T.pinHint}</p><p>{T.secretStrength.weak}</p></>} />
       <form id="onb-pin" className="stack" onSubmit={submit.onSubmit} aria-busy={submit.busy || busy || undefined}>
         <NewPinField label={T.pinLabel} />
         <Field label={T.pinConfirmLabel}><PinInput name="pin2" /></Field>
-        <p className="hint">{T.pinHint}</p>
       </form>
     </>
   );
@@ -208,7 +203,6 @@ export function Onboarding({ onFinish }) {
       body = (
         <>
           <h1>{ONB.nickTitle}</h1>
-          <p className="lead">{ONB.nickText}</p>
           <Field label={ONB.nickLabel}>
             <input className="input big-input" name="nickname" value={draft.nickname} maxLength={MAX_NICKNAME} placeholder={ONB.nickPlaceholder}
               autoComplete="off" onChange={(e) => set({ nickname: e.target.value })} />
@@ -220,7 +214,6 @@ export function Onboarding({ onFinish }) {
       body = (
         <>
           <h1>{ONB.substancesTitle}</h1>
-          <p className="lead">{ONB.substancesText}</p>
           <ChoiceGrid legend={ONB.substancesTitle} name="substances" options={SUBSTANCES} selected={draft.substances} onToggle={(id) => toggle('substances', id)} />
           {draft.substances.includes('other') && (
             <Field label={ONB.otherLabel}><input className="input" value={draft.otherSubstance} maxLength={40} onChange={(e) => set({ otherSubstance: e.target.value })} /></Field>
@@ -253,7 +246,6 @@ export function Onboarding({ onFinish }) {
       body = (
         <>
           <h1>{ONB.goalTitle}</h1>
-          <p className="lead">{ONB.goalText}</p>
           <div className="choice-grid" role="radiogroup" aria-label={ONB.goalTitle}>
             {[...GOAL_OPTIONS.map((n) => [n, ONB.goalOption(n)]), ['custom', ONB.goalCustom]].map(([id, label]) => (
               <label className="choice" key={id}>
@@ -275,7 +267,6 @@ export function Onboarding({ onFinish }) {
       body = (
         <>
           <h1>{ONB.costTitle}</h1>
-          <p className="lead">{ONB.costText}</p>
           <Field label={ONB.costLabel}>
             <input className="input big-input" name="cost" inputMode="numeric" placeholder="pl. 3 500" value={draft.cost} onChange={(e) => set({ cost: e.target.value })} />
           </Field>
@@ -288,7 +279,6 @@ export function Onboarding({ onFinish }) {
       body = (
         <>
           <h1>{ONB.triggersTitle}</h1>
-          <p className="lead">{ONB.triggersText}</p>
           <ChoiceGrid legend={ONB.triggersTitle} name="triggers" options={ONBOARDING_TRIGGERS.map((id) => ({ id, label: ONB.triggerShort[id] ?? LABELS.trigger.get(id) }))}
             selected={draft.triggers} onToggle={(id) => toggle('triggers', id)} />
           <div className="row">
@@ -365,8 +355,6 @@ export function Onboarding({ onFinish }) {
           : <button type="button" className="btn btn-primary btn-big" disabled={nextDisabled} onClick={onNext}>{nextLabel}</button>}
       </div>
       {canSkip && <button type="button" className="btn-link onb-skip" onClick={() => go(step + 1)}>{ONB.skip}</button>}
-      {step === 1 && <p className="hint center">{ONB.restartNote}</p>}
-      {step === 1 && <p className="hint center">{T.disclaimer}</p>}
     </div>
   );
 }

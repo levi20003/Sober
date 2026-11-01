@@ -31,7 +31,6 @@ export function ToolsPage() {
       </div>
       <section className="card tone tone-sky" aria-labelledby="bl-h">
         <h2 id="bl-h">{TOOLS.breatheTitle}</h2>
-        <p>{TOOLS.breatheText}</p>
         <div className="breath-blob" aria-hidden="true" />
       </section>
       <Challenges />

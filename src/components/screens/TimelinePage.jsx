@@ -45,14 +45,14 @@ export function TimelinePage() {
         )}
       </section>
 
-      <section className="card tone tone-butter" aria-labelledby="pat-h">
-        <h2 id="pat-h">{TP.patternsTitle}</h2>
-        {patterns.length === 0 ? <p>{TP.patternNone}</p> : (
+      {patterns.length > 0 && (
+        <section className="card tone tone-butter" aria-labelledby="pat-h">
+          <h2 id="pat-h">{TP.patternsTitle}</h2>
           <ul className="reason-list">
             {patterns.map((p) => <li key={p.id}>{p.id === 'most-common' ? TP.patterns[p.id](NAMES[p.mood] ?? '') : TP.patterns[p.id]}</li>)}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
       <QuickLog />
       <div className="actions"><button type="button" className="btn btn-ghost" onClick={() => setFresh(true)}>{T.actionSlip}</button></div>

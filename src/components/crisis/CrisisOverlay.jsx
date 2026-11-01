@@ -9,7 +9,7 @@
 //  - Esc, "Vissza" or the browser Back button closes it; nothing is recorded
 
 import { useRef } from 'react';
-import { COUNTRIES, helplinesFor, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T } from '../../content/index.js';
+import { COUNTRIES, helplinesFor, GROUNDING, URGE_WAVE, CRISIS_STEPS, RISK_MESSAGES, T, UX } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
 import { splitHelplines } from '../../domain/helplines.js';
 import { useModalDialog } from '../../hooks/useModalDialog.js';
@@ -25,7 +25,7 @@ import { BreathingExercise } from './BreathingExercise.jsx';
  * @param {Date}     [props.now]
  * @param {object}   [props.clock]   injectable clock for the breathing exercise (tests)
  */
-export function CrisisOverlay({ onClose, events = [], reasons = [], now = new Date(), clock }) {
+export function CrisisOverlay({ onClose, events = [], reasons = [], trusted = null, now = new Date(), clock }) {
   const ref = useRef(null);
   useModalDialog(ref, onClose);
   const [prefs, setPrefs] = usePrefs();
@@ -61,6 +61,12 @@ export function CrisisOverlay({ onClose, events = [], reasons = [], now = new Da
             <h2 className="h3">{RISK_MESSAGES[risk].title}</h2>
             <p>{RISK_MESSAGES[risk].text}</p>
           </aside>
+        )}
+        {trusted && (
+          <section className="card" aria-labelledby="trusted-h">
+            <h2 id="trusted-h">{UX.trustedCrisis}</h2>
+            <a className="btn btn-call btn-primary" href={`tel:${trusted.phone.replace(/[^\d+]/g, '')}`}><span className="call-number">{trusted.phone}</span><span>{trusted.name}</span></a>
+          </section>
         )}
         <HelplineList lines={talk} />
 

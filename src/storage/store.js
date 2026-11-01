@@ -27,7 +27,10 @@ export function throttleDelay(failures) {
   return Math.min(MAX_DELAY_MS, 2 ** (failures - FREE_ATTEMPTS) * 15_000);
 }
 
-const DEFAULT_META = { failedAttempts: 0, lockedUntil: 0, reminders: { enabled: false, time: '20:00' } };
+// A meta rekord NEM titkosított (a zárolóképernyőnek és a háttérfolyamatnak olvasnia kell). Személyes tartalom nincs benne:
+//  pinHint: egy csak számjegyes PIN hossza (a gyors billentyűzethez; a Beállításokban kikapcsolható: quickPin=false)
+//  lastBackup / backupSnoozeUntil: a mentés-emlékeztető időpontjai.
+const DEFAULT_META = { failedAttempts: 0, lockedUntil: 0, reminders: { enabled: false, time: '20:00' }, pinHint: null, quickPin: true, lastBackup: null, backupSnoozeUntil: null };
 
 export class VaultStore {
   #dek = null;
@@ -76,6 +79,13 @@ export class VaultStore {
     return { ...DEFAULT_META, ...m, reminders: { ...DEFAULT_META.reminders, ...m?.reminders } };
   }
 
+  /** A gyors PIN-billentyűzethez: csak számjegyes PIN hosszát jegyezzük meg (ha a felhasználó nem kapcsolta ki). */
+  async #rememberPinShape(pin) {
+    const m = await this.getMeta();
+    const hint = m.quickPin !== false && /^\d{4,12}$/.test(String(pin)) ? String(pin).length : null;
+    if (m.pinHint !== hint) await this.setMeta({ pinHint: hint });
+  }
+
   async setMeta(patch) {
     const m = await this.getMeta();
     await this.backend.putMany({ [K_META]: { ...m, ...patch } });
@@ -99,6 +109,7 @@ export class VaultStore {
     };
     await this.backend.putMany({ [K_VAULT]: record, [K_META]: { ...DEFAULT_META } });
     await this.#adopt(record, dek, data);
+    await this.#rememberPinShape(pin);
     return { recoveryCode };
   }
 
@@ -109,7 +120,9 @@ export class VaultStore {
   }
 
   async unlock(pin) {
-    return this.#unlockWith('pin', pin);
+    const record = await this.#unlockWith('pin', pin);
+    await this.#rememberPinShape(pin);
+    return record;
   }
 
   /** Forgot-PIN path: opens the vault with the recovery code and sets a new PIN. */
@@ -121,6 +134,7 @@ export class VaultStore {
     record.slots = { ...record.slots, pin: await createKeySlot(dek, newPin, this.pinIterations) };
     record.revision += 1;
     await this.#writeRecord(record);
+    await this.#rememberPinShape(newPin);
   }
 
   async #unlockWith(slotName, secret, { extractable = false } = {}) {
@@ -219,6 +233,7 @@ export class VaultStore {
     const record = await this.#readRecord(K_VAULT);
     const dek = await this.#open(record.slots.pin, oldPin, true);
     await this.#writeRecord({ ...record, revision: record.revision + 1, slots: { ...record.slots, pin: await createKeySlot(dek, newPin, this.pinIterations) } });
+    await this.#rememberPinShape(newPin);
   }
 
   /** Invalidates the old recovery code and returns a new one. */
@@ -249,6 +264,7 @@ export class VaultStore {
     const current = await this.backend.get(K_VAULT);
     await this.backend.putMany({ [K_VAULT]: backup.record, ...(current ? { [K_PREV]: current } : {}) });
     await this.#adopt(backup.record, dek, data);
+    await this.#rememberPinShape(pin);
   }
 
   lock() {

@@ -8,6 +8,7 @@ import { Actions } from '../../domain/timelineReducer.js';
 import { CRISIS_HASH } from '../../lib/hashRouter.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { Mascot } from '../mood/Mascot.jsx';
+import { BackupNotice } from '../home/Notices.jsx';
 import { FreshStartModal } from '../timeline/FreshStartModal.jsx';
 import { MoodCheckin } from '../home/MoodCheckin.jsx';
 import { Celebration } from '../home/Celebration.jsx';
@@ -66,6 +67,7 @@ export function Home() {
         <button type="button" className="btn btn-ghost" onClick={() => setFreshStart(true)}>{T.actionSlip}</button>
       </div>
       {freshStart && <FreshStartModal onClose={() => setFreshStart(false)} />}
+      <BackupNotice data={data} suppressed={Boolean(milestone) || freshStart} />
       {milestone && (
         <Celebration days={milestone} onClose={async () => { setCelebrated(true); await dispatch({ type: Actions.UPDATE_PROFILE, payload: { lastCelebration: milestone } }).catch(() => {}); }} />
       )}

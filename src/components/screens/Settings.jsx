@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { T, MISC, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVIEW, COUNTRIES, ONB } from '../../content/index.js';
+import { useEffect, useState } from 'react';
+import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVIEW, COUNTRIES, ONB } from '../../content/index.js';
 import { LOCALES } from '../../i18n/locale.js';
 import { CURRENCIES, CURRENCY_IDS } from '../../i18n/money.js';
 import { feedbackUrl } from '../../lib/feedback.js';
@@ -21,6 +21,7 @@ import { isNativeShell } from '../../lib/platform.js';
 import { usePrefs } from '../../hooks/usePrefs.js';
 import { useUpdate } from '../../hooks/useUpdate.js';
 import { Page } from '../shell/Page.jsx';
+import { InfoButton } from '../Info.jsx';
 
 
 const APK_PAGE = 'https://levi20003.github.io/Sober/telepites.html';
@@ -41,8 +42,7 @@ function ProfileSection() {
   });
   const flip = (list, set, id) => set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
   return (
-    <section className="card" aria-labelledby="prof-h">
-      <h2 id="prof-h">{SP.profile}</h2>
+    <>
       <form className="stack" onSubmit={save.onSubmit} aria-busy={save.busy || undefined}>
         <Field label={SP.nickname}><input name="nick" className="input" defaultValue={p.nickname ?? ''} maxLength={MAX_NICKNAME} autoComplete="off" /></Field>
         <Field label={SP.goal}><input name="goal" className="input" inputMode="numeric" defaultValue={p.goalDays ?? ''} /></Field>
@@ -54,93 +54,111 @@ function ProfileSection() {
         </div></fieldset>
         <button type="submit" className="btn btn-primary" disabled={save.busy}>{T.save}</button>
       </form>
-    </section>
+    </>
   );
 }
 
-/** Visszajelzés: előre kitöltött GitHub-űrlap külső böngészőben. Az app maga semmit sem küld. */
-function FeedbackSection() {
+/** Összecsukható csoport: a Beállítások így átlátható marad. */
+function Group({ id, title, open = false, children, tone }) {
   return (
-    <section className="card tone tone-sky" aria-labelledby="fb-h">
-      <h2 id="fb-h">{SP.feedback}</h2>
-      <span className="pill">{PREVIEW.badge}</span>
-      <p>{PREVIEW.text}</p>
-      <p className="hint">{SP.feedbackText}</p>
-      <a className="btn btn-primary" href={feedbackUrl()} target="_blank" rel="noopener noreferrer">{SP.feedbackButton}</a>
-    </section>
+    <details className={`card group${tone ? ` ${tone}` : ''}`} open={open} id={id}>
+      <summary><h2>{title}</h2></summary>
+      <div className="stack group-body">{children}</div>
+    </details>
+  );
+}
+
+const Legend = ({ children, info, infoTitle }) => (
+  <legend className="legend-info">{children}{info && <InfoButton title={infoTitle ?? String(children)}>{info}</InfoButton>}</legend>
+);
+
+/** Megbízható személy: a krízisoldalról egy koppintással hívható (csak feloldott naplónál jelenik meg). Titkosítva tárolódik. */
+function TrustedSection() {
+  const { snapshot, dispatch } = useTimeline();
+  const toast = useToast();
+  const c = snapshot.data.profile.trustedContact;
+  const save = useFormAction(async (fd) => {
+    const name = String(fd.get('name') ?? '').trim();
+    const phone = String(fd.get('phone') ?? '').trim();
+    if (!name && !phone) { await dispatch({ type: Actions.UPDATE_PROFILE, payload: { trustedContact: null } }); toast(T.saved_ok); return; }
+    if (!name || !/^\+?[\d ]{3,20}$/.test(phone)) throw userError(UX.trustedInvalid);
+    await dispatch({ type: Actions.UPDATE_PROFILE, payload: { trustedContact: { name, phone } } });
+    toast(T.saved_ok);
+  });
+  return (
+    <form className="stack" onSubmit={save.onSubmit} aria-busy={save.busy || undefined} key={c ? `${c.name}|${c.phone}` : 'none'}>
+      <h3>{UX.trustedTitle}</h3>
+      <Field label={UX.trustedName}><input name="name" className="input" maxLength={40} defaultValue={c?.name ?? ''} autoComplete="off" /></Field>
+      <Field label={UX.trustedPhone}><input name="phone" className="input" type="tel" inputMode="tel" maxLength={20} defaultValue={c?.phone ?? ''} autoComplete="off" /></Field>
+      <button type="submit" className="btn" disabled={save.busy}>{T.save}</button>
+    </form>
   );
 }
 
 function AppearanceSection() {
   const [prefs, setPrefs] = usePrefs();
   return (
-    <section className="card" aria-labelledby="app-h">
-      <h2 id="app-h">{SP.appearance}</h2>
+    <>
       <fieldset className="chips"><legend>{SP.theme}</legend><div className="chip-row">
         {Object.entries(SP.themeOptions).map(([id, label]) => (
           <label className="chip" key={id}><input type="radio" name="theme" value={id} checked={prefs.theme === id} onChange={() => setPrefs({ theme: id })} /><span>{label}</span></label>
         ))}
       </div></fieldset>
-      <fieldset className="chips"><legend>{SP.language}</legend><div className="chip-row">
+      <fieldset className="chips"><Legend info={<p>{SP.languageHint}</p>}>{SP.language}</Legend><div className="chip-row">
         {LOCALES.map((id) => (
           <label className="chip" key={id}><input type="radio" name="lang" value={id} checked={prefs.lang === id} onChange={() => { setPrefs({ lang: id }); location.reload(); }} /><span>{id === 'hu' ? 'Magyar' : 'English'}</span></label>
         ))}
-      </div><p className="hint">{SP.languageHint}</p></fieldset>
+      </div></fieldset>
       <fieldset className="chips"><legend>{SP.country}</legend><div className="chip-row">
         {COUNTRIES.map((c) => (
           <label className="chip" key={c.id}><input type="radio" name="country" value={c.id} checked={prefs.country === c.id} onChange={() => setPrefs({ country: c.id })} /><span>{c.label}</span></label>
         ))}
       </div></fieldset>
-      <fieldset className="chips"><legend>{SP.currency}</legend><div className="chip-row">
+      <fieldset className="chips"><Legend info={<p>{SP.currencyHint}</p>}>{SP.currency}</Legend><div className="chip-row">
         {CURRENCY_IDS.map((id) => (
           <label className="chip" key={id}><input type="radio" name="currency" value={id} checked={prefs.currency === id} onChange={() => { setPrefs({ currency: id }); location.reload(); }} /><span>{CURRENCIES[id].symbol} {id}</span></label>
         ))}
-      </div><p className="hint">{SP.currencyHint}</p></fieldset>
+      </div></fieldset>
       <div className="check">
         <input type="checkbox" id="motion-off" role="switch" checked={prefs.motion === 'reduced'} onChange={(e) => setPrefs({ motion: e.target.checked ? 'reduced' : 'full' })} />
         <label htmlFor="motion-off">{SP.motion}</label>
       </div>
-      <p className="hint">{SP.motionHint}</p>
-    </section>
+    </>
   );
 }
 
-/** Verzió és frissítés. PWA: automatikus (service worker); Android-app: kézi, letöltési oldalról. */
+/** Verzió és frissítés. PWA: automatikus (service worker); Android-app: percenkénti ellenőrzés és letöltés. */
 function UpdateSection() {
   const u = useUpdate();
   const [prefs, setPrefs] = usePrefs();
   const native = isNativeShell();
+  const status = u.ready ? (native ? SP.updateApkReady : SP.updateReady) : u.status === 'checking' ? SP.updateChecking : u.status === 'uptodate' ? SP.updateNone : u.status === 'error' ? SP.updateApkError : '';
   return (
-    <section className="card" aria-labelledby="upd-h">
-      <h2 id="upd-h">{SP.update}</h2>
+    <>
       <p>{SP.version(__APP_VERSION__)}</p>
-      {native ? (
+      {(native || u.supported) ? (
         <>
-          <p className="hint">{SP.updateApkText}</p>
-          <p className="hint" role="status">{u.ready ? SP.updateApkReady : u.status === 'checking' ? SP.updateChecking : u.status === 'uptodate' ? SP.updateNone : u.status === 'error' ? SP.updateApkError : ''}</p>
+          {status && <p className="hint" role="status">{status}</p>}
           <div className="actions">
             {u.ready
-              ? <button type="button" className="btn btn-primary" onClick={u.apply}>{SP.updateApkDownload}</button>
-              : <button type="button" className="btn" onClick={() => u.check({ manual: true })} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
-            <a className="btn btn-ghost" href={APK_PAGE} target="_blank" rel="noopener noreferrer">{SP.updateApkLink}</a>
+              ? <button type="button" className="btn btn-primary" onClick={u.apply}>{native ? SP.updateApkDownload : SP.updateApply}</button>
+              : <button type="button" className="btn" onClick={() => u.check(native ? { manual: true } : undefined)} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
+            {native && <a className="btn btn-ghost" href={APK_PAGE} target="_blank" rel="noopener noreferrer">{SP.updateApkLink}</a>}
           </div>
-          <div className="check">
-            <input type="checkbox" id="apk-auto" role="switch" checked={prefs.apkCheck} onChange={(e) => setPrefs({ apkCheck: e.target.checked })} />
-            <label htmlFor="apk-auto">{SP.updateApkAuto}</label>
-          </div>
-          <p className="hint">{SP.updateApkAutoHint}</p>
-        </>
-      ) : u.supported ? (
-        <>
-          <p className="hint" role="status">{u.ready ? SP.updateReady : u.status === 'checking' ? SP.updateChecking : u.status === 'uptodate' ? SP.updateNone : ''}</p>
-          <div className="actions">
-            {u.ready
-              ? <button type="button" className="btn btn-primary" onClick={u.apply}>{SP.updateApply}</button>
-              : <button type="button" className="btn" onClick={() => u.check()} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
-          </div>
+          {native && (
+            <div className="check">
+              <input type="checkbox" id="apk-auto" role="switch" checked={prefs.apkCheck} onChange={(e) => setPrefs({ apkCheck: e.target.checked })} />
+              <label htmlFor="apk-auto">{SP.updateApkAuto}</label>
+              <InfoButton title={SP.update}><p>{SP.updateApkText}</p><p>{SP.updateApkAutoHint}</p></InfoButton>
+            </div>
+          )}
         </>
       ) : <p className="hint">{SP.updateUnsupported}</p>}
-    </section>
+      <div className="row-between">
+        <a className="btn btn-primary" href={feedbackUrl()} target="_blank" rel="noopener noreferrer">{SP.feedbackButton}</a>
+        <InfoButton title={SP.feedback}><p>{PREVIEW.text}</p><p>{SP.feedbackText}</p></InfoButton>
+      </div>
+    </>
   );
 }
 
@@ -152,6 +170,10 @@ export function Settings({ onWipe, showRecoveryCode }) {
   const toast = useToast();
   const { data } = snapshot;
   const stamp = toDateKey();
+  const native = isNativeShell();
+  const [meta, setMeta] = useState(null);
+  const loadMeta = () => Promise.resolve(store.getMeta?.()).then(setMeta).catch(() => {});
+  useEffect(() => { loadMeta(); }, [store]);
 
   const prefs = useFormAction(async (fd) => {
     const next = store.data;
@@ -167,13 +189,17 @@ export function Settings({ onWipe, showRecoveryCode }) {
     await store.changePin(fd.get('old'), fd.get('pin'));
     form.reset();
     toast(MISC.pinChanged);
+    loadMeta();
   });
   const recovery = useFormAction(async (fd) => {
     const { recoveryCode } = await store.regenerateRecoveryCode(fd.get('pin'));
     showRecoveryCode(recoveryCode);
   });
   const importer = useFormAction(async (fd) => {
-    const text = await fd.get('file').text();
+    const file = fd.get('file');
+    const pasted = String(fd.get('paste') ?? '').trim();
+    const text = pasted || (file && file.size ? await file.text() : '');
+    if (!text) throw userError(MISC.backupFile);
     const obj = JSON.parse(text.replace(/^﻿/, ''));
     if (!confirm(MISC.importConfirm)) return;
     if (obj?.kind === 'encrypted-backup') await store.importEncryptedBackup(obj, fd.get('pin'));
@@ -183,25 +209,48 @@ export function Settings({ onWipe, showRecoveryCode }) {
     navigate('#/');
   });
   const plain = (fn) => () => { if (confirm(T.exportPlainWarning)) fn(); };
+  const markBackup = () => store.setMeta({ lastBackup: new Date().toISOString(), backupSnoozeUntil: null }).then(loadMeta).catch(() => {});
+  const downloadBackup = async () => {
+    download(`jozansag-mentes-${stamp}.json`, JSON.stringify(await store.exportEncryptedBackup()), 'application/json');
+    await markBackup();
+  };
+  // Az Android-appban a WebView nem tölt le fájlt: a titkosított mentés szövegét a vágólapra másoljuk.
+  const copyBackup = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(await store.exportEncryptedBackup()));
+      await markBackup();
+      toast(UX.copyBackupDone);
+    } catch { toast(T.errGeneric, 'error'); }
+  };
+  const setQuickPin = async (on) => {
+    await store.setMeta(on ? { quickPin: true } : { quickPin: false, pinHint: null });
+    loadMeta();
+  };
 
   return (
     <Page title={SP.title}>
       <div className="actions"><button type="button" className="btn" onClick={() => auth.lock('manual')}>{T.lockNow}</button></div>
-      <ProfileSection />
-      <AppearanceSection />
-      <UpdateSection />
-      <FeedbackSection />
-      <section className="card">
-        <h2>{T.journeySection}</h2>
+
+      <Group title={SP.profile}>
+        <ProfileSection />
+        <TrustedSection />
+      </Group>
+
+      <Group title={SP.appearance}><AppearanceSection /></Group>
+
+      <Group title={T.securitySection}>
         <form className="stack" onSubmit={prefs.onSubmit} aria-busy={prefs.busy || undefined}>
           <Field label={T.journeyStartLabel}><input type="date" name="start" className="input" defaultValue={data.profile.journeyStart} max={toDateKey()} required /></Field>
           <Field label={T.autoLockLabel}><input type="number" name="autolock" className="input" min="1" max="120" defaultValue={String(data.settings.autoLockMinutes)} /></Field>
           <button type="submit" className="btn btn-primary" disabled={prefs.busy}>{T.save}</button>
         </form>
-      </section>
-
-      <section className="card">
-        <h2>{T.securitySection}</h2>
+        {meta && (
+          <div className="check">
+            <input type="checkbox" id="quick-pin" role="switch" checked={meta.quickPin !== false} onChange={(e) => setQuickPin(e.target.checked)} />
+            <label htmlFor="quick-pin">{UX.quickPin}</label>
+            <InfoButton title={UX.quickPin}><p>{UX.quickPinInfo}</p></InfoButton>
+          </div>
+        )}
         <details>
           <summary>{T.changePin}</summary>
           <form className="stack" onSubmit={pin.onSubmit} aria-busy={pin.busy || undefined}>
@@ -212,49 +261,42 @@ export function Settings({ onWipe, showRecoveryCode }) {
           </form>
         </details>
         <details>
-          <summary>{T.newRecovery}</summary>
+          <summary>{T.newRecovery}<InfoButton title={T.newRecovery}><p>{T.newRecoveryInfo}</p></InfoButton></summary>
           <form className="stack" onSubmit={recovery.onSubmit} aria-busy={recovery.busy || undefined}>
-            <p className="hint">{T.newRecoveryInfo}</p>
             <Field label={MISC.pinField}><PinInput name="pin" autoComplete="current-password" /></Field>
             <button type="submit" className="btn" disabled={recovery.busy}>{T.newRecovery}</button>
           </form>
         </details>
-      </section>
+      </Group>
 
-      <section className="card">
-        <h2>{T.dataSection}</h2>
-        <div className="stack">
-          <button type="button" className="btn btn-primary"
-            onClick={async () => download(`jozansag-mentes-${stamp}.json`, JSON.stringify(await store.exportEncryptedBackup()), 'application/json')}>
-            {T.exportEncrypted}
-          </button>
-          <p className="hint">{T.exportEncryptedInfo}</p>
-          <button type="button" className="btn" onClick={plain(() => download(`jozansag-naplo-${stamp}.csv`, toCsvExport(store.data), 'text/csv;charset=utf-8'))}>{T.exportCsv}</button>
-          <button type="button" className="btn" onClick={plain(() => download(`jozansag-naplo-${stamp}.json`, toJsonExport(store.data), 'application/json;charset=utf-8'))}>{T.exportJson}</button>
-          <details>
-            <summary>{T.importEncrypted}</summary>
-            <form className="stack" onSubmit={importer.onSubmit} aria-busy={importer.busy || undefined}>
-              <p className="hint">{T.importEncryptedInfo}</p>
-              <Field label={MISC.importFileLabel}><input type="file" name="file" accept=".json,application/json" required className="input" /></Field>
-              <Field label={MISC.importPinLabel}><input type="password" name="pin" className="input" autoComplete="off" /></Field>
-              <button type="submit" className="btn" disabled={importer.busy}>{T.importEncrypted}</button>
-            </form>
-          </details>
+      <Group title={T.dataSection}>
+        <div className="row-between">
+          {native
+            ? <button type="button" className="btn btn-primary" onClick={copyBackup}>{UX.copyBackup}</button>
+            : <button type="button" className="btn btn-primary" onClick={downloadBackup}>{T.exportEncrypted}</button>}
+          <InfoButton title={T.exportEncrypted}><p>{T.exportEncryptedInfo}</p></InfoButton>
         </div>
-      </section>
-
-      <section className="card card-warn">
-        <h2>{T.deleteAll}</h2>
-        <p>{T.deleteAllInfo}</p>
+        <button type="button" className="btn" onClick={plain(() => download(`jozansag-naplo-${stamp}.csv`, toCsvExport(store.data), 'text/csv;charset=utf-8'))}>{T.exportCsv}</button>
+        <button type="button" className="btn" onClick={plain(() => download(`jozansag-naplo-${stamp}.json`, toJsonExport(store.data), 'application/json;charset=utf-8'))}>{T.exportJson}</button>
+        <details>
+          <summary>{T.importEncrypted}<InfoButton title={T.importEncrypted}><p>{T.importEncryptedInfo}</p></InfoButton></summary>
+          <form className="stack" onSubmit={importer.onSubmit} aria-busy={importer.busy || undefined}>
+            <Field label={MISC.importFileLabel}><input type="file" name="file" accept=".json,application/json" className="input" /></Field>
+            <Field label={UX.pasteBackup}><textarea name="paste" className="input" rows={3} placeholder={UX.pasteBackupPlaceholder} /></Field>
+            <Field label={MISC.importPinLabel}><input type="password" name="pin" className="input" autoComplete="off" /></Field>
+            <button type="submit" className="btn" disabled={importer.busy}>{T.importEncrypted}</button>
+          </form>
+        </details>
         <button type="button" className="btn btn-danger" onClick={async () => { if (confirm(T.deleteAllConfirm)) await onWipe(); }}>{T.deleteAll}</button>
-      </section>
+      </Group>
 
-      <section className="card">
-        <h2>{T.aboutSection}</h2>
+      <Group title={SP.update}><UpdateSection /></Group>
+
+      <Group title={T.aboutSection}>
         <p>{T.disclaimer}</p>
         <p>{T.privacyPromise}</p>
         <p className="hint">{MISC.contentVersion(CONTENT_VERSION, REVIEW_STATUS)}</p>
-      </section>
+      </Group>
     </Page>
   );
 }

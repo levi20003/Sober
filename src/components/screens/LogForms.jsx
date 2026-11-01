@@ -66,7 +66,6 @@ export function TriggerForm() {
   return (
     <Screen>
       <h1>{T.triggerTitle}</h1>
-      <p className="lead">{T.triggerIntro}</p>
       <section className="card">
         <form className="stack" onSubmit={onSubmit} aria-busy={busy || undefined}>
           <Chips legend={T.triggersLabel} name="triggers" options={TRIGGERS} multiple />

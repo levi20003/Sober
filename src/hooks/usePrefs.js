@@ -24,6 +24,7 @@ function derive(r) {
     lang: LOCALES.includes(r.lang) ? r.lang : locale,
     country: COUNTRY_IDS.includes(r.country) ? r.country : detectCountry(),
     currency: CURRENCY_IDS.includes(r.currency) ? r.currency : currency,
+    seen: Array.isArray(r.seen) ? r.seen.filter((x) => typeof x === 'string').slice(0, 50) : [],
   };
 }
 
@@ -55,6 +56,10 @@ export function usePrefs() {
   const prefs = useSyncExternalStore((fn) => { listeners.add(fn); return () => listeners.delete(fn); }, getPrefs);
   return [prefs, setPrefs];
 }
+
+/** Egyszeri tudnivalók (pl. az előzetes verzió jelzése): "már láttam" jelzők, nem személyes adat. */
+export const hasSeen = (key) => getPrefs().seen.includes(key);
+export const markSeen = (key) => { if (!hasSeen(key)) setPrefs({ seen: [...getPrefs().seen, key] }); };
 
 /** Tesztekhez: a gyorsítótár eldobása. */
 export function resetPrefsCache() { cache = null; raw = null; }

@@ -3,6 +3,7 @@ import { T, MISC } from '../content/index.js';
 import { enableReminders, disableReminders, remindersSupported } from '../reminders.js';
 import { useToast } from '../hooks/useToast.jsx';
 import { Field } from './ui.jsx';
+import { TitleWithInfo } from './Info.jsx';
 
 export function Reminders({ store }) {
   const toast = useToast();
@@ -28,7 +29,7 @@ export function Reminders({ store }) {
   };
   return (
     <section className="card">
-      <h2>{T.remindersSection}</h2>
+      <TitleWithInfo title={T.remindersSection} info={<p>{T.remindersInfo}</p>} />
       <div className="check">
         <input type="checkbox" id="rem-on" role="switch" checked={rem.enabled} disabled={!remindersSupported()} onChange={(e) => apply(e.target.checked, rem.time)} />
         <label htmlFor="rem-on">{T.remindersLabel}</label>
@@ -36,7 +37,6 @@ export function Reminders({ store }) {
       <Field label={T.remindersTimeLabel}>
         <input type="time" className="input" value={rem.time} onChange={(e) => { setRem({ ...rem, time: e.target.value }); if (rem.enabled) apply(true, e.target.value); }} />
       </Field>
-      <p className="hint">{T.remindersInfo}</p>
     </section>
   );
 }

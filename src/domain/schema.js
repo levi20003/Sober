@@ -206,6 +206,15 @@ export function validateProfile(p) {
     const list = cleanList(p.reasons, 0, 12, 140, 'Személyes okok');
     if (list.length) out.reasons = list;
   }
+  if (p.trustedContact !== undefined && p.trustedContact !== null) {
+    const c = p.trustedContact;
+    if (!isObj(c)) fail('Megbízható személy: érvénytelen');
+    const name = cleanText(c.name, 'Megbízható személy neve');
+    const phone = typeof c.phone === 'string' ? c.phone.trim() : '';
+    if (!name || name.length > 40) fail('Megbízható személy: a név 1–40 karakter');
+    if (!/^\+?[\d ]{3,20}$/.test(phone) || phone.replace(/\D/g, '').length < 3) fail('Megbízható személy: érvénytelen telefonszám');
+    out.trustedContact = { name, phone };
+  }
   if (p.lastCelebration !== undefined && p.lastCelebration !== null) {
     out.lastCelebration = cleanInt(p.lastCelebration, 0, MAX_GOAL_DAYS, 'Ünnepelt mérföldkő');
   }

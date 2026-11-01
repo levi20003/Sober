@@ -14,7 +14,7 @@
 
 Only what you type in yourself: your nickname, what you want to stay away from, your goal, hard situations, reasons, moods, gratitude notes, letters, your start date, daily cost and savings goal, daily check-ins, hard moments, slips, lessons and notes. All of it is **encrypted** and lives in your browser's storage (IndexedDB, or localStorage if that is unavailable).
 
-Stored **unencrypted** (it is not personal content, and the lock screen needs it): the number of failed unlock attempts and the end of the wait time; whether reminders are on, their time and the day of the last one; and your display settings (theme, reduced motion, language, country, currency). Nothing from the journal is ever in these.
+Stored **unencrypted** (it is not personal content, and the lock screen needs it): the number of failed unlock attempts and the end of the wait time; the number of digits of a digits-only PIN (for the quick keypad; can be switched off in Settings; the PIN itself is never stored); the date of the last backup; whether reminders are on, their time and the day of the last one; and your display settings (theme, reduced motion, language, country, currency). Nothing from the journal is ever in these.
 
 Not stored, not collected: name, e-mail, phone number, location, device identifier, IP address, usage statistics.
 

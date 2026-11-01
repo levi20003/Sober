@@ -6,6 +6,7 @@ import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { useFormAction } from '../../hooks/useFormAction.js';
 import { Field } from '../ui.jsx';
+import { TitleWithInfo } from '../Info.jsx';
 import { Page } from '../shell/Page.jsx';
 
 /** A legutóbbi levél a megadott alkalomra, vagy null. */
@@ -40,8 +41,7 @@ export function Letter() {
   return (
     <Page title={TOOLS.letterTitle}>
       <section className="card tone tone-pink">
-        <h2>{TOOLS.letterTitle}</h2>
-        <p>{TOOLS.letterText}</p>
+        <TitleWithInfo title={TOOLS.letterTitle} info={<p>{TOOLS.letterText}</p>} />
         <form className="stack" onSubmit={save.onSubmit} aria-busy={save.busy || undefined}>
           <Field label={TOOLS.letterLabel}><textarea name="note" className="input" rows={6} maxLength={2000} required /></Field>
           <fieldset className="chips">
