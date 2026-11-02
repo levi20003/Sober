@@ -115,3 +115,19 @@ A debug kulccsal aláírt telepítés nem frissíthető a kiadási kulccsal alá
 ## Android: emulátoros próba
 
 A `.github/workflows/android.yml` `emulator-smoke` jobja egy API 35-ös emulátorra telepíti az APK-t, és a `scripts/android-smoke.mjs` a valódi WebView-t a Chrome DevTools protokollal vezérli. A próbabuild WebView-hibakeresése csak ebben a jobban van bekapcsolva (a kiadott APK-ban `webContentsDebuggingEnabled: false`). Hiba esetén a futás annotációi tartalmazzák a lépéseket és a logcat releváns sorait, a képernyőképek az `android-smoke` artifactban vannak.
+
+## Kiadási folyamat (2026-11, audit SEC-02/03/04)
+
+```
+PR → apk (teszt, build, aláírás) ─┬─ emulator-smoke (valódi WebView) ─┐
+                                  └─ release-check (letöltés + SHA-256, közzététel nélkül)
+main push → apk ─ emulator-smoke ─ release (environment: release) → android-latest
+```
+
+- A `main` ág védett (ruleset „main védelem”): csak PR-on át, zöld `apk` és `Emulátoros próba (valódi WebView)` mellett.
+- A workflow alapból csak olvasási jogot kap; írni (kiadni) csak a `release` job tud.
+- A `release` job csak akkor fut, ha az APK-build **és** az emulátoros próba is zöld, és pontosan azt az APK-t adja ki,
+  amit a build készített (a SHA-256-ot újra ellenőrzi). Debug-kulccsal aláírt APK-t nem ad ki.
+- **[EMBERI TEENDŐ]** Settings → Environments → `release` → **Required reviewers**: add hozzá magad. Ettől kezdve
+  minden kiadás a te jóváhagyásodra vár (Actions → a futás → „Review deployments” → Approve). Az environment az első
+  futáskor jön létre, ha még nincs; a jóváhagyó beállítása nélkül a kiadás jóváhagyás nélkül megy ki.

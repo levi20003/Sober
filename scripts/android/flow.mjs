@@ -34,15 +34,21 @@ const H = `(() => {
 const j = JSON.stringify;
 
 export async function install(c) {
+  // A WebView induláskor egy pillanatig még egy átmeneti (pl. about:blank) dokumentumot mutat, amelyben a localStorage
+  // tiltott ("Access is denied for this document"). Előbb megvárjuk, hogy az app saját originje töltődjön be (audit SEC-04).
+  await c.waitFor(`location.origin === 'https://localhost' && document.readyState !== 'loading'`, { timeoutMs: 60_000, what: 'az app originje (https://localhost)' });
   await c.eval(H);
   // A folyamat magyar szövegekre épül; az emulátor nyelve angol lehet, ezért a nyelvet magyarra állítjuk (és újratöltünk).
   const state = await c.eval(`(() => {
     const k = 'jsz-ui'; let o = {};
     try { o = JSON.parse(localStorage.getItem(k) || '{}'); } catch { /* üres */ }
     if (o.lang === 'hu') return 'ok';
-    o.lang = 'hu'; localStorage.setItem(k, JSON.stringify(o)); setTimeout(() => location.reload(), 50);
+    o.lang = 'hu';
+    try { localStorage.setItem(k, JSON.stringify(o)); } catch { return 'retry'; }
+    setTimeout(() => location.reload(), 50);
     return 'reloading';
   })()`);
+  if (state === 'retry') throw new Error('A localStorage az app originjében sem írható (a tárhely tiltva van?)');
   if (state === 'reloading') {
     await c.waitFor(`!window.__s && document.readyState === 'complete'`, { timeoutMs: 30_000, what: 'újratöltés a magyar nyelv beállítása után' });
     await c.eval(H);
