@@ -103,3 +103,32 @@ h2 { font-size: var(--fs-lg); letter-spacing: -0.01em; }
 .risk-banner { display: grid; gap: 2px; padding: var(--sp-3) var(--sp-4); font-size: var(--fs-sm); border-radius: 18px; box-shadow: none; border: 1px solid var(--hairline); }
 .risk-banner strong { font-size: var(--fs-sm); }
 .risk-banner span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--card-muted); }
+
+/* Élő számláló (jelenlegi szakasz): egységenként egy csempe, alatta a következő egységig telő csík. */
+.live-counter { margin-top: var(--sp-3); text-align: left; }
+.live-counter .eyebrow { margin-bottom: var(--sp-2); }
+.lc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr)); gap: var(--sp-2); }
+.lc-cell { display: grid; justify-items: center; gap: 2px; padding: 10px 4px 8px; border-radius: 14px; background: var(--surface-2); }
+.lc-value { font-size: 1.35rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text); }
+.lc-label { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.lc-bar { display: block; width: 78%; height: 4px; margin-top: 4px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 18%, transparent); overflow: hidden; }
+.lc-bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; transform-origin: left; transition: transform 1s linear; }
+.lc-seconds .lc-bar i { transition-duration: .95s; }
+[data-motion="reduced"] .lc-bar i { transition: none; }
+@media (prefers-reduced-motion: reduce) { .lc-bar i { transition: none; } }
+
+/* Helyreállító kód: koppintásra másolható kártya, 8 négyes csoport rácsban. */
+.rc-card { display: grid; gap: 12px; width: 100%; padding: 18px 14px 14px; border: 1px solid color-mix(in srgb, var(--sun) 45%, transparent); border-radius: 24px;
+  background: color-mix(in srgb, var(--sun) 14%, var(--surface)); color: var(--text); cursor: pointer; text-align: center; font: inherit; }
+.rc-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.rc-code { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; user-select: all; }
+.rc-group { padding: 8px 2px; border-radius: 10px; background: var(--surface); font-size: 1.05rem; font-weight: 700; letter-spacing: .08em; color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.rc-sep { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.rc-hint { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: .9rem; font-weight: 700; color: var(--muted); }
+.rc-card.is-copied { border-color: color-mix(in srgb, var(--good) 60%, transparent); }
+.rc-card.is-copied .rc-hint { color: var(--good); }
+@media (max-width: 340px) { .rc-code { grid-template-columns: repeat(2, 1fr); } }
+
+/* „Elmentettem” jelölőnégyzet kártyaként: nagy érintési felület. */
+.check.check-card { padding: 12px 14px; border-radius: 16px; background: var(--surface-2); }
+.check.check-card input { width: 24px; height: 24px; accent-color: var(--accent); }

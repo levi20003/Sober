@@ -28,6 +28,7 @@ import { FreshStartModal } from './components/timeline/FreshStartModal.jsx';
 import { PreviewNotice } from './components/home/Notices.jsx';
 import { isNativeShell } from './lib/platform.js';
 import { ApkUpdateStatus, apkBusy } from './components/ApkUpdateStatus.jsx';
+import { RecoveryCodeCard } from './components/RecoveryCodeCard.jsx';
 
 const SUBTITLES = { '#/eszkozok/hullam': TOOLS.urgeTitle, '#/eszkozok/hala': TOOLS.gratitudeTitle, '#/eszkozok/level': TOOLS.letterTitle, '#/eszkozok/okok': TOOLS.reasonsTitle,
   '#/rogzites/bejelentkezes': T.actionCheckin, '#/rogzites/nehez-pillanat': T.triggerTitle, '#/rogzites/jegyzet': T.noteTitle };
@@ -201,17 +202,14 @@ function Shell() {
 
 /** Új helyreállító kód (Beállítások → "Új helyreállító kód"): teljes képernyős, egyszeri megjelenítés. */
 export function RecoveryOverlay({ code, onDone }) {
-  const toast = useToast();
   const [ok, setOk] = useState(false);
-  const [copied, setCopied] = useState(false);
   return (
     <div className="celebrate" role="dialog" aria-modal="true" aria-labelledby="rc-h" style={{ background: 'var(--bg)' }}>
       <DialogHelp />
       <h2 id="rc-h">{T.recoveryTitle}</h2>
       <p>{T.recoveryIntro}</p>
-      <p className="recovery-box mono" translate="no">{code}</p>
-      <button type="button" className="btn" onClick={async () => { try { await navigator.clipboard.writeText(code); setCopied(true); toast(UX.clipboardWarning); } catch { /* kézi másolás */ } }}>{copied ? T.copied : T.copy}</button>
-      <div className="check" style={{ justifyContent: 'center' }}>
+      <RecoveryCodeCard code={code} />
+      <div className="check check-card">
         <input type="checkbox" id="rc2-ok" checked={ok} onChange={(e) => setOk(e.target.checked)} />
         <label htmlFor="rc2-ok">{T.recoveryConfirm}</label>
       </div>

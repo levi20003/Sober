@@ -17,13 +17,16 @@ import { Icon } from '../icons/Icon.jsx';
 import { MoodFigure } from '../mood/MoodFigures.jsx';
 import { Donut, MoodBar, ProgressRing, Sparkline } from '../charts/Charts.jsx';
 import { TimelineBar } from '../timeline/TimelineBar.jsx';
+import { LiveCounter, useNow } from './LiveCounter.jsx';
+import { dayProgress } from '../../domain/elapsed.js';
+import { toDateKey } from '../../domain/dates.js';
 
 const MOOD_NAMES = Object.fromEntries(MOODS.map((m) => [m.id, m.label]));
 export const moodName = (id) => MOOD_NAMES[id] ?? '';
 
 /** Hős-kártya: az összes józan nap (egy megcsúszás nem törli), körülötte a cél felé haladás gyűrűje. */
-export function Hero({ stats, phases, goalDays, freshToday, currentSince }) {
-  const { dispatch } = useTimeline();
+export function Hero({ stats, phases, goalDays, freshToday, currentSince, liveStart, clock }) {
+  const { dispatch, refresh } = useTimeline();
   const toast = useToast();
   const total = stats.totalSoberDays;
   const shown = useCountUp(total);
@@ -35,21 +38,25 @@ export function Hero({ stats, phases, goalDays, freshToday, currentSince }) {
     return undefined;
   }, [total]);
   const g = goalProgress(total, goalDays);
-  const ms = milestoneStatus(total);
-  const ratio = g ? g.ratio : ms.progressToNext;
+  // A kör a mai nap: éjfélig megtelik. Napváltáskor újraszámoljuk a statisztikát, így a szám eggyel nő, a kör újraindul.
+  const now = useNow(clock);
+  const dayRatio = dayProgress(new Date(now));
+  const todayKey = toDateKey(new Date(now));
+  useEffect(() => { if (todayKey !== stats.today && refresh) refresh(); }, [todayKey]);
   const setNext = async () => { await dispatch({ type: Actions.UPDATE_PROFILE, payload: { goalDays: g.nextSuggestion } }); toast(HOME.goalProgress(total, g.nextSuggestion)); };
   return (
     <section className="hero-card" aria-label={HOME.totalLabel}>
       {burst && <Confetti count={28} />}
       <div className="row-between">
         <p className="eyebrow">{HOME.totalLabel}</p>
-        <InfoButton title={HOME.totalLabel}><p>{HOME.totalSub}</p></InfoButton>
+        <InfoButton title={HOME.totalLabel}><p>{HOME.totalSub}</p><p>{HOME.ringInfo}</p></InfoButton>
       </div>
-      <ProgressRing ratio={ratio} size={232} stroke={10} color="var(--accent)" label={g ? HOME.goalProgress(g.shown, g.goal) : T.days(total)}>
+      <ProgressRing ratio={dayRatio} size={232} stroke={10} color="var(--accent)" label={HOME.ringAria(Math.floor(dayRatio * 100))}>
         <p className="hero-value" data-total={total}>{shown}</p>
         <p className="hero-unit">{MISC.dayWord}</p>
       </ProgressRing>
       <span className="visually-hidden">{`${HOME.totalLabel}: ${T.days(total)}`}</span>
+      {liveStart && <LiveCounter start={liveStart} clock={clock} />}
       {g && <p className="hero-goal"><strong>{HOME.goalProgress(g.shown, g.goal)}</strong> · {SETUP.goalLine(g.remaining)}</p>}
       {g?.reached && (
         <div className="hero-reached">
@@ -106,7 +113,8 @@ export function WeekGlance({ events, today, journeyStart }) {
       <div className="week" role="list">
         {days.map((d, i) => {
           const slip = slips.has(d.date);
-          const sober = !d.isFuture && !slip && d.date >= journeyStart;
+          // A mai nap még nincs „kész” (éjfélkor kerül be a józan napok közé): üres karika, nem pipa.
+          const sober = !d.isFuture && !d.isToday && !slip && d.date >= journeyStart;
           const cls = `day-dot${d.isToday ? ' is-today' : ''}${slip ? ' is-slip' : sober ? ' is-sober' : ''}`;
           const status = slip ? HOME.weekSlip : sober ? HOME.weekSober : '';
           return (

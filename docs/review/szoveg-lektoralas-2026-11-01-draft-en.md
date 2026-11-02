@@ -4,7 +4,7 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 
 Állapot: **Awaiting expert review**. Tájékoztató a lektornak: [LEKTOR-TAJEKOZTATO.md](LEKTOR-TAJEKOZTATO.md). A visszajelzést a CSV-fájl üres oszlopaiban kérjük (Rendben / Módosítandó / Javasolt szöveg / Megjegyzés).
 
-Összesen 839 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
+Összesen 860 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
 
 
 ## Krízisképernyő – légzőgyakorlat
@@ -301,6 +301,15 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `HOME.appbarHello` | Hi, 7 | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
 | `HOME.totalLabel` | Your total sober days |  |
 | `HOME.totalSub` | A slip does not erase them: all your sober days stay. |  |
+| `HOME.ringInfo` | The ring shows today: it fills up until midnight, then starts again and your sober days go up by one. |  |
+| `HOME.ringAria` | Today: 7% | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `HOME.liveTitle` | Current phase |  |
+| `HOME.liveUnits.years` | yr |  |
+| `HOME.liveUnits.months` | mo |  |
+| `HOME.liveUnits.weeks` | wk |  |
+| `HOME.liveUnits.hours` | h |  |
+| `HOME.liveUnits.minutes` | min |  |
+| `HOME.liveStartsTomorrow` | Starts tomorrow: counting from midnight. |  |
 | `HOME.newPhase` | A new chapter began today. Your path so far is kept. |  |
 | `HOME.goalLabel` | Your goal |  |
 | `HOME.goalProgress` | 7 / 2026. október 1. days | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
@@ -596,10 +605,10 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `SETTINGS_PAGE.updateNone` | You have the latest version. |  |
 | `SETTINGS_PAGE.updateReady` | A new version is ready. I will apply it as soon as you finish what you are doing. |  |
 | `SETTINGS_PAGE.updateApply` | Update now |  |
-| `SETTINGS_PAGE.updateApkText` | At start and at most once a day the app checks GitHub for a newer Android version (a single anonymous request; GitHub only sees the IP address and the time, nothing from your journal). If there is one, you get a notice; Android always asks you to approve the install, and the new version installs over the old one, keeping your data. |  |
+| `SETTINGS_PAGE.updateApkText` | At start and at most once a day the app checks GitHub for a newer Android version (a single anonymous request; GitHub only sees the IP address and the time, nothing from your journal). If there is one, you get a notice, and the Update button downloads and verifies it inside the app (checksum, signing key, version); Android always asks you to approve the install, and the new version installs over the old one, keeping your data. |  |
 | `SETTINGS_PAGE.updateApkError` | Could not check just now (no network?). I will try again later. |  |
 | `SETTINGS_PAGE.updateApkReady` | A new Android version is available. |  |
-| `SETTINGS_PAGE.updateApkDownload` | Download the new version |  |
+| `SETTINGS_PAGE.updateApkDownload` | Update now |  |
 | `SETTINGS_PAGE.updateApkAuto` | Check for new versions once a day over the internet |  |
 | `SETTINGS_PAGE.updateApkAutoHint` | When off, the app sends no network requests and only checks with the button. |  |
 | `SETTINGS_PAGE.updateApkLink` | Open the download page |  |
@@ -657,7 +666,17 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | Kulcs | Szöveg | Kontextus |
 |---|---|---|
 | `UPDATE.apkBanner` | A new Android version is available. |  |
-| `UPDATE.apkApply` | Download |  |
+| `UPDATE.apkApply` | Update |  |
+| `UPDATE.apkDownloading` | Downloading the update… 7% | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `UPDATE.apkInstalling` | The Android installer is open: tap "Update" or "Install". Your data stays. |  |
+| `UPDATE.apkPermission` | Android asks for permission: turn on "Allow from this source", go back, and tap Update again. |  |
+| `UPDATE.apkRetry` | Try again |  |
+| `UPDATE.apkErrors.CHECKSUM` | The downloaded file was damaged, so it was not installed. Please try again. |  |
+| `UPDATE.apkErrors.SIGNATURE` | The downloaded update is not signed with the same key as the installed app, so it was not installed. If you use a temporary-key build, follow the steps under Settings → Security. |  |
+| `UPDATE.apkErrors.NOT_NEWER` | You already have the latest version. |  |
+| `UPDATE.apkErrors.PACKAGE` | The downloaded file is not an update of this app, so it was not installed. |  |
+| `UPDATE.apkErrors.NETWORK` | The download did not go through (no network?). Please try again later. |  |
+| `UPDATE.apkErrors.UNKNOWN` | The update did not work right now. Try again, or use the download page. |  |
 | `UPDATE.banner` | A new version is available. |  |
 | `UPDATE.apply` | Update |  |
 | `UPDATE.later` | Later |  |
@@ -940,6 +959,8 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `UX.storageErrorTitle` | The journal is not available right now |  |
 | `UX.storageErrorText` | The phone's storage is not responding, so we neither open nor overwrite your journal. Please try again a little later. The helplines are available in the meantime. |  |
 | `UX.retry` | Try again |  |
+| `UX.copyCodeTap` | Copy the recovery code |  |
+| `UX.copyCodeHint` | Tap the code to copy it |  |
 | `UX.clipboardWarning` | Copied. Once you have saved it (e.g. in a password manager), copy something else so the code does not stay on the clipboard. |  |
 | `UX.backupDoneTitle` | Backup created and verified |  |
 | `UX.backupSavedDevice` | Saved to the place you chose, as "7". | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |

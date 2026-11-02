@@ -22,6 +22,7 @@ import { useHashRoute } from '../../hooks/useHashRoute.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { useFormAction } from '../../hooks/useFormAction.js';
 import { CrisisButton } from '../crisis/CrisisButton.jsx';
+import { RecoveryCodeCard } from '../RecoveryCodeCard.jsx';
 import { BACKUP_ACCEPT } from '../../lib/nativeFiles.js';
 import { parseBackupText } from '../../domain/backupFile.js';
 import { RecoveryRestoreFields } from '../RestoreFields.jsx';
@@ -60,7 +61,9 @@ export function stepProblem(step, d, today = toDateKey()) {
 }
 
 export function draftToProfile(d, today = toDateKey()) {
-  const profile = { journeyStart: d.startMode === 'earlier' && d.startDate ? d.startDate : today, dailyCostHuf: 0 };
+  const earlier = d.startMode === 'earlier' && d.startDate;
+  // „Ma kezdem”: a pontos időpontot is eltesszük (titkosítva), hogy az élő számláló percre pontos legyen.
+  const profile = { journeyStart: earlier ? d.startDate : today, ...(earlier ? {} : { journeyStartAt: new Date().toISOString() }), dailyCostHuf: 0 };
   if (d.nickname.trim()) profile.nickname = d.nickname.trim();
   if (d.substances.length) profile.substances = d.substances;
   if (d.substances.includes('other') && d.otherSubstance.trim()) profile.otherSubstance = d.otherSubstance.trim();
@@ -126,7 +129,6 @@ export function Onboarding({ onFinish }) {
   const toast = useToast();
   const [draft, setDraft] = useState(EMPTY);
   const [recoveryCode, setRecoveryCode] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const maxReached = useRef(1);
   const headingRef = useRef(null);
@@ -155,14 +157,13 @@ export function Onboarding({ onFinish }) {
     maxReached.current = RECOVERY_STEP;
     withTransition(() => navigate(`${STEP_PATH}${RECOVERY_STEP}`));
   };
-  const copy = async () => { try { await navigator.clipboard.writeText(recoveryCode); setCopied(true); toast(UX.clipboardWarning); } catch { toast(ONB.recoveryText); } };
 
   let body;
   switch (step) {
     case 1:
       body = (
         <>
-          <TitleWithInfo as="h1" title={ONB.welcomeTitle} infoTitle={UX.welcomeInfo} info={<><p>{UX.welcomeInfoText}</p><p>{T.privacyPromise}</p></>} />
+          <TitleWithInfo as="h1" title={ONB.welcomeTitle} infoTitle={UX.welcomeInfo} info={<><p>{UX.welcomeInfoText}</p><p>{T.privacyPromise}</p><p className="hint disclaimer">{T.disclaimer}</p></>} />
           <Field label={SETUP.nickLabel}>
             <input className="input big-input" name="nickname" value={draft.nickname} maxLength={MAX_NICKNAME} placeholder={ONB.nickPlaceholder}
               autoComplete="off" onChange={(e) => set({ nickname: e.target.value })} />
@@ -171,7 +172,6 @@ export function Onboarding({ onFinish }) {
             <summary>{ONB.welcomeRestore}</summary>
             <RestoreForm onRestored={() => onFinish({ restored: true })} />
           </details>
-          <p className="hint disclaimer">{T.disclaimer}</p>
         </>
       );
       break;
@@ -207,9 +207,8 @@ export function Onboarding({ onFinish }) {
         <>
           <h1>{ONB.recoveryTitle}</h1>
           <p className="lead">{ONB.recoveryText}</p>
-          <p className="recovery-box mono" translate="no" data-testid="recovery-code">{recoveryCode}</p>
-          <button type="button" className="btn" onClick={copy}><Icon name="copy" size={20} />{copied ? T.copied : T.copy}</button>
-          <div className="check">
+          <RecoveryCodeCard code={recoveryCode} />
+          <div className="check check-card">
             <input type="checkbox" id="rc-ok" checked={saved} onChange={(e) => setSaved(e.target.checked)} />
             <label htmlFor="rc-ok">{ONB.recoveryConfirm}</label>
           </div>
