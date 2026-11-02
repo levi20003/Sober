@@ -6,8 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Alapból csak olvasás. Írni (kiadni) csak a `release` job tud, ami a build ÉS az emulátoros próba után fut
+# (audit SEC-02, SEC-03; docs/audit-2026/REMEDIATION-ROADMAP.md P0-2).
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: android-${{ github.ref }}
@@ -16,6 +18,10 @@ concurrency:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    outputs:
+      version_code: ${{ steps.meta.outputs.version_code }}
+      signing_kind: ${{ steps.meta.outputs.signing_kind }}
+      cert_sha256: ${{ steps.meta.outputs.cert_sha256 }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -102,36 +108,13 @@ jobs:
             jozansag-szamlalo.apk
             jozansag-szamlalo.apk.sha256
 
-      # A main ágon mindig ugyanazon a címen érhető el a legfrissebb APK:
-      # https://github.com/<owner>/<repo>/releases/download/android-latest/jozansag-szamlalo.apk
-      - name: Kiadás frissítése (android-latest)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # A kiadáshoz szükséges adatok a `release` jobnak (az APK maga artifactként megy tovább).
+      - name: Kiadási adatok
+        id: meta
         run: |
-          if [ "$SIGNING_KIND" = "release" ]; then
-            SIGN_NOTE="állandó kiadási kulcs: az új verziók az előzőre frissítésként települnek"
-          else
-            SIGN_NOTE="IDEIGLENES debug kulcs: ez a build nem települ egy korábbi build fölé, előbb távolítsd el a régit (az adatai elvesznek)"
-          fi
-          cat > "$RUNNER_TEMP/notes.md" <<NOTES
-          Telepíthető APK a main ág $GITHUB_SHA állapotából.
-
-          A Józanság-számláló segít követni és támogatni a józanságod útját. Nem orvosi eszköz, és nem helyettesíti a szakember segítségét.
-          Ha közvetlen veszélyben vagy, hívd a 112-t.
-
-          - Verziókód: $ANDROID_VERSION_CODE
-          - Aláírás: $SIGN_NOTE
-          - Aláíró tanúsítvány SHA-256: \`$CERT_SHA256\`
-          - Ellenőrzőösszeg: jozansag-szamlalo.apk.sha256
-          - Telepítési útmutató: https://levi20003.github.io/Sober/telepites.html
-          NOTES
-          gh release delete android-latest --cleanup-tag --yes || true
-          gh release create android-latest jozansag-szamlalo.apk jozansag-szamlalo.apk.sha256 \
-            --target "$GITHUB_SHA" \
-            --title "Józanság-számláló Android (legfrissebb)" \
-            --notes-file "$RUNNER_TEMP/notes.md" \
-            --prerelease
+          echo "version_code=$ANDROID_VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "signing_kind=$SIGNING_KIND" >> "$GITHUB_OUTPUT"
+          echo "cert_sha256=$CERT_SHA256" >> "$GITHUB_OUTPUT"
 
   # Valódi telepítés és indítás emulátoron: az APK-t telepítjük, elindítjuk, és a valódi
   # WebView-t a Chrome DevTools protokollal végigvezetjük a használati folyamaton
@@ -226,3 +209,74 @@ jobs:
           name: android-smoke
           path: smoke-out
           if-no-files-found: ignore
+
+  # PR-okon: ugyanaz a letöltés és ellenőrzés, mint a kiadásnál, de közzététel nélkül. Így a kiadási lépés
+  # (gh run download ugyanabból a futásból) a beolvasztás ELŐTT is ki van próbálva.
+  release-check:
+    name: Kiadás próbája (közzététel nélkül)
+    if: github.event_name == 'pull_request'
+    needs: [apk]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Az APK letöltése a futásból és ellenőrzése
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --name jozansag-szamlalo-apk --dir .
+          sha256sum -c jozansag-szamlalo.apk.sha256
+
+  # Kiadás: CSAK a main ágra történő push után, és csak ha az APK-build ÉS az emulátoros próba is zöld.
+  # A `release` environmentben a repó beállításaiban kötelező jóváhagyó adható meg
+  # (Settings → Environments → release → Required reviewers): ekkor a kiadás emberi jóváhagyásra vár.
+  release:
+    name: Kiadás (android-latest)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [apk, emulator-smoke]
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+      url: https://github.com/levi20003/Sober/releases/tag/android-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      # A main ágon mindig ugyanazon a címen érhető el a legfrissebb APK:
+      # https://github.com/<owner>/<repo>/releases/download/android-latest/jozansag-szamlalo.apk
+      - name: Kiadás frissítése (android-latest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ANDROID_VERSION_CODE: ${{ needs.apk.outputs.version_code }}
+          SIGNING_KIND: ${{ needs.apk.outputs.signing_kind }}
+          CERT_SHA256: ${{ needs.apk.outputs.cert_sha256 }}
+        run: |
+          if [ "$SIGNING_KIND" != "release" ]; then
+            echo "::error::Csak a kiadási kulccsal aláírt APK adható ki (most: $SIGNING_KIND)."
+            exit 1
+          fi
+          # Pontosan azt az APK-t adjuk ki, amit az apk job épített és az emulátoros próba ellenőrzött.
+          gh run download "$GITHUB_RUN_ID" --name jozansag-szamlalo-apk --dir .
+          sha256sum -c jozansag-szamlalo.apk.sha256
+          SIGN_NOTE="állandó kiadási kulcs: az új verziók az előzőre frissítésként települnek"
+          cat > "$RUNNER_TEMP/notes.md" <<NOTES
+          Telepíthető APK a main ág $GITHUB_SHA állapotából.
+
+          A Józanság-számláló segít követni és támogatni a józanságod útját. Nem orvosi eszköz, és nem helyettesíti a szakember segítségét.
+          Ha közvetlen veszélyben vagy, hívd a 112-t.
+
+          - Verziókód: $ANDROID_VERSION_CODE
+          - Aláírás: $SIGN_NOTE
+          - Aláíró tanúsítvány SHA-256: \`$CERT_SHA256\`
+          - Ellenőrzőösszeg: jozansag-szamlalo.apk.sha256
+          - Telepítési útmutató: https://levi20003.github.io/Sober/telepites.html
+          NOTES
+          gh release delete android-latest --cleanup-tag --yes || true
+          gh release create android-latest jozansag-szamlalo.apk jozansag-szamlalo.apk.sha256 \
+            --target "$GITHUB_SHA" \
+            --title "Józanság-számláló Android (legfrissebb)" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --prerelease
