@@ -193,6 +193,13 @@ export function validateProfile(p) {
     const t = cleanList([p.otherSubstance], 1, 1, 40, 'Egyéb')[0];
     out.otherSubstance = t;
   }
+  // A napló indulásának pontos ideje (csak ha ugyanarra a napra esik, mint a journeyStart; különben elhagyjuk,
+  // pl. ha a kezdődátumot később átírták). Az élő számláló használja; a napok számolása ettől független.
+  if (typeof p.journeyStartAt === 'string' && !Number.isNaN(Date.parse(p.journeyStartAt))) {
+    const at = new Date(p.journeyStartAt);
+    const key = `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, '0')}-${String(at.getDate()).padStart(2, '0')}`;
+    if (key === p.journeyStart) out.journeyStartAt = at.toISOString();
+  }
   if (p.goalDays !== undefined && p.goalDays !== null) out.goalDays = cleanInt(p.goalDays, 1, MAX_GOAL_DAYS, 'Cél (nap)');
   if (p.triggers !== undefined) {
     const list = cleanIds(p.triggers, 'trigger', 'Nehéz helyzetek');

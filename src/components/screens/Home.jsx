@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { RISK_MESSAGES, HOME, T } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
 import { formatDateHu } from '../../domain/dates.js';
+import { phaseStartInstant } from '../../domain/elapsed.js';
 import { figureOf, moodOnDay } from '../../domain/moods.js';
 import { uncelebratedMilestone } from '../../domain/milestones.js';
 import { Actions } from '../../domain/timelineReducer.js';
@@ -49,7 +50,8 @@ export function Home() {
         <p className="bubble" aria-live="polite">{bubble}</p>
       </div>
       <div className="rise-in" style={{ '--d': '40ms' }}>
-        <Hero stats={s} phases={phases} goalDays={profile.goalDays} freshToday={freshToday} currentSince={formatDateHu(s.currentPhaseStart)} />
+        <Hero stats={{ ...s, today }} phases={phases} goalDays={profile.goalDays} freshToday={freshToday} currentSince={formatDateHu(s.currentPhaseStart)}
+          liveStart={phaseStartInstant(s.currentPhaseStart, s.phaseCount > 1 ? null : profile.journeyStartAt)} />
       </div>
       <div className="rise-in" style={{ '--d': '80ms' }}>
         <SetupCard profile={profile} savingsConfigured={savings.configured} />

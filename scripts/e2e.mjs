@@ -242,7 +242,10 @@ try {
   await tab(page, 'Beállítások'); await shot('08-settings');
   // Android-back behaviour: tab → tab replaces, one back returns home, another leaves the app
   await tab(page, 'Megtakarítás');
+  // Megvárjuk, amíg a fülváltás (view transition) tényleg lezajlott, különben a goBack megelőzheti.
+  await page.waitForFunction(() => location.hash === '#/megtakaritas' && document.querySelector('.appbar-title')?.textContent === 'Megtakarítás');
   await page.goBack();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 5000 }).catch(() => {});
   assert.equal(new URL(page.url()).hash, '#/', 'one back press from any tab returns home');
   step('five tabs; phone back goes to home');
 

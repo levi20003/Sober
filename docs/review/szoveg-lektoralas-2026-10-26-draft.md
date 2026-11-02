@@ -4,7 +4,7 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 
 Állapot: **Szakmai lektorálásra vár**. Tájékoztató a lektornak: [LEKTOR-TAJEKOZTATO.md](LEKTOR-TAJEKOZTATO.md). A visszajelzést a CSV-fájl üres oszlopaiban kérjük (Rendben / Módosítandó / Javasolt szöveg / Megjegyzés).
 
-Összesen 839 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
+Összesen 860 szöveg. A biztonságkritikus részek (krízisképernyő, megcsúszás, értesítés) vannak elöl.
 
 
 ## Krízisképernyő – légzőgyakorlat
@@ -301,6 +301,15 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `HOME.appbarHello` | Szia, 7 | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
 | `HOME.totalLabel` | Összes józan napod |  |
 | `HOME.totalSub` | Egy megcsúszás sem törli: minden józan napod megmarad. |  |
+| `HOME.ringInfo` | A kör a mai napot mutatja: éjfélig megtelik, akkor újraindul, és eggyel nő a józan napjaid száma. |  |
+| `HOME.ringAria` | A mai nap: 7% | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `HOME.liveTitle` | Jelenlegi szakasz |  |
+| `HOME.liveUnits.years` | év |  |
+| `HOME.liveUnits.months` | hó |  |
+| `HOME.liveUnits.weeks` | hét |  |
+| `HOME.liveUnits.hours` | óra |  |
+| `HOME.liveUnits.minutes` | perc |  |
+| `HOME.liveStartsTomorrow` | Holnap kezdődik: éjféltől számolunk. |  |
 | `HOME.newPhase` | Ma új szakasz kezdődött. Az eddigi utad megmaradt. |  |
 | `HOME.goalLabel` | A célod |  |
 | `HOME.goalProgress` | 7 / 2026. október 1. nap | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
@@ -596,10 +605,10 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `SETTINGS_PAGE.updateNone` | A legújabb verziót használod. |  |
 | `SETTINGS_PAGE.updateReady` | Van új verzió. Alkalmazom, amint befejezted, amit épp csinálsz. |  |
 | `SETTINGS_PAGE.updateApply` | Frissítés most |  |
-| `SETTINGS_PAGE.updateApkText` | Az app indításkor és naponta legfeljebb egyszer megnézi a GitHubon, van-e újabb Android-verzió (egyetlen névtelen kérés; a GitHub csak az IP-címet és az időpontot látja, a naplódból semmi nem megy el). Ha van, értesítést kapsz; az Android a telepítést mindig tőled kéri jóvá, és az új verzió a régi fölé települ, az adataid megmaradnak. |  |
+| `SETTINGS_PAGE.updateApkText` | Az app indításkor és naponta legfeljebb egyszer megnézi a GitHubon, van-e újabb Android-verzió (egyetlen névtelen kérés; a GitHub csak az IP-címet és az időpontot látja, a naplódból semmi nem megy el). Ha van, értesítést kapsz, és a Frissítés gombbal az app maga tölti le és ellenőrzi (ellenőrzőösszeg, aláíró kulcs, verzió); a telepítést az Android mindig tőled kéri jóvá, az új verzió a régi fölé települ, az adataid megmaradnak. |  |
 | `SETTINGS_PAGE.updateApkError` | Most nem sikerült megnézni (nincs hálózat?). Később újra megpróbálom. |  |
 | `SETTINGS_PAGE.updateApkReady` | Új Android-verzió érhető el. |  |
-| `SETTINGS_PAGE.updateApkDownload` | Új verzió letöltése |  |
+| `SETTINGS_PAGE.updateApkDownload` | Frissítés most |  |
 | `SETTINGS_PAGE.updateApkAuto` | Új verzió keresése naponta egyszer az interneten |  |
 | `SETTINGS_PAGE.updateApkAutoHint` | Kikapcsolva az app semmilyen hálózati kérést nem küld, és csak a gombbal keres. |  |
 | `SETTINGS_PAGE.updateApkLink` | Letöltési oldal megnyitása |  |
@@ -657,7 +666,17 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | Kulcs | Szöveg | Kontextus |
 |---|---|---|
 | `UPDATE.apkBanner` | Új Android-verzió érhető el. |  |
-| `UPDATE.apkApply` | Letöltés |  |
+| `UPDATE.apkApply` | Frissítés |  |
+| `UPDATE.apkDownloading` | Frissítés letöltése… 7% | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
+| `UPDATE.apkInstalling` | Megnyílt az Android telepítője: koppints a „Frissítés” vagy „Telepítés” gombra. Az adataid megmaradnak. |  |
+| `UPDATE.apkPermission` | Az Android engedélyt kér: kapcsold be az „Engedélyezés ebből a forrásból” beállítást, lépj vissza, és koppints újra a Frissítés gombra. |  |
+| `UPDATE.apkRetry` | Újra |  |
+| `UPDATE.apkErrors.CHECKSUM` | A letöltött fájl sérült, ezért nem telepítettük. Próbáld újra. |  |
+| `UPDATE.apkErrors.SIGNATURE` | A letöltött frissítés nem ugyanazzal a kulccsal van aláírva, mint a telepített app, ezért nem telepítettük. Ha ideiglenes kulcsos verziót használsz, a Beállítások → Biztonság részben leírt lépések kellenek. |  |
+| `UPDATE.apkErrors.NOT_NEWER` | Már a legfrissebb verzió van telepítve. |  |
+| `UPDATE.apkErrors.PACKAGE` | A letöltött fájl nem ennek az alkalmazásnak a frissítése, ezért nem telepítettük. |  |
+| `UPDATE.apkErrors.NETWORK` | A letöltés nem sikerült (nincs hálózat?). Próbáld újra később. |  |
+| `UPDATE.apkErrors.UNKNOWN` | A frissítés most nem sikerült. Próbáld újra, vagy használd a letöltési oldalt. |  |
 | `UPDATE.banner` | Új verzió érhető el. |  |
 | `UPDATE.apply` | Frissítés |  |
 | `UPDATE.later` | Később |  |
@@ -940,6 +959,8 @@ Generálta: `node scripts/review-export.mjs` – ne szerkeszd kézzel, a forrás
 | `UX.storageErrorTitle` | A napló most nem érhető el |  |
 | `UX.storageErrorText` | A telefon tárhelye most nem válaszol, ezért nem nyitjuk meg és nem is írjuk felül a naplódat. Próbáld újra egy kicsit később. A segélyvonalak addig is elérhetők. |  |
 | `UX.retry` | Újrapróbálom |  |
+| `UX.copyCodeTap` | Helyreállító kód másolása |  |
+| `UX.copyCodeHint` | Koppints a kódra a másoláshoz |  |
 | `UX.clipboardWarning` | Kimásolva. Ha elmentetted (pl. jelszókezelőbe), másolj ki valami mást, hogy a kód ne maradjon a vágólapon. |  |
 | `UX.backupDoneTitle` | A mentés elkészült és ellenőrizve |  |
 | `UX.backupSavedDevice` | Elmentve a választott helyre, „7” néven. | Változó szöveg; minta (7, 2026. október 1., 3, 2) értékekkel. |
