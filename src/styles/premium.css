@@ -132,3 +132,11 @@ h2 { font-size: var(--fs-lg); letter-spacing: -0.01em; }
 /* „Elmentettem” jelölőnégyzet kártyaként: nagy érintési felület. */
 .check.check-card { padding: 12px 14px; border-radius: 16px; background: var(--surface-2); }
 .check.check-card input { width: 24px; height: 24px; accent-color: var(--accent); }
+
+/* Téma-kapcsoló: rövid, egységes színátmenet az egész felületen (csak váltáskor). */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease, stroke .35s ease !important;
+}
+.theme-toggle svg { transition: transform .35s ease; }
+.theme-toggle:active svg { transform: rotate(-30deg) scale(.9); }
+@media (prefers-reduced-motion: reduce) { .theme-toggle svg { transition: none; } }

@@ -1,5 +1,7 @@
 # Józanság-számláló / Sobriety Counter
 
+**[Legfrissebb APK](https://github.com/levi20003/Sober/releases/download/android-latest/jozansag-szamlalo.apk)** · [Mi változott? (CHANGELOG)](CHANGELOG.md) · [Telepítés](https://levi20003.github.io/Sober/telepites.html)
+
 🇬🇧 English UI and privacy notice: [PRIVACY.en.md](PRIVACY.en.md) · 🇭🇺 Magyar adatvédelmi tájékoztató: [PRIVACY.md](PRIVACY.md) · Community post draft: [docs/REDDIT-POST.md](docs/REDDIT-POST.md)
 
 > **Fontos / Important.** A Józanság-számláló segít követni és támogatni a józanságod útját. Nem orvosi eszköz, és nem helyettesíti a szakember segítségét. Közvetlen veszélyben hívd a 112-t.

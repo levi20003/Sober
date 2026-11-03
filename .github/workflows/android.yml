@@ -18,6 +18,9 @@ concurrency:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       version_code: ${{ steps.meta.outputs.version_code }}
       signing_kind: ${{ steps.meta.outputs.signing_kind }}
@@ -42,6 +45,13 @@ jobs:
       # Supply chain (biztonsági audit 1.4): magas vagy kritikus sérülékenység esetén a build megáll.
       - run: npm audit --audit-level=high
       - run: npm test
+      # Az alkalmazás kódját módosító PR-nak a CHANGELOG.md-t is frissítenie kell (a változások oldal ebből készül).
+      - name: Változásnapló ellenőrzése
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: node scripts/check-changelog.mjs
       # Segélyvonalak: 90 napnál régebbi ellenőrzésnél ::warning:: (docs/SAFETY.md 4.1)
       - run: node scripts/check-helplines.mjs
       # A verziókód a buildbe is bekerül: az app ezzel veti össze a legfrissebb kiadást (frissítésfigyelő).

@@ -29,6 +29,7 @@ import { PreviewNotice } from './components/home/Notices.jsx';
 import { isNativeShell } from './lib/platform.js';
 import { ApkUpdateStatus, apkBusy } from './components/ApkUpdateStatus.jsx';
 import { RecoveryCodeCard } from './components/RecoveryCodeCard.jsx';
+import { ThemeToggle } from './components/ThemeToggle.jsx';
 
 const SUBTITLES = { '#/eszkozok/hullam': TOOLS.urgeTitle, '#/eszkozok/hala': TOOLS.gratitudeTitle, '#/eszkozok/level': TOOLS.letterTitle, '#/eszkozok/okok': TOOLS.reasonsTitle,
   '#/rogzites/bejelentkezes': T.actionCheckin, '#/rogzites/nehez-pillanat': T.triggerTitle, '#/rogzites/jegyzet': T.noteTitle };
@@ -168,7 +169,7 @@ function Shell() {
     screen = <Onboarding onFinish={finishOnboarding} />;
   } else if (state.status === AuthStatus.STORAGE_ERROR) {
     screen = (
-      <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header>
+      <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><ThemeToggle /><CrisisButton /></div></header>
         <main className="screen screen-plain lock" id="main" tabIndex={-1}>
           <h1>{UX.storageErrorTitle}</h1>
           <p className="lead">{UX.storageErrorText}</p>
@@ -176,7 +177,7 @@ function Shell() {
         </main></>
     );
   } else if (state.status === AuthStatus.LOCKED) {
-    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header><LockScreen onReset={wipe} /></>;
+    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><ThemeToggle /><CrisisButton /></div></header><LockScreen onReset={wipe} /></>;
   } else if (unlocked) {
     screen = (
       <TimelineProvider vault={auth.store}>
@@ -185,7 +186,7 @@ function Shell() {
       </TimelineProvider>
     );
   } else {
-    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><CrisisButton /></div></header><main className="screen screen-plain" id="main" tabIndex={-1}><p>{MISC.loading}</p></main></>;
+    screen = <><header className="topbar"><span className="brand">{T.appName}</span><div className="topbar-actions"><ThemeToggle /><CrisisButton /></div></header><main className="screen screen-plain" id="main" tabIndex={-1}><p>{MISC.loading}</p></main></>;
   }
 
   return (

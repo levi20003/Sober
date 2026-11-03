@@ -18,7 +18,7 @@ test('no dangerous DOM sinks or dynamic code evaluation anywhere in src/', () =>
 
 test('every dynamic href/src/xlink:href is one of the reviewed, safe expressions', () => {
   const ALLOWED = new Set([
-    'CRISIS_HASH', 'line.url ?? telHref(line)', 'feedbackUrl()', 'APK_PAGE', 'l.hash', 't.hash',
+    'CRISIS_HASH', 'line.url ?? telHref(line)', 'feedbackUrl()', 'APK_PAGE', 'CHANGES_PAGE', 'l.hash', 't.hash',
     "`tel:${trusted.phone.replace(/[^\\d+]/g, '')}`",
   ]);
   for (const f of SRC.filter((x) => x.endsWith('.jsx'))) {

@@ -25,3 +25,4 @@
 .recovery-box { font-size: 1.3rem; text-align: center; letter-spacing: .06em; background: var(--tone-butter); color: var(--card-ink); padding: 20px 14px; border-radius: 24px; word-break: break-all; user-select: all; }
 .cost-note { font-size: 1.2rem; font-weight: 800; text-align: center; }
 .step-enter { animation: rise-in 360ms var(--ease-soft) both; }
+.onb-top-actions { display: flex; align-items: center; gap: 8px; flex: none; }

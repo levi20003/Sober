@@ -30,6 +30,7 @@ import { ApkUpdateStatus, apkBusy } from '../ApkUpdateStatus.jsx';
 
 
 const APK_PAGE = 'https://levi20003.github.io/Sober/telepites.html';
+const CHANGES_PAGE = 'https://levi20003.github.io/Sober/valtozasok.html';
 
 /** Rólad: becenév, cél, mitől maradsz távol, nehéz helyzetek. Mind a titkosított tárolóba kerül. */
 function ProfileSection() {
@@ -157,6 +158,7 @@ function UpdateSection() {
               ? <button type="button" className="btn btn-primary" onClick={u.apply} disabled={native && apkBusy(u)}>{native ? SP.updateApkDownload : SP.updateApply}</button>
               : <button type="button" className="btn" onClick={() => u.check(native ? { manual: true } : undefined)} disabled={u.status === 'checking'}>{SP.updateCheck}</button>}
             {native && <a className="btn btn-ghost" href={APK_PAGE} target="_blank" rel="noopener noreferrer">{SP.updateApkLink}</a>}
+            <a className="btn btn-ghost" href={CHANGES_PAGE} target="_blank" rel="noopener noreferrer">{SP.whatsNew}</a>
           </div>
           {native && (
             <div className="check">

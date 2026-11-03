@@ -22,6 +22,7 @@ import { useHashRoute } from '../../hooks/useHashRoute.js';
 import { useToast } from '../../hooks/useToast.jsx';
 import { useFormAction } from '../../hooks/useFormAction.js';
 import { CrisisButton } from '../crisis/CrisisButton.jsx';
+import { ThemeToggle } from '../ThemeToggle.jsx';
 import { RecoveryCodeCard } from '../RecoveryCodeCard.jsx';
 import { BACKUP_ACCEPT } from '../../lib/nativeFiles.js';
 import { parseBackupText } from '../../domain/backupFile.js';
@@ -231,7 +232,7 @@ export function Onboarding({ onFinish }) {
           <div className="steps-bar" aria-hidden="true"><i style={{ transform: `scaleX(${step / TOTAL_STEPS})` }} /></div>
           <p className="onb-count">{ONB.step(step, TOTAL_STEPS)}</p>
         </div>
-        <CrisisButton />
+        <div className="onb-top-actions"><ThemeToggle /><CrisisButton /></div>
       </div>
       {step === 1 && <LanguageToggle />}
       <div className="onb-body step-enter" key={step}>
