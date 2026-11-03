@@ -1,6 +1,7 @@
 // Fejléc: oldalcím (a főoldalon köszönés + dátum), "Segítség most" és avatar. A segítség gomb minden oldalon, PIN nélkül elérhető.
 import { A11Y, HOME, NAV_TABS, T } from '../../content/index.js';
 import { CrisisButton } from '../crisis/CrisisButton.jsx';
+import { ThemeToggle } from '../ThemeToggle.jsx';
 import { MoodFigure } from '../mood/MoodFigures.jsx';
 import { Mascot } from '../mood/Mascot.jsx';
 
@@ -14,6 +15,7 @@ export function AppBar({ title, subtitle, mood, onAvatar, onLock, avatar = true 
         </div>
         <div className="appbar-actions">
           {onLock && <button type="button" className="btn-link" onClick={onLock}>{T.lockNow}</button>}
+          <ThemeToggle />
           <CrisisButton />
           {avatar && (
             <button type="button" className="avatar" onClick={onAvatar} aria-label={A11Y.avatar}>

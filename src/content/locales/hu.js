@@ -614,6 +614,7 @@ export const SETTINGS_PAGE = {
   updateApkAuto: 'Új verzió keresése naponta egyszer az interneten',
   updateApkAutoHint: 'Kikapcsolva az app semmilyen hálózati kérést nem küld, és csak a gombbal keres.',
   updateApkLink: 'Letöltési oldal megnyitása',
+  whatsNew: 'Mi változott?',
   updateUnsupported: 'Ez a böngésző nem támogatja az automatikus frissítést.',
   language: 'Nyelv / Language',
   languageHint: 'Váltáskor az alkalmazás újratölt. Az adataid nem változnak.',
@@ -686,6 +687,8 @@ export const CHALLENGE_CATALOG = [
 
 export const A11Y = {
   mainNav: 'Fő navigáció',
+  themeToLight: 'Világos mód bekapcsolása',
+  themeToDark: 'Sötét mód bekapcsolása',
   quickAdd: 'Gyors rögzítés',
   avatar: 'Hangulatod és a Beállítások',
   moodGroup: 'Hogy vagy ma?',

@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { listFiles, precacheList, contentVersion, renderServiceWorker } from './scripts/precache.js';
+import { changelogPage } from './scripts/changelog-page.mjs';
 
 const APP_VERSION = JSON.parse(readFileSync('package.json', 'utf8')).version;
 // A kiadási aláíró tanúsítvány lenyomata (nyilvános): az app ezzel ismeri fel a debug kulccsal aláírt telepítést.
@@ -37,6 +38,8 @@ function serviceWorker() {
     apply: 'build',
     configResolved(c) { outDir = c.build.outDir; },
     closeBundle() {
+      // Változások oldal (CHANGELOG.md → valtozasok.html) a Pages-re; a service worker listája előtt, hogy offline is meglegyen.
+      writeFileSync(join(outDir, 'valtozasok.html'), changelogPage(readFileSync('CHANGELOG.md', 'utf8')));
       const files = listFiles(outDir).filter((f) => f !== 'sw.js');
       const sw = renderServiceWorker(readFileSync('src/sw/sw.template.js', 'utf8'), {
         shell: precacheList(files),

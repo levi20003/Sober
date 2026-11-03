@@ -599,6 +599,7 @@ export const SETTINGS_PAGE = {
   updateApkDownload: 'Update now',
   updateApkAuto: 'Check for new versions once a day over the internet',
   updateApkAutoHint: 'When off, the app sends no network requests and only checks with the button.',
+  whatsNew: 'What changed?',
   updateApkLink: 'Open the download page',
   updateUnsupported: 'This browser does not support automatic updates.',
   language: 'Nyelv / Language',
@@ -672,6 +673,8 @@ export const CHALLENGE_CATALOG = [
 
 export const A11Y = {
   mainNav: 'Main navigation',
+  themeToLight: 'Switch to light mode',
+  themeToDark: 'Switch to dark mode',
   quickAdd: 'Quick log',
   avatar: 'Your mood and Settings',
   moodGroup: 'How are you today?',
