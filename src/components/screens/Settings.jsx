@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVIEW, COUNTRIES, ONB, helplinesFor } from '../../content/index.js';
+import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, COMPANIONS, PREVIEW, COUNTRIES, ONB, helplinesFor } from '../../content/index.js';
 import { lastVerified } from '../../domain/helplines.js';
 import { LOCALES } from '../../i18n/locale.js';
 import { CURRENCIES, CURRENCY_IDS } from '../../i18n/money.js';
@@ -26,6 +26,7 @@ import { useUpdate } from '../../hooks/useUpdate.js';
 import { Page } from '../shell/Page.jsx';
 import { InfoButton, Sheet } from '../Info.jsx';
 import { RecoveryRestoreFields } from '../RestoreFields.jsx';
+import { Companion, COMPANION_IDS, companionOf } from '../companions/Companion.jsx';
 import { ApkUpdateStatus, apkBusy } from '../ApkUpdateStatus.jsx';
 
 
@@ -98,6 +99,33 @@ function TrustedSection() {
       <Field label={UX.trustedPhone}><input name="phone" className="input" type="tel" inputMode="tel" maxLength={20} defaultValue={c?.phone ?? ''} autoComplete="off" /></Field>
       <button type="submit" className="btn" disabled={save.busy}>{T.save}</button>
     </form>
+  );
+}
+
+/** Kísérő választása: a titkosított profilba kerül (profile.companion). Bármikor kikapcsolható. */
+function CompanionSection() {
+  const { snapshot, dispatch } = useTimeline();
+  const toast = useToast();
+  const current = companionOf(snapshot.data.profile);
+  const pick = async (id) => {
+    try { await dispatch({ type: Actions.UPDATE_PROFILE, payload: { companion: id } }); } catch (e) { toast(friendlyError(e), 'error'); }
+  };
+  return (
+    <div className="stack">
+      <h3 id="companion-h" className="legend-info">{SP.companion}<InfoButton title={SP.companion}><p>{SP.companionHint}</p></InfoButton></h3>
+      <div role="radiogroup" aria-labelledby="companion-h" className="companion-pick">
+        {COMPANION_IDS.map((id) => (
+          <label className="companion-opt" key={id}>
+            <input type="radio" name="companion" value={id} checked={current === id} onChange={() => pick(id)} />
+            <span className="companion-card">
+              {id === 'none' ? <span className="companion-none" aria-hidden="true" /> : <Companion kind={id} look="happy" size={44} />}
+              <strong>{COMPANIONS[id].name}</strong>
+              <small>{COMPANIONS[id].desc}</small>
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -261,7 +289,7 @@ export function Settings({ onWipe, showRecoveryCode }) {
         <TrustedSection />
       </Group>
 
-      <Group title={SP.appearance}><AppearanceSection /></Group>
+      <Group title={SP.appearance}><CompanionSection /><AppearanceSection /></Group>
 
       <Group title={T.securitySection}>
         <form className="stack" onSubmit={prefs.onSubmit} aria-busy={prefs.busy || undefined}>

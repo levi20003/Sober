@@ -473,6 +473,40 @@ export const HOME = {
   slipKind: 'Nehéz nap volt. Nem kell magyarázkodnod: az eddigi utad megmaradt.',
 };
 
+/** Kísérők (Beállítások → Kísérő). Különböző hang, azonos biztonsági tartalom: nehéz pillanatban a segítségre mutatnak,
+ * megcsúszás után visszafogottak (nincs ünneplés, nincs tréfa), és soha nem hibáztatnak, nem sürgetnek. */
+export const COMPANIONS = {
+  potty: {
+    name: 'Pötty',
+    desc: 'Vidám kis csillag. Bátorít, örül veled.',
+    hello: (name) => `Szia${name ? `, ${name}` : ''}! Hogy érzed ma magad?`,
+    react: HOME.pottyReact,
+  },
+  mira: {
+    name: 'Mira',
+    desc: 'Csendes holdacska. Nyugodt hangon, lassan szól.',
+    hello: (name) => `Jó, hogy itt vagy${name ? `, ${name}` : ''}. Vegyél egy nyugodt levegőt.`,
+    react: {
+      positive: 'Ez jó hír. Őrizd meg ezt az érzést egy kicsit.',
+      neutral: 'Egy csendes nap is számít. Lassan, a magad tempójában.',
+      hard: 'Itt vagyok veled. Egyszerre csak egy lélegzet. Ha kell, a sárga gomb mindig itt van.',
+      slip: 'Megtörtént. Az eddigi napjaid megmaradnak. Pihenj egy kicsit, holnap újra indulhatsz.',
+    },
+  },
+  kavics: {
+    name: 'Kavics',
+    desc: 'Higgadt kavics. Kevés szóval, kitartóan.',
+    hello: (name) => `Szia${name ? `, ${name}` : ''}. Egy nap, egy lépés.`,
+    react: {
+      positive: 'Szép. Így tovább.',
+      neutral: 'Rendben. Ez is egy nap.',
+      hard: 'Értem. Ez nehéz, és nem kell egyedül vinned. Ha kell, a sárga gomb mindig itt van.',
+      slip: 'Megtörtént. Ami eddig megvolt, az megmarad. Holnap folytatjuk.',
+    },
+  },
+  none: { name: 'Kísérő nélkül', desc: 'Nincs figura és buborék. Bármikor visszakapcsolhatod.' },
+};
+
 export const ENCOURAGEMENTS = [
   { id: 'e1', text: 'Ma is számít, hogy itt vagy.', tags: [] },
   { id: 'e2', text: 'Egy nap egyszerre. Pont ennyi a feladat.', tags: [] },
@@ -596,6 +630,8 @@ export const SETTINGS_PAGE = {
   goal: 'Célod (nap)',
   triggers: 'Nehéz helyzetek',
   appearance: 'Megjelenés',
+  companion: 'Kísérő',
+  companionHint: 'A kísérő csak fontos pillanatokban szól (napi egy köszönés, mérföldkő, gyakorlat után). A krízis- és a zárolóképernyőn soha nem jelenik meg. A választás a titkosított naplóban marad.',
   theme: 'Téma',
   themeOptions: { system: 'Rendszer szerint', light: 'Világos', dark: 'Sötét' },
   motion: 'Kevesebb mozgás',

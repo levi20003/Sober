@@ -21,6 +21,7 @@ export const NAV_TABS = L.NAV_TABS;
 export const GREETINGS = L.GREETINGS;
 export const ONB = L.ONB;
 export const HOME = L.HOME;
+export const COMPANIONS = L.COMPANIONS;
 export const ENCOURAGEMENTS = L.ENCOURAGEMENTS;
 export const TIPS = L.TIPS;
 export const TIMELINE_PAGE = L.TIMELINE_PAGE;

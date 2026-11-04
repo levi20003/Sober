@@ -63,5 +63,14 @@ export function usePrefs() {
 export const hasSeen = (key) => getPrefs().seen.includes(key);
 export const markSeen = (key) => { if (!hasSeen(key)) setPrefs({ seen: [...getPrefs().seen, key] }); };
 
+/** A kísérő napi köszönése: csak az utolsó köszönés napja (ÉÉÉÉ-HH-NN) kerül külön kulcsba, semmi tartalom. */
+const GREET_KEY = 'jsz-greet';
+export function greetedOn(day) {
+  try { return localStorage.getItem(GREET_KEY) === day; } catch { return false; }
+}
+export function markGreeted(day) {
+  try { localStorage.setItem(GREET_KEY, day); } catch { /* privát mód: legfeljebb újra köszön */ }
+}
+
 /** Tesztekhez: a gyorsítótár eldobása. */
 export function resetPrefsCache() { cache = null; raw = null; }

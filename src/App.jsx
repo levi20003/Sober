@@ -22,6 +22,7 @@ import { TimelinePage } from './components/screens/TimelinePage.jsx';
 import { SavingsPage } from './components/screens/SavingsPage.jsx';
 import { ToolsRoute } from './components/screens/ToolsPage.jsx';
 import { AppBar } from './components/shell/AppBar.jsx';
+import { companionOf } from './components/companions/Companion.jsx';
 import { TabBar } from './components/shell/TabBar.jsx';
 import { QuickAddSheet } from './components/shell/QuickAddSheet.jsx';
 import { FreshStartModal } from './components/timeline/FreshStartModal.jsx';
@@ -103,7 +104,7 @@ function UnlockedApp({ onWipe, showRecoveryCode }) {
   return (
     <>
       <AppBar title={isHome ? HOME.appbarHello(nick) : pageTitle(route)} subtitle={isHome ? formatDayHu(new Date()) : undefined}
-        mood={m ? figureOf(m.mood)?.id : null} onAvatar={() => goTab('#/beallitasok')} />
+        mood={m ? figureOf(m.mood)?.id : null} companion={companionOf(data.profile)} onAvatar={() => goTab('#/beallitasok')} />
       <UpdateBanner />
       <div key={route} className="route">
         <Routes route={route} onWipe={onWipe} showRecoveryCode={showRecoveryCode} />

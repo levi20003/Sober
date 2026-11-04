@@ -459,6 +459,40 @@ export const HOME = {
   slipKind: 'It was a hard day. You do not have to explain: your path so far is kept.',
 };
 
+/** Companions (Settings → Companion). Different voices, the same safety content: hard moments point to help,
+ * after a slip they stay quiet (no celebrating, no jokes), and they never blame or pressure. */
+export const COMPANIONS = {
+  potty: {
+    name: 'Dot',
+    desc: 'A cheerful little star. Encouraging, glad with you.',
+    hello: (name) => `Hi${name ? `, ${name}` : ''}! How are you feeling today?`,
+    react: HOME.pottyReact,
+  },
+  mira: {
+    name: 'Mira',
+    desc: 'A quiet little moon. Speaks slowly and calmly.',
+    hello: (name) => `Good to see you${name ? `, ${name}` : ''}. Take a calm breath.`,
+    react: {
+      positive: 'That is good news. Hold on to that feeling for a while.',
+      neutral: 'A quiet day counts too. Slowly, at your own pace.',
+      hard: 'I am here with you. Just one breath at a time. If you need it, the yellow button is always here.',
+      slip: 'It happened. The days you have achieved stay yours. Rest a little, you can start again tomorrow.',
+    },
+  },
+  kavics: {
+    name: 'Pebble',
+    desc: 'A steady pebble. Few words, lots of patience.',
+    hello: (name) => `Hi${name ? `, ${name}` : ''}. One day, one step.`,
+    react: {
+      positive: 'Nice. Keep going.',
+      neutral: 'Okay. This is a day too.',
+      hard: 'I see. This is hard, and you do not have to carry it alone. If you need it, the yellow button is always here.',
+      slip: 'It happened. What you built so far stays. We carry on tomorrow.',
+    },
+  },
+  none: { name: 'No companion', desc: 'No figure and no speech bubble. You can switch it back on any time.' },
+};
+
 export const ENCOURAGEMENTS = [
   { id: 'e1', text: 'Today, too, it matters that you are here.', tags: [] },
   { id: 'e2', text: 'One day at a time. That is the whole task.', tags: [] },
@@ -582,6 +616,8 @@ export const SETTINGS_PAGE = {
   goal: 'Your goal (days)',
   triggers: 'Hard situations',
   appearance: 'Appearance',
+  companion: 'Companion',
+  companionHint: 'The companion only speaks at important moments (one greeting a day, milestones, after an exercise). It never appears on the crisis or lock screen. Your choice stays in the encrypted journal.',
   theme: 'Theme',
   themeOptions: { system: 'Follow system', light: 'Light', dark: 'Dark' },
   motion: 'Reduce motion',

@@ -5,7 +5,7 @@ import { createCountdown, formatClock, URGE_DURATION_MS } from '../../domain/cou
 import { Actions } from '../../domain/timelineReducer.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
 import { useToast } from '../../hooks/useToast.jsx';
-import { Mascot } from '../mood/Mascot.jsx';
+import { Companion, companionOf } from '../companions/Companion.jsx';
 import { Confetti } from '../Confetti.jsx';
 import { Page } from '../shell/Page.jsx';
 import { LetterCard } from './Letter.jsx';
@@ -37,7 +37,7 @@ export function Urge() {
       <Page title={TOOLS.urgeTitle}>
         <section className="card tone tone-mint urge">
           {result === 'passed' && <Confetti />}
-          <Mascot look={result === 'passed' ? 'celebrate' : 'comfort'} size={120} label={null} />
+          <Companion kind={companionOf(data.profile)} look={result === 'passed' ? 'celebrate' : 'comfort'} size={120} animate />
           <h2>{result === 'passed' ? TOOLS.urgeVictory : TOOLS.urgeStillText}</h2>
           <div className="actions" style={{ justifyContent: 'center' }}>
             <button type="button" className="btn btn-primary" onClick={() => setResult(null)}>{TOOLS.urgeAgain}</button>
