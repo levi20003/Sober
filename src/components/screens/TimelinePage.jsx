@@ -57,8 +57,12 @@ export function TimelinePage() {
             ))}
           </div>
         </div>
-        <BarChart items={series.map((s) => ({ key: s.key, label: s.label, value: s.soberDays }))} max={max} picked={picked} onPick={setPicked} />
-        <p className="chart-tip" aria-live="polite">{sel ? TP.tooltip(sel.label, sel.soberDays) : ''}</p>
+        {series.some((s) => s.soberDays > 0) ? (
+          <>
+            <BarChart items={series.map((s) => ({ key: s.key, label: s.label, value: s.soberDays }))} max={max} picked={picked} onPick={setPicked} />
+            <p className="chart-tip" aria-live="polite">{sel ? TP.tooltip(sel.label, sel.soberDays) : ''}</p>
+          </>
+        ) : <p className="hint empty-state">{TP.chartEmpty}</p>}
         {valence.some((v) => v !== null) && (
           <>
             <p className="stat-label">{TP.moodTrend}</p>

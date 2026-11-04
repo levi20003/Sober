@@ -46,7 +46,7 @@ export function throttleDelay(failures) {
 // A meta rekord NEM titkosított (a zárolóképernyőnek és a háttérfolyamatnak olvasnia kell). Személyes tartalom nincs benne:
 //  pinHint: egy csak számjegyes PIN hossza (a gyors billentyűzethez; a Beállításokban kikapcsolható: quickPin=false)
 //  lastBackup / backupSnoozeUntil: a mentés-emlékeztető időpontjai.
-const DEFAULT_META = { failedAttempts: 0, lockedUntil: 0, lockedAt: 0, lockDelay: 0, reminders: { enabled: false, time: '20:00' }, pinHint: null, quickPin: true, lastBackup: null, backupSnoozeUntil: null };
+const DEFAULT_META = { failedAttempts: 0, lockedUntil: 0, lockedAt: 0, lockDelay: 0, reminders: { enabled: false, time: '20:00', everyDays: 1 }, pinHint: null, quickPin: true, lastBackup: null, backupSnoozeUntil: null };
 
 export class VaultStore {
   #dek = null;

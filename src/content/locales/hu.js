@@ -294,7 +294,9 @@ export const T = {
   journeySection: 'Az utad',
   journeyStartLabel: 'Az út kezdete',
   remindersSection: 'Emlékeztetők',
-  remindersLabel: 'Napi, kíméletes emlékeztető',
+  remindersLabel: 'Kíméletes emlékeztető (alapból kikapcsolva)',
+  remindersEvery: 'Milyen gyakran',
+  remindersEveryOptions: { 1: 'Naponta', 2: '2 naponta', 3: '3 naponta', 7: 'Hetente' },
   remindersTimeLabel: 'Időpont',
   remindersInfo: 'Az értesítés szövege semleges („Egy perc magadra”), így a zárolt képernyőn sem árul el semmit. Szerver nélkül működik, ezért nem minden böngésző támogatja a pontos időzítést; ilyenkor az alkalmazás megnyitásakor kapsz egy finom jelzést.',
   remindersDenied: 'A böngésző nem engedélyezte az értesítéseket. Ezt a böngésző beállításaiban módosíthatod.',
@@ -542,6 +544,7 @@ export const FUN_ITEMS = [
 ];
 
 export const TIMELINE_PAGE = {
+  chartEmpty: 'Még nincs mit rajzolni: az első teljes nap után itt jelenik meg az oszlop. Ez teljesen rendben van.',
   title: 'Idővonal',
   ranges: { week: 'Hét', month: 'Hónap', year: 'Év' },
   chartTitle: 'Józan napjaid',

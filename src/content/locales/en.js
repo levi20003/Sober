@@ -285,7 +285,9 @@ export const T = {
   journeySection: 'Your path',
   journeyStartLabel: 'Start of your journey',
   remindersSection: 'Reminders',
-  remindersLabel: 'Gentle daily reminder',
+  remindersLabel: 'Gentle reminder (off by default)',
+  remindersEvery: 'How often',
+  remindersEveryOptions: { 1: 'Daily', 2: 'Every 2 days', 3: 'Every 3 days', 7: 'Weekly' },
   remindersTimeLabel: 'Time',
   remindersInfo: 'The notification text is neutral ("A minute for you"), so it reveals nothing on a lock screen. It works without a server, so not every browser supports exact timing; then you get a gentle nudge when you open the app.',
   remindersDenied: 'The browser did not allow notifications. You can change that in the browser settings.',
@@ -528,6 +530,7 @@ export const FUN_ITEMS = [
 ];
 
 export const TIMELINE_PAGE = {
+  chartEmpty: 'Nothing to draw yet: the first bar appears after your first full day. That is perfectly fine.',
   title: 'Timeline',
   ranges: { week: 'Week', month: 'Month', year: 'Year' },
   chartTitle: 'Your sober days',

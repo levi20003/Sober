@@ -14,11 +14,15 @@ export function remindersSupported() {
   return 'Notification' in globalThis && 'serviceWorker' in navigator;
 }
 
-export async function enableReminders(store, time) {
+export const REMINDER_EVERY = [1, 2, 3, 7];
+
+export async function enableReminders(store, time, everyDays = 1) {
   if (!remindersSupported()) throw new Error(MISC.notSupportedNotifications);
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return { enabled: false, denied: true };
-  await store.setMeta({ reminders: { enabled: true, time }, notification: NOTIFICATION });
+  const m = await store.getMeta();
+  const every = REMINDER_EVERY.includes(everyDays) ? everyDays : 1;
+  await store.setMeta({ reminders: { ...m.reminders, enabled: true, time, everyDays: every }, notification: NOTIFICATION });
   let scheduled = false;
   try {
     const reg = await navigator.serviceWorker.ready;
