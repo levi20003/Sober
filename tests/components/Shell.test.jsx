@@ -28,26 +28,32 @@ async function bootUnlocked({ days = 12, extra = {} } = {}) {
   return { auth, router };
 }
 const tabs = [['Főoldal', '#/'], ['Idővonal', '#/idovonal'], ['Megtakarítás', '#/megtakaritas'], ['Eszközök', '#/eszkozok'], ['Beállítások', '#/beallitasok']];
+// Az alsó sávban 4 fül és középen a gyors rögzítés „+” (R4); a Beállítások a fejléc avatarjáról nyílik.
+const openTab = (name) => (name === 'Beállítások'
+  ? fireEvent.click(document.querySelector('.appbar .avatar'))
+  : fireEvent.click(within(screen.getByRole('navigation', { name: 'Fő navigáció' })).getByRole('link', { name })));
 
-test('bottom navigation: five tabs with the right routes, aria-current follows, page title in the header', async () => {
+test('bottom navigation: four tabs + centre quick-add, Settings from the avatar; aria-current follows, page title in the header', async () => {
   await bootUnlocked();
   const nav = screen.getByRole('navigation', { name: 'Fő navigáció' });
   const links = within(nav).getAllByRole('link');
-  assert.deepEqual(links.map((a) => a.getAttribute('href')), tabs.map((t) => t[1]));
+  assert.deepEqual(links.map((a) => a.getAttribute('href')), tabs.slice(0, 4).map((t) => t[1]));
+  const buttons = within(nav).getAllByRole('button');
+  assert.deepEqual(buttons.map((b) => b.getAttribute('aria-label')), ['Gyors rögzítés'], 'the + sits in the middle of the bar');
+  assert.equal(nav.children[2].querySelector('button')?.getAttribute('aria-label'), 'Gyors rögzítés');
   assert.equal(within(nav).getByRole('link', { name: 'Főoldal' }).getAttribute('aria-current'), 'page');
   for (const [name, hash] of tabs.slice(1)) {
-    fireEvent.click(within(nav).getByRole('link', { name }));
-    await waitFor(() => assert.equal(within(nav).getByRole('link', { name }).getAttribute('aria-current'), 'page'));
-    assert.equal(window.location.hash, hash);
-    assert.equal(document.querySelector('.appbar-title').textContent, name);
+    openTab(name);
+    await waitFor(() => assert.equal(window.location.hash, hash));
+    if (name !== 'Beállítások') await waitFor(() => assert.equal(within(nav).getByRole('link', { name }).getAttribute('aria-current'), 'page'));
+    await waitFor(() => assert.equal(document.querySelector('.appbar-title').textContent, name));
   }
 });
 
 test('"Segítség most" is on every tab, in the quick-add sheet flow, and needs no PIN', async () => {
   await bootUnlocked();
-  const nav = screen.getByRole('navigation', { name: 'Fő navigáció' });
   for (const [name] of tabs) {
-    fireEvent.click(within(nav).getByRole('link', { name }));
+    openTab(name);
     await waitFor(() => assert.ok(within(document.querySelector('.appbar')).getByRole('link', { name: 'Most segítségre van szükségem' })));
     const help = within(document.querySelector('.appbar')).getByRole('link', { name: 'Most segítségre van szükségem' });
     assert.equal(help.getAttribute('href'), '#/segitseg');
@@ -113,7 +119,7 @@ test('milestone celebration appears once and is remembered', async () => {
 
 test('settings: theme and reduced-motion switches change the root attributes and persist (non-personal) only', async () => {
   await bootUnlocked();
-  fireEvent.click(within(screen.getByRole('navigation')).getByRole('link', { name: 'Beállítások' }));
+  openTab('Beállítások');
   fireEvent.click(await screen.findByLabelText('Sötét'));
   assert.equal(document.documentElement.getAttribute('data-theme'), 'dark');
   fireEvent.click(screen.getByLabelText('Kevesebb mozgás'));

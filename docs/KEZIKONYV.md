@@ -11,6 +11,10 @@ mi kerülhet ki a telefonról. A változások listája: [CHANGELOG.md](../CHANGE
 - **A „Segítség most” gomb minden képernyőn ott van**, PIN nélkül is működik; a 112, 116-123, Drog Stop (06-80-505-678) és Kék Vonal (116-111) mindig elérhető.
 - A felhasználó dönt mindenről, ami kifelé megy (mentés, megosztás). Felhőbe semmi nem kerül magától.
 
+## 1b. Navigáció
+
+Az alsó tinta sávban négy fül van (Főoldal, Idővonal, Megtakarítás, Eszközök), középen a kiemelt **+** a gyors rögzítéshez. A **Beállítások** a jobb felső sarokban lévő avatarról (kísérő vagy a mai hangulat) nyílik. A sárga **Segítség most** minden képernyő fejlécében ott van.
+
 ## 2. Kísérők
 
 Beállítások → Megjelenés → **Kísérő**. Négy választás:

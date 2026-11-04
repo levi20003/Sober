@@ -18,7 +18,7 @@ test('no dangerous DOM sinks or dynamic code evaluation anywhere in src/', () =>
 
 test('every dynamic href/src/xlink:href is one of the reviewed, safe expressions', () => {
   const ALLOWED = new Set([
-    'CRISIS_HASH', 'line.url ?? telHref(line)', 'feedbackUrl()', 'APK_PAGE', 'CHANGES_PAGE', 'l.hash', 't.hash',
+    'CRISIS_HASH', 'line.url ?? telHref(line)', 'feedbackUrl()', 'APK_PAGE', 'CHANGES_PAGE', 'l.hash', 't.hash', 'safeHash(href)',
     "`tel:${trusted.phone.replace(/[^\\d+]/g, '')}`",
   ]);
   for (const f of SRC.filter((x) => x.endsWith('.jsx'))) {
@@ -41,4 +41,10 @@ test('helpline and trusted-person links can only ever be tel: or the vetted http
   // a megbízható személy számát a séma is korlátozza (csak +, számjegy, szóköz)
   const { validateProfile } = await import('../src/domain/schema.js');
   assert.throws(() => validateProfile({ journeyStart: '2026-01-01', trustedContact: { name: 'x', phone: 'javascript:alert(1)' } }));
+});
+
+test('tile links only ever point to in-app routes (safeHash)', async () => {
+  const { safeHash } = await import('../src/components/design/Design.jsx');
+  assert.equal(safeHash('#/eszkozok/hala'), '#/eszkozok/hala');
+  for (const bad of ['javascript:alert(1)', 'https://x.example', '#/<x>', '//evil', undefined]) assert.equal(safeHash(bad), '#/', String(bad));
 });

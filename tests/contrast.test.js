@@ -25,7 +25,7 @@ function lum(hex) {
 }
 const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 
-const TONES = ['peach', 'lavender', 'mint', 'pink', 'butter', 'sky'];
+const TONES = ['peach', 'lavender', 'mint', 'pink', 'butter', 'sky', 'coral'];
 const MOODS = ['excited', 'cheerful', 'grateful', 'energetic', 'sensitive', 'confused', 'bored', 'stressed', 'angry', 'unsure', 'hurt', 'guilty'];
 
 for (const [name, v] of [['light', light], ['dark', dark], ['crisis', crisis]]) {
@@ -41,6 +41,16 @@ for (const [name, v] of [['light', light], ['dark', dark], ['crisis', crisis]]) 
     }
   });
 }
+
+test('contrast: gradient header (both ends), colour block and ink button meet AA in light and dark', () => {
+  for (const [name, v] of [['light', light], ['dark', dark]]) {
+    for (const end of ['accent-soft', 'coral-soft']) {
+      for (const fg of ['card-ink', 'card-muted']) assert.ok(ratio(v[fg], v[end]) >= 4.5, `${name}: --${fg} on --${end} = ${ratio(v[fg], v[end]).toFixed(2)}`);
+    }
+    for (const fg of ['block-ink', 'block-muted']) assert.ok(ratio(v[fg], v['block-bg']) >= 4.5, `${name}: --${fg} on --block-bg = ${ratio(v[fg], v['block-bg']).toFixed(2)}`);
+    assert.ok(ratio(v['ink-btn-fg'], v['ink-btn']) >= 4.5, `${name}: ink button`);
+  }
+});
 
 test('contrast: the help button is the same warm yellow in light and dark', () => {
   assert.equal(light['help-bg'], dark['help-bg']);

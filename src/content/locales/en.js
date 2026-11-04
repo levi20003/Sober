@@ -411,6 +411,7 @@ export const ONB = {
 };
 
 export const HOME = {
+  weekAtGlance: 'How your week went',
   hello: (greeting, name) => (name ? `${greeting}, ${name}` : greeting),
   appbarHello: (name) => (name ? `Hi, ${name}` : 'Hi'),
   totalLabel: 'Your total sober days',
@@ -532,6 +533,13 @@ export const FUN_ITEMS = [
 ];
 
 export const TIMELINE_PAGE = {
+  phaseTomorrow: 'Your new stretch starts tomorrow. Every day so far is kept.',
+  currentPhase: 'Current stretch',
+  unitDays: 'days',
+  unitHours: 'hours',
+  pillTotal: 'sober days in total',
+  pillUrges: 'urges ridden out',
+  pillLongest: 'longest stretch (days)',
   chartEmpty: 'Nothing to draw yet: the first bar appears after your first full day. That is perfectly fine.',
   title: 'Timeline',
   ranges: { week: 'Week', month: 'Month', year: 'Year' },
@@ -561,6 +569,15 @@ export const SAVINGS_PAGE = {
 };
 
 export const TOOLS = {
+  open: 'Open',
+  tileDesc: {
+    urge: 'A 10-minute wave timer until it passes.',
+    breathe: 'Slow, calm breathing for a few minutes.',
+    challenges: 'Small steps for today, if you like.',
+    gratitude: 'Three things that made you glad today.',
+    letter: 'A few lines to your future self.',
+    reasons: 'Why you started – all in one place.',
+  },
   title: 'Tools',
   urgeTitle: 'I really want to right now',
   urgeText: 'A craving is a wave: it peaks, then fades. Ten minutes, and I will walk you through.',

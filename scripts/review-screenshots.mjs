@@ -110,7 +110,7 @@ for (const theme of ['light', 'dark']) {
   await rem.getByRole('button', { name: /Tudnivalók/ }).click();
   await capture(p, '10b-ertesites-tudnivalo', theme, { locator: p.locator('dialog.sheet[open]') });
   await p.locator('dialog.sheet[open]').getByRole('button', { name: 'Értem' }).click();
-  await p.locator('nav.tabbar').getByRole('link', { name: 'Beállítások', exact: true }).click();
+  await p.locator('.appbar .avatar').click();
   // 8. Névjegy: határ-mondat és az ellenőrzés dátuma
   const about = p.locator('details.group', { has: p.locator('summary', { hasText: 'Rólunk' }) }).first();
   if (!(await about.evaluate((e) => e.open))) await about.locator('> summary').click();

@@ -41,6 +41,18 @@
   --tone-pink: #ffd6e4;
   --tone-butter: #fff1bc;
   --tone-sky: #d0e7ff;
+  --tone-coral: #ffd0c9;
+  --fig-shadow: rgba(43, 37, 64, 0.18);
+  /* R2: színátmenetes fejléc (lila → barack), szöveg rajta: --card-ink */
+  --coral-soft: #ffd9c7;
+  --grad-hero: linear-gradient(160deg, var(--accent-soft) 0%, var(--coral-soft) 100%);
+  /* R3: telt színblokk (idővonal fejléc), szöveg rajta: --block-ink */
+  --block-bg: #1f6b62;
+  --block-ink: #ffffff;
+  --block-muted: #d6efe9;
+  /* tinta pill-gomb (bevezető „Tovább →”) */
+  --ink-btn: #2b2540;
+  --ink-btn-fg: #ffffff;
 
   /* a 12 hangulatfigura színe (a vonásaik mindig sötét tintával készülnek) */
   --mood-excited: #ffb020;
@@ -121,12 +133,19 @@
     --good: #3dd9a0;
     --card-ink: #f2eef8;
     --card-muted: #cfc6dd;
-    --tone-peach: #3a2b2a;
-    --tone-lavender: #2c2850;
-    --tone-mint: #1a3330;
-    --tone-pink: #382336;
-    --tone-butter: #35301c;
-    --tone-sky: #1a2c42;
+    --tone-peach: #4a2b22;
+    --tone-lavender: #33295f;
+    --tone-mint: #133d34;
+    --tone-pink: #47203a;
+    --tone-butter: #3e3415;
+    --tone-sky: #14304f;
+    --tone-coral: #4c2024;
+    --coral-soft: #4a2531;
+    --block-bg: #174e48;
+    --block-ink: #f2eef8;
+    --block-muted: #c3e3dc;
+    --ink-btn: #efebf8;
+    --ink-btn-fg: #14111f;
     --hairline: rgba(255, 255, 255, 0.06);
     --tint: rgba(169, 139, 255, 0.12);
     --nav-bg: #100d1a;
@@ -158,12 +177,19 @@
   --good: #3dd9a0;
   --card-ink: #f2eef8;
   --card-muted: #cfc6dd;
-  --tone-peach: #3a2b2a;
-  --tone-lavender: #2c2850;
-  --tone-mint: #1a3330;
-  --tone-pink: #382336;
-  --tone-butter: #35301c;
-  --tone-sky: #1a2c42;
+  --tone-peach: #4a2b22;
+  --tone-lavender: #33295f;
+  --tone-mint: #133d34;
+  --tone-pink: #47203a;
+  --tone-butter: #3e3415;
+  --tone-sky: #14304f;
+  --tone-coral: #4c2024;
+  --coral-soft: #4a2531;
+  --block-bg: #174e48;
+  --block-ink: #f2eef8;
+  --block-muted: #c3e3dc;
+  --ink-btn: #efebf8;
+  --ink-btn-fg: #14111f;
   --hairline: rgba(255, 255, 255, 0.06);
   --tint: rgba(169, 139, 255, 0.12);
   --nav-bg: #100d1a;

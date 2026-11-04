@@ -425,6 +425,7 @@ export const ONB = {
 };
 
 export const HOME = {
+  weekAtGlance: 'Hogy telt a heted',
   hello: (greeting, name) => (name ? `${greeting}, ${name}` : greeting),
   appbarHello: (name) => (name ? `Szia, ${name}` : 'Szia'),
   totalLabel: 'Összes józan napod',
@@ -546,6 +547,13 @@ export const FUN_ITEMS = [
 ];
 
 export const TIMELINE_PAGE = {
+  phaseTomorrow: 'Az új szakasz holnap indul. Minden eddigi napod megmaradt.',
+  currentPhase: 'Jelenlegi szakasz',
+  unitDays: 'nap',
+  unitHours: 'óra',
+  pillTotal: 'józan nap összesen',
+  pillUrges: 'átvészelt sóvárgás',
+  pillLongest: 'leghosszabb szakasz (nap)',
   chartEmpty: 'Még nincs mit rajzolni: az első teljes nap után itt jelenik meg az oszlop. Ez teljesen rendben van.',
   title: 'Idővonal',
   ranges: { week: 'Hét', month: 'Hónap', year: 'Év' },
@@ -575,6 +583,15 @@ export const SAVINGS_PAGE = {
 };
 
 export const TOOLS = {
+  open: 'Megnézem',
+  tileDesc: {
+    urge: '10 perces hullám-időzítő, amíg elmúlik.',
+    breathe: 'Lassú, nyugodt légzés pár percre.',
+    challenges: 'Apró, mai lépések, ha van kedved.',
+    gratitude: 'Három dolog, aminek ma örültél.',
+    letter: 'Pár sor a jövőbeli magadnak.',
+    reasons: 'Amiért belevágtál – egy helyen.',
+  },
   title: 'Eszközök',
   urgeTitle: 'Most nagyon kívánom',
   urgeText: 'A vágy hullám: tetőzik, aztán elül. Tíz perc, én végigviszlek.',

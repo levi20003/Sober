@@ -35,7 +35,9 @@ test('English UI: every tab is in English, with dollars and the US helplines by 
   const nav = screen.getByRole('navigation', { name: 'Main navigation' });
   const seen = [];
   for (const name of ['Home', 'Timeline', 'Savings', 'Tools', 'Settings']) {
-    fireEvent.click(within(nav).getByRole('link', { name }));
+    // Settings: from the header avatar (the bar holds four tabs and the centre quick-add)
+    if (name === 'Settings') fireEvent.click(document.querySelector('.appbar .avatar'));
+    else fireEvent.click(within(nav).getByRole('link', { name }));
     if (name !== 'Home') await waitFor(() => assert.equal(document.querySelector('.appbar-title').textContent, name));
     const text = document.body.textContent.replace(/Pötty/g, '');
     seen.push(text);

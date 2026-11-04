@@ -76,7 +76,8 @@ const dismissCelebration = async (p) => {
   const later = p.locator('dialog.sheet[open]').getByRole('button', { name: 'Később' });
   if (await later.isVisible({ timeout: 1500 }).catch(() => false)) await later.click();
 };
-const tab = (p, name) => p.locator('nav.tabbar').getByRole('link', { name, exact: true }).click();
+// A Beállítások 2026-11 óta a fejléc avatarjáról nyílik (az alsó sávban 4 fül és középen a „+” van).
+const tab = (p, name) => (name === 'Beállítások' ? p.locator('.appbar .avatar').click() : p.locator('nav.tabbar').getByRole('link', { name, exact: true }).click());
 
 const browser = await chromium.launch();
 const context = await browser.newContext({ locale: 'hu-HU', viewport: { width: 390, height: 844 }, acceptDownloads: true });
@@ -231,7 +232,7 @@ try {
   await shot('05a-home-after-slip');
   step('fresh start: growth summary, total (30) never resets, help offered (not forced) and reachable inside the dialog');
 
-  // The five tabs
+  // The tabs (four in the bar, Settings from the header avatar)
   await tab(page, 'Idővonal');
   await page.getByRole('heading', { name: '2. szakasz' }).waitFor();
   const closedCard = page.locator('.phase-card', { hasText: '1. szakasz' });
@@ -247,7 +248,31 @@ try {
   await page.goBack();
   await page.waitForFunction(() => location.hash === '#/', null, { timeout: 5000 }).catch(() => {});
   assert.equal(new URL(page.url()).hash, '#/', 'one back press from any tab returns home');
-  step('five tabs; phone back goes to home');
+  step('four tabs + centre quick-add, Settings from the avatar; phone back goes to home');
+
+  // Design (R3): a trendgörbe buboréka a diagramon belül marad, nem csúszik rá a szomszédos kártyára;
+  // 360 px szélességen és 200%-os nagyításnál (195 px) sincs vízszintes görgetés a fő oldalakon.
+  await tab(page, 'Idővonal');
+  const trend = page.locator('.trend');
+  if (await trend.count()) {
+    for (const b of await trend.locator('.trend-picks button:not([disabled])').all()) {
+      await b.click();
+      const [box, bub] = await Promise.all([trend.boundingBox(), trend.locator('.trend-bubble').boundingBox()]);
+      assert.ok(bub.x >= box.x - 0.5 && bub.x + bub.width <= box.x + box.width + 0.5, 'bubble inside the chart horizontally');
+    }
+  }
+  for (const width of [360, 195]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const name of ['Főoldal', 'Idővonal', 'Megtakarítás', 'Eszközök', 'Beállítások']) {
+      await tab(page, name);
+      await page.waitForTimeout(350);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      assert.ok(over <= 1, `${name} at ${width}px scrolls sideways by ${over}px`);
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await tab(page, 'Főoldal');
+  step('design: trend bubble stays inside the chart; no sideways scroll at 360 px and at 200% zoom');
 
   // Daily cost: "from now on" keeps the past; "correct everything" re-values on purpose
   await tab(page, 'Megtakarítás');

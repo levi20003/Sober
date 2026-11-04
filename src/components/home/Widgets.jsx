@@ -75,13 +75,13 @@ export function Tiles({ savings, total, today }) {
   const ms = milestoneStatus(total);
   return (
     <div className="tiles">
-      <a className="tile press" href="#/megtakaritas">
+      <a className="tile tone tone-peach press" href="#/megtakaritas">
         <span className="tile-icon"><Icon name="savings" size={20} /></span>
         <span className="eyebrow">{HOME.savingsLabel}</span>
         <span className="tile-value">{savings.configured ? formatHuf(savings.total) : '–'}</span>
         {fun && <span className="tile-sub">{HOME.savingsFun(fun.count, fun.item.label)}</span>}
       </a>
-      <a className="tile press" href="#/idovonal">
+      <a className="tile tone tone-lavender press" href="#/idovonal">
         <span className="tile-icon"><Icon name="star" size={20} /></span>
         <span className="eyebrow">{SETUP.nextBadge}</span>
         <span className="tile-value">{ms.next ? T.days(ms.next) : SETUP.badgeDone}</span>
