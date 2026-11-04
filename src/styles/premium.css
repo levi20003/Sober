@@ -140,3 +140,15 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .theme-toggle svg { transition: transform .35s ease; }
 .theme-toggle:active svg { transform: rotate(-30deg) scale(.9); }
 @media (prefers-reduced-motion: reduce) { .theme-toggle svg { transition: none; } }
+
+/* Számláló stopperként (2026-11): nincs kör és óriási szám; fent az összes nap kicsiben, alatta az élő egységek. */
+.hero-clock .hero-head { align-items: center; gap: var(--sp-2); }
+.hero-clock .hero-total { display: flex; align-items: baseline; gap: 6px; }
+.hero-clock .hero-total .hero-value { font-size: 1.6rem; line-height: 1; letter-spacing: -0.02em; margin: 0; }
+.hero-clock .hero-total .hero-unit { margin: 0; font-size: .75rem; }
+.hero-clock .hero-total .info-btn { align-self: center; }
+.hero-clock .live-counter { margin-top: var(--sp-2); }
+.hero-clock .lc-grid { gap: 8px; }
+.hero-clock .lc-cell { padding: 16px 4px 12px; border-radius: 18px; }
+.hero-clock .lc-value { font-size: clamp(1.35rem, 7vw, 2.2rem); }
+.hero-clock .lc-label { font-size: .68rem; }

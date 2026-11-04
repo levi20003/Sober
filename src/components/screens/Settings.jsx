@@ -26,6 +26,13 @@ import { useUpdate } from '../../hooks/useUpdate.js';
 import { Page } from '../shell/Page.jsx';
 import { InfoButton, Sheet } from '../Info.jsx';
 import { RecoveryRestoreFields } from '../RestoreFields.jsx';
+import { startInstant } from '../onboarding/Onboarding.jsx';
+
+/** ISO időpont → helyi ÓÓ:PP (a beállító mezőhöz); hiányzó/érvénytelen → üres. */
+const clockOf = (iso) => {
+  const d = iso ? new Date(iso) : null;
+  return d && !Number.isNaN(d.getTime()) ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '';
+};
 import { Companion, COMPANION_IDS, companionOf } from '../companions/Companion.jsx';
 import { ApkUpdateStatus, apkBusy } from '../ApkUpdateStatus.jsx';
 
@@ -221,7 +228,13 @@ export function Settings({ onWipe, showRecoveryCode }) {
   const prefs = useFormAction(async (fd) => {
     const next = store.data;
     next.settings.autoLockMinutes = Number(fd.get('autolock'));
-    next.profile.journeyStart = fd.get('start');
+    const start = String(fd.get('start') ?? '');
+    const time = String(fd.get('startTime') ?? '');
+    const exact = startInstant(start, time);
+    if (start > toDateKey() || (exact && exact > new Date())) throw userError(ONB.startFuture);
+    next.profile.journeyStart = start;
+    // Pontos óra:perc esetén innen számol a számláló (és az első szakasz napjai); üresen hagyva a nap elejétől.
+    if (exact) next.profile.journeyStartAt = exact.toISOString(); else delete next.profile.journeyStartAt;
     await store.save(next);
     auth.refreshSettings();
     refresh();
@@ -293,7 +306,11 @@ export function Settings({ onWipe, showRecoveryCode }) {
 
       <Group title={T.securitySection}>
         <form className="stack" onSubmit={prefs.onSubmit} aria-busy={prefs.busy || undefined}>
-          <Field label={T.journeyStartLabel}><input type="date" name="start" className="input" defaultValue={data.profile.journeyStart} max={toDateKey()} required /></Field>
+          <div className="field-row">
+            <Field label={T.journeyStartLabel}><input type="date" name="start" className="input" defaultValue={data.profile.journeyStart} max={toDateKey()} required /></Field>
+            <Field label={T.journeyStartTimeLabel}><input type="time" name="startTime" className="input" step="60" defaultValue={clockOf(data.profile.journeyStartAt)} /></Field>
+          </div>
+          <p className="hint">{ONB.startTimeHint}</p>
           <Field label={T.autoLockLabel}><input type="number" name="autolock" className="input" min="1" max="120" defaultValue={String(data.settings.autoLockMinutes)} /></Field>
           <button type="submit" className="btn btn-primary" disabled={prefs.busy}>{T.save}</button>
         </form>

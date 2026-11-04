@@ -33,8 +33,7 @@ export function LiveCounter({ start, clock = defaultClock }) {
   const units = ORDER.slice(first);
   return (
     <section className="live-counter" aria-label={HOME.liveTitle}>
-      <p className="eyebrow">{HOME.liveTitle}</p>
-      <div className="lc-grid" role="timer" aria-live="off">
+      <div className="lc-grid" role="timer" aria-live="off" style={{ gridTemplateColumns: `repeat(${units.length <= 5 ? units.length : 4}, minmax(0, 1fr))` }}>
         {units.map((u) => (
           <div key={u} className={`lc-cell lc-${u}`}>
             <span className="lc-value">{p[u]}</span>

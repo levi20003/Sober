@@ -15,10 +15,9 @@ import { Confetti } from '../Confetti.jsx';
 import { InfoButton } from '../Info.jsx';
 import { Icon } from '../icons/Icon.jsx';
 import { MoodFigure } from '../mood/MoodFigures.jsx';
-import { Donut, MoodBar, ProgressRing, Sparkline } from '../charts/Charts.jsx';
+import { Donut, MoodBar, Sparkline } from '../charts/Charts.jsx';
 import { TimelineBar } from '../timeline/TimelineBar.jsx';
 import { LiveCounter, useNow } from './LiveCounter.jsx';
-import { dayProgress } from '../../domain/elapsed.js';
 import { toDateKey } from '../../domain/dates.js';
 
 const MOOD_NAMES = Object.fromEntries(MOODS.map((m) => [m.id, m.label]));
@@ -38,23 +37,23 @@ export function Hero({ stats, phases, goalDays, freshToday, currentSince, liveSt
     return undefined;
   }, [total]);
   const g = goalProgress(total, goalDays);
-  // A kör a mai nap: éjfélig megtelik. Napváltáskor újraszámoljuk a statisztikát, így a szám eggyel nő, a kör újraindul.
+  // Másodpercenként ketyeg; naptári napváltáskor újraszámoljuk a statisztikát (pontos kezdésnél a tár magától
+  // újraszámol, amikor betelik egy újabb 24 óra).
   const now = useNow(clock);
-  const dayRatio = dayProgress(new Date(now));
   const todayKey = toDateKey(new Date(now));
   useEffect(() => { if (todayKey !== stats.today && refresh) refresh(); }, [todayKey]);
   const setNext = async () => { await dispatch({ type: Actions.UPDATE_PROFILE, payload: { goalDays: g.nextSuggestion } }); toast(HOME.goalProgress(total, g.nextSuggestion)); };
   return (
-    <section className="hero-card" aria-label={HOME.totalLabel}>
+    <section className="hero-card hero-clock" aria-label={HOME.totalLabel}>
       {burst && <Confetti count={28} />}
-      <div className="row-between">
+      <div className="row-between hero-head">
         <p className="eyebrow">{HOME.totalLabel}</p>
-        <InfoButton title={HOME.totalLabel}><p>{HOME.totalSub}</p><p>{HOME.ringInfo}</p></InfoButton>
+        <div className="hero-total">
+          <p className="hero-value" data-total={total} aria-hidden="true">{shown}</p>
+          <p className="hero-unit" aria-hidden="true">{MISC.dayWord}</p>
+          <InfoButton title={HOME.totalLabel}><p>{HOME.totalSub}</p><p>{HOME.clockInfo}</p></InfoButton>
+        </div>
       </div>
-      <ProgressRing ratio={dayRatio} size={232} stroke={10} color="var(--accent)" label={HOME.ringAria(Math.floor(dayRatio * 100))}>
-        <p className="hero-value" data-total={total}>{shown}</p>
-        <p className="hero-unit">{MISC.dayWord}</p>
-      </ProgressRing>
       <span className="visually-hidden">{`${HOME.totalLabel}: ${T.days(total)}`}</span>
       {liveStart && <LiveCounter start={liveStart} clock={clock} />}
       {g && <p className="hero-goal"><strong>{HOME.goalProgress(g.shown, g.goal)}</strong> · {SETUP.goalLine(g.remaining)}</p>}

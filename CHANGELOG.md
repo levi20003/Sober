@@ -8,6 +8,8 @@ az alkalmazás kódját módosítja, de ezt a fájlt nem (`scripts/check-changel
 [Telepítési útmutató](https://levi20003.github.io/Sober/telepites.html) · [Webes változat](https://levi20003.github.io/Sober/)
 
 ## 0.12.0 – 2026-11-04
+- **Új számláló (stopper):** a kör és a nagy középső szám helyett az élő nap, óra, perc, másodperc csíkokkal; fent kicsiben az összes józan nap. A „nap” csík a kezdés pillanatától telik (nem a napszaktól), így induláskor üres.
+- **Percre pontos kezdés:** a Beállítások → Biztonság részben a kezdés napja mellett az óra és a perc is megadható; a bevezetőben a „Korábban kezdtem” mellé is. Pontos kezdésnél a napok száma pontosan 24 óránként nő, nem éjfélkor.
 - **Kísérők:** Pötty (vidám csillag), Mira (csendes holdacska) és Kavics (higgadt kavics) közül választhatsz, vagy kérheted a **Kísérő nélkül** módot (Beállítások → Megjelenés → Kísérő). A választás a titkosított naplóban marad.
 - A kísérő naponta egyszer köszön, egy képernyőn legfeljebb egy buborékkal; ezen túl csak akkor szól, ha épp rögzítettél valamit. Megcsúszás után visszafogott, nem sürget és nem hibáztat. Nincs folyamatosan ismétlődő animáció; a krízis- és a zárolóképernyőn nem jelenik meg.
 - **Megosztható mérföldkő:** az ünneplésnél és az Idővonal elért jelvényeinél „Megosztom”. Előbb mindig előnézet, a kép csak a gombra készül el. Letisztult vagy illusztrált stílus, világos vagy sötét, négyzet vagy álló forma, három semleges üzenet.

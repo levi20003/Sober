@@ -39,7 +39,7 @@ const PIN_STEP = 4;
 const RECOVERY_STEP = 5;
 const LOOKS = { 1: 'wave', 2: 'happy', 3: 'cheer', 4: 'happy', 5: 'celebrate' };
 
-const EMPTY = { nickname: '', substances: [], otherSubstance: '', startMode: 'today', startDate: '' };
+const EMPTY = { nickname: '', substances: [], otherSubstance: '', startMode: 'today', startDate: '', startTime: '' };
 
 export function stepFromHash(hash) {
   const m = /^#\/bevezeto\/(\d+)$/.exec(hash || '');
@@ -55,16 +55,28 @@ export function stepProblem(step, d, today = toDateKey()) {
       if (d.startMode === 'earlier') {
         if (!d.startDate) return 'select';
         if (d.startDate > today) return ONB.startFuture;
+        if (startInstant(d.startDate, d.startTime) > new Date()) return ONB.startFuture;
       }
       return null;
     default: return null;
   }
 }
 
+/** Kezdőnap + (opcionális) ÓÓ:PP helyi időként; ha nincs óra vagy érvénytelen, null. */
+export function startInstant(dateKey, time) {
+  if (!dateKey || !/^\d{2}:\d{2}$/.test(time ?? '')) return null;
+  const [y, m, dd] = dateKey.split('-').map(Number);
+  const [hh, mm] = time.split(':').map(Number);
+  const at = new Date(y, m - 1, dd, hh, mm, 0, 0);
+  return Number.isNaN(at.getTime()) || at.getDate() !== dd ? null : at;
+}
+
 export function draftToProfile(d, today = toDateKey()) {
   const earlier = d.startMode === 'earlier' && d.startDate;
   // „Ma kezdem”: a pontos időpontot is eltesszük (titkosítva), hogy az élő számláló percre pontos legyen.
-  const profile = { journeyStart: earlier ? d.startDate : today, ...(earlier ? {} : { journeyStartAt: new Date().toISOString() }), dailyCostHuf: 0 };
+  // „Korábban kezdtem”: ha az órát is megadja, az is pontos lesz (különben a kezdőnap éjfelétől számolunk).
+  const exact = earlier ? startInstant(d.startDate, d.startTime) : new Date();
+  const profile = { journeyStart: earlier ? d.startDate : today, ...(exact ? { journeyStartAt: exact.toISOString() } : {}), dailyCostHuf: 0 };
   if (d.nickname.trim()) profile.nickname = d.nickname.trim();
   if (d.substances.length) profile.substances = d.substances;
   if (d.substances.includes('other') && d.otherSubstance.trim()) profile.otherSubstance = d.otherSubstance.trim();
@@ -196,6 +208,11 @@ export function Onboarding({ onFinish }) {
           {draft.startMode === 'earlier' && (
             <Field label={ONB.startDateLabel}>
               <input type="date" className="input big-input" name="startDate" max={today} value={draft.startDate} onChange={(e) => set({ startDate: e.target.value })} />
+            </Field>
+          )}
+          {draft.startMode === 'earlier' && (
+            <Field label={ONB.startTimeLabel} hint={ONB.startTimeHint}>
+              <input type="time" className="input big-input" name="startTime" step="60" value={draft.startTime} onChange={(e) => set({ startTime: e.target.value })} />
             </Field>
           )}
           {typeof problem === 'string' && problem !== 'select' && <p className="card card-warn" role="alert">{problem}</p>}

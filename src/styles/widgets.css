@@ -173,3 +173,6 @@ details > summary .info-btn { margin-left: 8px; }
 .widget-slot .share-card { width: 100%; max-width: 320px; height: auto; border-radius: 22px; }
 .badge-btn { display: grid; justify-items: center; gap: inherit; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; border-radius: 12px; }
 .badge-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* Dátum + időpont egymás mellett (kezdés beállítása) */
+.field-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }

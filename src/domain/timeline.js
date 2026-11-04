@@ -52,7 +52,24 @@ export function slipDates(data) {
  * }
  * Closed phases are stable over time: only the current phase grows.
  */
-export function derivePhases(data, today = toDateKey()) {
+/**
+ * Pontos kezdőidőpont (profile.journeyStartAt) esetén az első szakasz napjai óra szerint számolnak, mint egy
+ * stopperóra: a kezdés óta eltelt teljes napok (helyi idő; 9:31-es kezdésnél másnap 9:31-kor lesz 1 nap).
+ * @returns {number|null} null, ha nincs pontos időpont vagy nincs megadva `now`
+ */
+export function exactStartDays(data, now) {
+  const at = data.profile.journeyStartAt;
+  if (!at || !(now instanceof Date)) return null;
+  const start = new Date(at);
+  if (Number.isNaN(start.getTime())) return null;
+  let n = diffDays(data.profile.journeyStart, toDateKey(now));
+  const sameClockToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), start.getHours(), start.getMinutes(), start.getSeconds(), start.getMilliseconds());
+  if (now < sameClockToday) n -= 1;
+  return Math.max(0, n);
+}
+
+/** @param {Date} [now] ha meg van adva és van pontos kezdőidőpont, az (egyetlen) első szakasz óra szerint számol */
+export function derivePhases(data, today = toDateKey(), now = undefined) {
   const slipsByDate = new Map();
   for (const e of data.events) {
     if (e.type !== 'slip' || e.date > today) continue;
@@ -69,10 +86,11 @@ export function derivePhases(data, today = toDateKey()) {
     opening = slips;
   }
   phases.push({ start, end: null, endedBySlip: false, opening, closing: [] });
+  const exact = phases.length === 1 ? exactStartDays(data, now) : null;
   return phases.map(({ opening, closing, ...p }, index) => ({
     index,
     ...p,
-    days: Math.max(0, diffDays(p.start, p.end ?? today)),
+    days: exact ?? Math.max(0, diffDays(p.start, p.end ?? today)),
     current: p.end === null,
     lessons: closing.filter((e) => e.lesson).map((e) => e.lesson),
     intentions: opening.filter((e) => e.intention).map((e) => e.intention),
@@ -96,8 +114,8 @@ export function phaseEntries(data, phases) {
 }
 
 /** Per-phase growth summary for phase cards. */
-export function phaseSummaries(data, today = toDateKey()) {
-  const phases = derivePhases(data, today);
+export function phaseSummaries(data, today = toDateKey(), now = undefined) {
+  const phases = derivePhases(data, today, now);
   const entries = phaseEntries(data, phases);
   return phases.map((p, i) => ({
     ...p,
@@ -107,8 +125,8 @@ export function phaseSummaries(data, today = toDateKey()) {
   }));
 }
 
-export function computeStats(data, today = toDateKey()) {
-  const phases = derivePhases(data, today);
+export function computeStats(data, today = toDateKey(), now = undefined) {
+  const phases = derivePhases(data, today, now);
   const current = phases[phases.length - 1];
   const totalSoberDays = phases.reduce((n, p) => n + p.days, 0);
   const events = data.events.filter((e) => e.date <= today);

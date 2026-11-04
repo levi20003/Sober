@@ -10,7 +10,7 @@
 // useSyncExternalStore(timeline.subscribe, timeline.getSnapshot) – see src/hooks/useTimeline.js.
 
 import { timelineReducer } from '../domain/timelineReducer.js';
-import { computeStats, phaseSummaries } from '../domain/timeline.js';
+import { computeStats, exactStartDays, phaseSummaries } from '../domain/timeline.js';
 import { computeSavings } from '../domain/savings.js';
 import { SAVINGS_MILESTONES } from '../content/index.js';
 import { toDateKey } from '../domain/dates.js';
@@ -22,9 +22,10 @@ export function createTimelineStore(vault, { now = () => new Date() } = {}) {
 
   function build() {
     const data = vault.data;
-    const today = toDateKey(now());
-    const phases = phaseSummaries(data, today);
-    return Object.freeze({ data, today, stats: computeStats(data, today), phases, savings: computeSavings(data, phases, today, SAVINGS_MILESTONES) });
+    const at = now();
+    const today = toDateKey(at);
+    const phases = phaseSummaries(data, today, at);
+    return Object.freeze({ data, today, exactDays: exactStartDays(data, at), stats: computeStats(data, today, at), phases, savings: computeSavings(data, phases, today, SAVINGS_MILESTONES) });
   }
 
   const api = {
@@ -34,8 +35,10 @@ export function createTimelineStore(vault, { now = () => new Date() } = {}) {
     /** Current derived view. Recomputed when the data or the calendar day changes. */
     getSnapshot() {
       if (!vault.isUnlocked) return cache; // locked mid-render: keep the last view, never decrypt
-      const today = toDateKey(now());
-      if (!cache || cache.today !== today) cache = build();
+      const at = now();
+      const today = toDateKey(at);
+      // Újraszámolás naptári napváltáskor, és pontos kezdésnél akkor is, amikor betelik egy újabb 24 óra.
+      if (!cache || cache.today !== today || (cache.exactDays !== null && cache.exactDays !== exactStartDays(vault.data, at))) cache = build();
       return cache;
     },
 
