@@ -293,8 +293,11 @@ export const T = {
   savingsSection: 'Megtakarítás',
   journeySection: 'Az utad',
   journeyStartLabel: 'Az út kezdete',
+  journeyStartTimeLabel: 'Időpont (óra:perc)',
   remindersSection: 'Emlékeztetők',
-  remindersLabel: 'Napi, kíméletes emlékeztető',
+  remindersLabel: 'Kíméletes emlékeztető (alapból kikapcsolva)',
+  remindersEvery: 'Milyen gyakran',
+  remindersEveryOptions: { 1: 'Naponta', 2: '2 naponta', 3: '3 naponta', 7: 'Hetente' },
   remindersTimeLabel: 'Időpont',
   remindersInfo: 'Az értesítés szövege semleges („Egy perc magadra”), így a zárolt képernyőn sem árul el semmit. Szerver nélkül működik, ezért nem minden böngésző támogatja a pontos időzítést; ilyenkor az alkalmazás megnyitásakor kapsz egy finom jelzést.',
   remindersDenied: 'A böngésző nem engedélyezte az értesítéseket. Ezt a böngésző beállításaiban módosíthatod.',
@@ -388,6 +391,8 @@ export const ONB = {
   startToday: 'Ma kezdem',
   startEarlier: 'Korábban kezdtem',
   startDateLabel: 'Az utad kezdete',
+  startTimeLabel: 'Hány órakor? (nem kötelező)',
+  startTimeHint: 'Ha megadod, a számláló percre pontosan innen indul; különben a nap elejétől.',
   startFuture: 'Jövőbeli dátumot nem adhatsz meg. Válaszd a mai napot, vagy egy korábbit.',
   goalTitle: 'Mi lenne most egy jó cél?',
   goalText: 'Nem verseny: egy kis lépcsőfok, amit meg tudsz ugrani.',
@@ -424,8 +429,7 @@ export const HOME = {
   appbarHello: (name) => (name ? `Szia, ${name}` : 'Szia'),
   totalLabel: 'Összes józan napod',
   totalSub: 'Egy megcsúszás sem törli: minden józan napod megmarad.',
-  ringInfo: 'A kör a mai napot mutatja: éjfélig megtelik, akkor újraindul, és eggyel nő a józan napjaid száma.',
-  ringAria: (pct) => `A mai nap: ${pct}%`,
+  clockInfo: 'A számláló a kezdés pillanatától fut, mint egy stopper: a napok száma pontosan 24 óránként nő. A kezdés napját és óráját a Beállítások → Biztonság részben adhatod meg percre pontosan.',
   liveTitle: 'Jelenlegi szakasz',
   liveUnits: { years: 'év', months: 'hó', weeks: 'hét', days: 'nap', hours: 'óra', minutes: 'perc', seconds: 'mp' },
   liveStartsTomorrow: 'Holnap kezdődik: éjféltől számolunk.',
@@ -473,6 +477,40 @@ export const HOME = {
   slipKind: 'Nehéz nap volt. Nem kell magyarázkodnod: az eddigi utad megmaradt.',
 };
 
+/** Kísérők (Beállítások → Kísérő). Különböző hang, azonos biztonsági tartalom: nehéz pillanatban a segítségre mutatnak,
+ * megcsúszás után visszafogottak (nincs ünneplés, nincs tréfa), és soha nem hibáztatnak, nem sürgetnek. */
+export const COMPANIONS = {
+  potty: {
+    name: 'Pötty',
+    desc: 'Vidám kis csillag. Bátorít, örül veled.',
+    hello: (name) => `Szia${name ? `, ${name}` : ''}! Hogy érzed ma magad?`,
+    react: HOME.pottyReact,
+  },
+  mira: {
+    name: 'Mira',
+    desc: 'Csendes holdacska. Nyugodt hangon, lassan szól.',
+    hello: (name) => `Jó, hogy itt vagy${name ? `, ${name}` : ''}. Vegyél egy nyugodt levegőt.`,
+    react: {
+      positive: 'Ez jó hír. Őrizd meg ezt az érzést egy kicsit.',
+      neutral: 'Egy csendes nap is számít. Lassan, a magad tempójában.',
+      hard: 'Itt vagyok veled. Egyszerre csak egy lélegzet. Ha kell, a sárga gomb mindig itt van.',
+      slip: 'Megtörtént. Az eddigi napjaid megmaradnak. Pihenj egy kicsit, holnap újra indulhatsz.',
+    },
+  },
+  kavics: {
+    name: 'Kavics',
+    desc: 'Higgadt kavics. Kevés szóval, kitartóan.',
+    hello: (name) => `Szia${name ? `, ${name}` : ''}. Egy nap, egy lépés.`,
+    react: {
+      positive: 'Szép. Így tovább.',
+      neutral: 'Rendben. Ez is egy nap.',
+      hard: 'Értem. Ez nehéz, és nem kell egyedül vinned. Ha kell, a sárga gomb mindig itt van.',
+      slip: 'Megtörtént. Ami eddig megvolt, az megmarad. Holnap folytatjuk.',
+    },
+  },
+  none: { name: 'Kísérő nélkül', desc: 'Nincs figura és buborék. Bármikor visszakapcsolhatod.' },
+};
+
 export const ENCOURAGEMENTS = [
   { id: 'e1', text: 'Ma is számít, hogy itt vagy.', tags: [] },
   { id: 'e2', text: 'Egy nap egyszerre. Pont ennyi a feladat.', tags: [] },
@@ -508,6 +546,7 @@ export const FUN_ITEMS = [
 ];
 
 export const TIMELINE_PAGE = {
+  chartEmpty: 'Még nincs mit rajzolni: az első teljes nap után itt jelenik meg az oszlop. Ez teljesen rendben van.',
   title: 'Idővonal',
   ranges: { week: 'Hét', month: 'Hónap', year: 'Év' },
   chartTitle: 'Józan napjaid',
@@ -596,6 +635,8 @@ export const SETTINGS_PAGE = {
   goal: 'Célod (nap)',
   triggers: 'Nehéz helyzetek',
   appearance: 'Megjelenés',
+  companion: 'Kísérő',
+  companionHint: 'A kísérő csak fontos pillanatokban szól (napi egy köszönés, mérföldkő, gyakorlat után). A krízis- és a zárolóképernyőn soha nem jelenik meg. A választás a titkosított naplóban marad.',
   theme: 'Téma',
   themeOptions: { system: 'Rendszer szerint', light: 'Világos', dark: 'Sötét' },
   motion: 'Kevesebb mozgás',
@@ -836,4 +877,43 @@ export const WITHDRAWAL = {
   ],
   action: 'Hívd a 112-t, vagy kérj meg valakit, hogy hívja.',
   note: 'Ha abbahagyást tervezel, előtte érdemes orvossal beszélned (például a háziorvosoddal vagy egy addiktológiai ambulanciával).',
+};
+
+/** Megosztható mérföldkő- és widgetkártya. Alapból csak a napok száma és egy semleges, támogató üzenet kerül rá. */
+export const SHARE = {
+  open: 'Megosztom',
+  openBadge: (d) => `Megosztom: ${d} nap`,
+  title: 'Megosztás',
+  widgetTitle: 'Widgetkártya',
+  widgetIntro: 'Kis, önálló kártya a napjaid számával. Képként mentheted vagy megoszthatod.',
+  widgetOpen: 'Widgetkártya megnyitása',
+  privacy: 'A képre csak a napok száma és egy semleges üzenet kerül. Nevet, dátumot, naplót, hangulatot, pénzt nem teszünk rá. A kép a telefonodon készül, és csak akkor megy tovább, ha te megosztod.',
+  layout: 'Stílus',
+  layouts: { minimal: 'Letisztult', illustrated: 'Illusztrált' },
+  theme: 'Színek',
+  themes: { light: 'Világos', dark: 'Sötét' },
+  shape: 'Forma',
+  shapes: { square: 'Négyzet', portrait: 'Álló', wide: 'Széles' },
+  message: 'Üzenet',
+  messages: { step: 'Egy nap egyszerre.', counts: 'Minden nap számít.', pace: 'A magam tempójában.' },
+  extras: 'Ha szeretnéd',
+  includeNext: 'A következő mérföldkő is látszódjon',
+  includeCompanion: (name) => `${name} is legyen a képen`,
+  preview: 'Előnézet',
+  previewAlt: (d) => `A megosztandó kép előnézete: ${d} nap`,
+  confirm: 'Megosztom ezt a képet',
+  save: 'Kép mentése',
+  copy: 'Szöveg másolása',
+  busy: 'Készítem a képet…',
+  shared: 'Megnyílt a megosztás.',
+  saved: 'A kép elmentve.',
+  downloaded: 'A kép letöltődött.',
+  fallback: 'Itt nem lehet közvetlenül megosztani, ezért letöltöttem a képet. Innen bárhová továbbküldheted.',
+  copied: 'A szöveg a vágólapon van.',
+  copyUnsupported: 'Itt nem tudok a vágólapra másolni. A szöveg: ',
+  error: 'Most nem sikerült elkészíteni a képet. Próbáld újra.',
+  daysUnit: (_d) => 'nap',
+  next: (n) => `Következő: ${n} nap`,
+  text: (d, msg, next) => `${d} nap. ${msg}${next ? ` Következő: ${next} nap.` : ''} – Sober`,
+  file: (d) => `sober-${d}-nap.png`,
 };

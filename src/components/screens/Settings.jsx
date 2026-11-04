@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, PREVIEW, COUNTRIES, ONB, helplinesFor } from '../../content/index.js';
+import { T, MISC, UX, CONTENT_VERSION, REVIEW_STATUS, SETTINGS_PAGE as SP, COMPANIONS, PREVIEW, COUNTRIES, ONB, helplinesFor } from '../../content/index.js';
 import { lastVerified } from '../../domain/helplines.js';
 import { LOCALES } from '../../i18n/locale.js';
 import { CURRENCIES, CURRENCY_IDS } from '../../i18n/money.js';
@@ -26,6 +26,14 @@ import { useUpdate } from '../../hooks/useUpdate.js';
 import { Page } from '../shell/Page.jsx';
 import { InfoButton, Sheet } from '../Info.jsx';
 import { RecoveryRestoreFields } from '../RestoreFields.jsx';
+import { startInstant } from '../onboarding/Onboarding.jsx';
+
+/** ISO időpont → helyi ÓÓ:PP (a beállító mezőhöz); hiányzó/érvénytelen → üres. */
+const clockOf = (iso) => {
+  const d = iso ? new Date(iso) : null;
+  return d && !Number.isNaN(d.getTime()) ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '';
+};
+import { Companion, COMPANION_IDS, companionOf } from '../companions/Companion.jsx';
 import { ApkUpdateStatus, apkBusy } from '../ApkUpdateStatus.jsx';
 
 
@@ -98,6 +106,33 @@ function TrustedSection() {
       <Field label={UX.trustedPhone}><input name="phone" className="input" type="tel" inputMode="tel" maxLength={20} defaultValue={c?.phone ?? ''} autoComplete="off" /></Field>
       <button type="submit" className="btn" disabled={save.busy}>{T.save}</button>
     </form>
+  );
+}
+
+/** Kísérő választása: a titkosított profilba kerül (profile.companion). Bármikor kikapcsolható. */
+function CompanionSection() {
+  const { snapshot, dispatch } = useTimeline();
+  const toast = useToast();
+  const current = companionOf(snapshot.data.profile);
+  const pick = async (id) => {
+    try { await dispatch({ type: Actions.UPDATE_PROFILE, payload: { companion: id } }); } catch (e) { toast(friendlyError(e), 'error'); }
+  };
+  return (
+    <div className="stack">
+      <h3 id="companion-h" className="legend-info">{SP.companion}<InfoButton title={SP.companion}><p>{SP.companionHint}</p></InfoButton></h3>
+      <div role="radiogroup" aria-labelledby="companion-h" className="companion-pick">
+        {COMPANION_IDS.map((id) => (
+          <label className="companion-opt" key={id}>
+            <input type="radio" name="companion" value={id} checked={current === id} onChange={() => pick(id)} />
+            <span className="companion-card">
+              {id === 'none' ? <span className="companion-none" aria-hidden="true" /> : <Companion kind={id} look="happy" size={44} />}
+              <strong>{COMPANIONS[id].name}</strong>
+              <small>{COMPANIONS[id].desc}</small>
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -193,7 +228,13 @@ export function Settings({ onWipe, showRecoveryCode }) {
   const prefs = useFormAction(async (fd) => {
     const next = store.data;
     next.settings.autoLockMinutes = Number(fd.get('autolock'));
-    next.profile.journeyStart = fd.get('start');
+    const start = String(fd.get('start') ?? '');
+    const time = String(fd.get('startTime') ?? '');
+    const exact = startInstant(start, time);
+    if (start > toDateKey() || (exact && exact > new Date())) throw userError(ONB.startFuture);
+    next.profile.journeyStart = start;
+    // Pontos óra:perc esetén innen számol a számláló (és az első szakasz napjai); üresen hagyva a nap elejétől.
+    if (exact) next.profile.journeyStartAt = exact.toISOString(); else delete next.profile.journeyStartAt;
     await store.save(next);
     auth.refreshSettings();
     refresh();
@@ -261,11 +302,15 @@ export function Settings({ onWipe, showRecoveryCode }) {
         <TrustedSection />
       </Group>
 
-      <Group title={SP.appearance}><AppearanceSection /></Group>
+      <Group title={SP.appearance}><CompanionSection /><AppearanceSection /></Group>
 
       <Group title={T.securitySection}>
         <form className="stack" onSubmit={prefs.onSubmit} aria-busy={prefs.busy || undefined}>
-          <Field label={T.journeyStartLabel}><input type="date" name="start" className="input" defaultValue={data.profile.journeyStart} max={toDateKey()} required /></Field>
+          <div className="field-row">
+            <Field label={T.journeyStartLabel}><input type="date" name="start" className="input" defaultValue={data.profile.journeyStart} max={toDateKey()} required /></Field>
+            <Field label={T.journeyStartTimeLabel}><input type="time" name="startTime" className="input" step="60" defaultValue={clockOf(data.profile.journeyStartAt)} /></Field>
+          </div>
+          <p className="hint">{ONB.startTimeHint}</p>
           <Field label={T.autoLockLabel}><input type="number" name="autolock" className="input" min="1" max="120" defaultValue={String(data.settings.autoLockMinutes)} /></Field>
           <button type="submit" className="btn btn-primary" disabled={prefs.busy}>{T.save}</button>
         </form>

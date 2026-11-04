@@ -38,14 +38,16 @@
 
 /* Pötty, a kabala */
 .mascot-body { fill: var(--mascot, #ffd25e); stroke: var(--mascot, #ffd25e); stroke-linejoin: round; }
+.mascot-shade { fill: #000; opacity: .08; }
+.mascot-crater { fill: #000; stroke: #000; opacity: .1; }
 .mascot-cheek { fill: #ff7f9c; opacity: .55; }
 .mascot-ink { fill: var(--fig-ink); }
 .mascot-line { fill: none; stroke: var(--fig-ink); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
 .mascot-spark { fill: #fff; opacity: .9; }
 .mascot-arm { fill: none; stroke: var(--mascot, #ffd25e); stroke-width: 9; stroke-linecap: round; }
 .mascot-anim { transform-box: view-box; transform-origin: 50px 60px; }
-.mascot-live .mascot-anim { animation: mascot-float 3.6s ease-in-out infinite; }
-.mascot-celebrate .mascot-anim { animation: mascot-dance 900ms ease-in-out infinite; }
-.mascot-live circle.mascot-ink { transform-box: fill-box; transform-origin: center; animation: fig-blink 5s linear infinite; }
+.mascot-live .mascot-anim { animation: mascot-float 3.6s ease-in-out 2; }
+.mascot-celebrate .mascot-anim { animation: mascot-dance 900ms ease-in-out 4; }
+.mascot-live circle.mascot-ink { transform-box: fill-box; transform-origin: center; animation: fig-blink 5s linear 2; }
 @keyframes mascot-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes mascot-dance { 0%, 100% { transform: rotate(-7deg) scale(1); } 50% { transform: rotate(7deg) scale(1.06); } }

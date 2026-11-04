@@ -233,3 +233,19 @@ test('M11: only src/lib/log.js may call console.*, and it never prints message t
   assert.doesNotMatch(out[0], /TITKOS|ittam/);
   assert.match(out[0], /SyntaxError/);
 });
+
+// --- 5.2: az új, opcionális kísérő-beállítás a mentéssel együtt visszaáll; a régi mentésekben hiányzik, és ez rendben van
+test('M3: the companion choice travels inside the encrypted v2 backup and restores; format and schema versions unchanged', async () => {
+  const { store } = makeStore();
+  await store.create(PIN, initial({ nickname: 'Mentő', companion: 'kavics' }));
+  const b = await store.exportEncryptedBackup();
+  assert.equal(b.formatVersion, 2);
+  assert.equal(b.schemaVersion, 3);
+  assert.ok(!JSON.stringify(b).includes('kavics'), 'encrypted, not in plaintext');
+  const other = otherDevice();
+  await other.store.importEncryptedBackup(parseBackupText(JSON.stringify(b)), PIN);
+  assert.equal(other.store.data.profile.companion, 'kavics');
+  const { store: old } = makeStore();
+  await old.create(PIN, initial({ nickname: 'Régi' }));
+  assert.equal(old.data.profile.companion, undefined, 'older journals simply have no companion (Pötty is shown)');
+});

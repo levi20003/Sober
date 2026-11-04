@@ -1,6 +1,6 @@
 {
   "name": "jozansag-szamlalo",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "private": true,
   "description": "Józanság-számláló – offline-first, titkosított, magyar nyelvű felépülés-követő PWA",
   "type": "module",

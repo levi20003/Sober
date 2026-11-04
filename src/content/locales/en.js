@@ -284,8 +284,11 @@ export const T = {
   savingsSection: 'Savings',
   journeySection: 'Your path',
   journeyStartLabel: 'Start of your journey',
+  journeyStartTimeLabel: 'Time (hh:mm)',
   remindersSection: 'Reminders',
-  remindersLabel: 'Gentle daily reminder',
+  remindersLabel: 'Gentle reminder (off by default)',
+  remindersEvery: 'How often',
+  remindersEveryOptions: { 1: 'Daily', 2: 'Every 2 days', 3: 'Every 3 days', 7: 'Weekly' },
   remindersTimeLabel: 'Time',
   remindersInfo: 'The notification text is neutral ("A minute for you"), so it reveals nothing on a lock screen. It works without a server, so not every browser supports exact timing; then you get a gentle nudge when you open the app.',
   remindersDenied: 'The browser did not allow notifications. You can change that in the browser settings.',
@@ -374,6 +377,8 @@ export const ONB = {
   startToday: 'I start today',
   startEarlier: 'I started earlier',
   startDateLabel: 'Start of your journey',
+  startTimeLabel: 'At what time? (optional)',
+  startTimeHint: 'If you set it, the counter starts from that exact minute; otherwise from the start of the day.',
   startFuture: 'A future date is not possible. Choose today or an earlier day.',
   goalTitle: 'What would be a good goal now?',
   goalText: 'It is not a race: a small step you can reach.',
@@ -410,8 +415,7 @@ export const HOME = {
   appbarHello: (name) => (name ? `Hi, ${name}` : 'Hi'),
   totalLabel: 'Your total sober days',
   totalSub: 'A slip does not erase them: all your sober days stay.',
-  ringInfo: 'The ring shows today: it fills up until midnight, then starts again and your sober days go up by one.',
-  ringAria: (pct) => `Today: ${pct}%`,
+  clockInfo: 'The counter runs from the moment you started, like a stopwatch: the number of days grows exactly every 24 hours. You can set the start day and time to the minute in Settings → Security.',
   liveTitle: 'Current phase',
   liveUnits: { years: 'yr', months: 'mo', weeks: 'wk', days: 'd', hours: 'h', minutes: 'min', seconds: 's' },
   liveStartsTomorrow: 'Starts tomorrow: counting from midnight.',
@@ -459,6 +463,40 @@ export const HOME = {
   slipKind: 'It was a hard day. You do not have to explain: your path so far is kept.',
 };
 
+/** Companions (Settings → Companion). Different voices, the same safety content: hard moments point to help,
+ * after a slip they stay quiet (no celebrating, no jokes), and they never blame or pressure. */
+export const COMPANIONS = {
+  potty: {
+    name: 'Dot',
+    desc: 'A cheerful little star. Encouraging, glad with you.',
+    hello: (name) => `Hi${name ? `, ${name}` : ''}! How are you feeling today?`,
+    react: HOME.pottyReact,
+  },
+  mira: {
+    name: 'Mira',
+    desc: 'A quiet little moon. Speaks slowly and calmly.',
+    hello: (name) => `Good to see you${name ? `, ${name}` : ''}. Take a calm breath.`,
+    react: {
+      positive: 'That is good news. Hold on to that feeling for a while.',
+      neutral: 'A quiet day counts too. Slowly, at your own pace.',
+      hard: 'I am here with you. Just one breath at a time. If you need it, the yellow button is always here.',
+      slip: 'It happened. The days you have achieved stay yours. Rest a little, you can start again tomorrow.',
+    },
+  },
+  kavics: {
+    name: 'Pebble',
+    desc: 'A steady pebble. Few words, lots of patience.',
+    hello: (name) => `Hi${name ? `, ${name}` : ''}. One day, one step.`,
+    react: {
+      positive: 'Nice. Keep going.',
+      neutral: 'Okay. This is a day too.',
+      hard: 'I see. This is hard, and you do not have to carry it alone. If you need it, the yellow button is always here.',
+      slip: 'It happened. What you built so far stays. We carry on tomorrow.',
+    },
+  },
+  none: { name: 'No companion', desc: 'No figure and no speech bubble. You can switch it back on any time.' },
+};
+
 export const ENCOURAGEMENTS = [
   { id: 'e1', text: 'Today, too, it matters that you are here.', tags: [] },
   { id: 'e2', text: 'One day at a time. That is the whole task.', tags: [] },
@@ -494,6 +532,7 @@ export const FUN_ITEMS = [
 ];
 
 export const TIMELINE_PAGE = {
+  chartEmpty: 'Nothing to draw yet: the first bar appears after your first full day. That is perfectly fine.',
   title: 'Timeline',
   ranges: { week: 'Week', month: 'Month', year: 'Year' },
   chartTitle: 'Your sober days',
@@ -582,6 +621,8 @@ export const SETTINGS_PAGE = {
   goal: 'Your goal (days)',
   triggers: 'Hard situations',
   appearance: 'Appearance',
+  companion: 'Companion',
+  companionHint: 'The companion only speaks at important moments (one greeting a day, milestones, after an exercise). It never appears on the crisis or lock screen. Your choice stays in the encrypted journal.',
   theme: 'Theme',
   themeOptions: { system: 'Follow system', light: 'Light', dark: 'Dark' },
   motion: 'Reduce motion',
@@ -822,4 +863,43 @@ export const WITHDRAWAL = {
   ],
   action: 'Call 112 (or your local emergency number), or ask someone to call for you.',
   note: 'If you plan to stop, it is worth talking to a doctor first (for example your GP or an addiction service).',
+};
+
+/** Shareable milestone and widget card. By default only the number of days and a neutral, supportive message. */
+export const SHARE = {
+  open: 'Share',
+  openBadge: (d) => `Share: ${d} ${d === 1 ? 'day' : 'days'}`,
+  title: 'Share',
+  widgetTitle: 'Widget card',
+  widgetIntro: 'A small standalone card with your number of days. Save it as an image or share it.',
+  widgetOpen: 'Open widget card',
+  privacy: 'Only the number of days and a neutral message go on the image. No name, date, journal, mood or money. The image is made on your phone and only leaves it if you share it.',
+  layout: 'Style',
+  layouts: { minimal: 'Minimal', illustrated: 'Illustrated' },
+  theme: 'Colours',
+  themes: { light: 'Light', dark: 'Dark' },
+  shape: 'Shape',
+  shapes: { square: 'Square', portrait: 'Portrait', wide: 'Wide' },
+  message: 'Message',
+  messages: { step: 'One day at a time.', counts: 'Every day counts.', pace: 'At my own pace.' },
+  extras: 'If you like',
+  includeNext: 'Show the next milestone too',
+  includeCompanion: (name) => `Add ${name} to the image`,
+  preview: 'Preview',
+  previewAlt: (d) => `Preview of the image to share: ${d} ${d === 1 ? 'day' : 'days'}`,
+  confirm: 'Share this image',
+  save: 'Save image',
+  copy: 'Copy text',
+  busy: 'Making the image…',
+  shared: 'Sharing opened.',
+  saved: 'Image saved.',
+  downloaded: 'The image was downloaded.',
+  fallback: 'Direct sharing is not available here, so the image was downloaded. You can send it on from there.',
+  copied: 'The text is on the clipboard.',
+  copyUnsupported: 'Copying is not available here. The text: ',
+  error: 'The image could not be made just now. Please try again.',
+  daysUnit: (d) => (d === 1 ? 'day' : 'days'),
+  next: (n) => `Next: ${n} days`,
+  text: (d, msg, next) => `${d} ${d === 1 ? 'day' : 'days'}. ${msg}${next ? ` Next: ${next} days.` : ''} – Sober`,
+  file: (d) => `sober-${d}-days.png`,
 };

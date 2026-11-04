@@ -322,8 +322,40 @@ try {
   const t1 = await offlineCrisis.locator('.breath-circle').evaluate((e) => getComputedStyle(e).transform);
   assert.notEqual(t0, t1, 'circle animates offline');
   await page.keyboard.press('Escape');
-  await context.setOffline(false);
   step('offline: crisis screen, all four tel: links and the breathing animation work');
+
+  // Megosztható widgetkártya internet nélkül: előnézet, majd valódi PNG a natív Canvasszal (SVG data-URL-ből).
+  const cspErrors = [];
+  page.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) cspErrors.push(m.text()); });
+  const netRequests = [];
+  page.on('request', (r) => { if (!r.url().startsWith(BASE) && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) netRequests.push(r.url()); });
+  await page.goto(BASE + '#/');
+  await page.getByLabel('PIN-kód', { exact: true }).fill(PIN);
+  await page.getByRole('button', { name: 'Megnyitás' }).click();
+  await page.locator('.hero-value').waitFor({ timeout: 20000 });
+  await dismissCelebration(page);
+  await tab(page, 'Idővonal');
+  await page.getByRole('button', { name: 'Widgetkártya megnyitása' }).click();
+  const shareDlg = page.locator('dialog.sheet[open]');
+  await shareDlg.getByRole('img', { name: /előnézete/ }).waitFor();
+  const cardHtml = await shareDlg.locator('svg.share-card').evaluate((e) => e.outerHTML);
+  assert.ok(!cardHtml.includes('Dani'), 'no nickname on the card');
+  await shareDlg.locator('label.chip', { hasText: 'Illusztrált' }).click();
+  await shareDlg.locator('label.chip', { hasText: 'Sötét' }).click();
+  await shot('11-share-preview');
+  const [img] = await Promise.all([page.waitForEvent('download'), shareDlg.getByRole('button', { name: 'Kép mentése' }).click()]);
+  const pngBytes = await readFile(await img.path());
+  assert.equal(pngBytes.subarray(1, 4).toString('latin1'), 'PNG', 'a real PNG');
+  assert.deepEqual([pngBytes.readUInt32BE(16), pngBytes.readUInt32BE(20)], [1200, 600], 'wide widget size');
+  assert.ok(pngBytes.length > 8000, `not a blank image (${pngBytes.length} bytes)`);
+  assert.match(img.suggestedFilename(), /^sober-\d+-nap\.png$/);
+  if (SHOTS) await cp(await img.path(), `${SHOTS}/12-share-card.png`);
+  assert.deepEqual(cspErrors, [], 'no CSP violation while building the image');
+  assert.deepEqual(netRequests, [], 'no network request while sharing');
+  await shareDlg.getByRole('button', { name: 'Bezár', exact: true }).click();
+  await context.setOffline(false);
+  await page.reload(); // a következő lépés zárolt naplóval indul
+  step('offline: widget card preview and a real 1200×600 PNG made locally, no CSP violation, no request');
 
   // Single-step delete
   await page.goto(BASE + '#/');

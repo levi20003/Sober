@@ -8,6 +8,7 @@
 //     nickname?: string (1..24), substances?: id[], otherSubstance?: string (1..40),
 //     goalDays?: int (1..3650), triggers?: id[], customTriggers?: string[] (1..30 chars, max 10),
 //     reasons?: string[] (1..140 chars, max 12), lastCelebration?: int (legnagyobb ünnepelt mérföldkő, nap),
+//     companion?: 'potty'|'mira'|'kavics'|'none' (választott kísérő; hiányában Pötty),
 //   },
 //   settings: {
 //     costHistory: [{ from: 'YYYY-MM-DD', dailyCostHuf: int }],  // effective-dated, ascending
@@ -175,6 +176,8 @@ function cleanList(v, min, max, maxLen, field) {
 }
 
 /** Optional profile fields (onboarding answers and personal settings). Unknown keys are dropped. */
+export const COMPANION_CHOICES = Object.freeze(['potty', 'mira', 'kavics', 'none']);
+
 export function validateProfile(p) {
   if (!isObj(p) || !isValidDateKey(p.journeyStart)) fail('Profil: érvénytelen kezdődátum');
   const out = { journeyStart: p.journeyStart };
@@ -200,6 +203,8 @@ export function validateProfile(p) {
     const key = `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, '0')}-${String(at.getDate()).padStart(2, '0')}`;
     if (key === p.journeyStart) out.journeyStartAt = at.toISOString();
   }
+  // Választott kísérő (opcionális; hiányában Pötty). Ismeretlen értéket elhagyunk, a régi mentések így is megnyílnak.
+  if (COMPANION_CHOICES.includes(p.companion)) out.companion = p.companion;
   if (p.goalDays !== undefined && p.goalDays !== null) out.goalDays = cleanInt(p.goalDays, 1, MAX_GOAL_DAYS, 'Cél (nap)');
   if (p.triggers !== undefined) {
     const list = cleanIds(p.triggers, 'trigger', 'Nehéz helyzetek');

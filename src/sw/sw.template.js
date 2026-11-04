@@ -82,6 +82,12 @@ async function maybeRemind() {
   const [hh, mm] = String(rem.time || '20:00').split(':').map(Number);
   const due = now.getHours() > hh || (now.getHours() === hh && now.getMinutes() >= mm);
   if (!due || rem.lastShown === todayKey(now) || now.getHours() >= 23) return;
+  // Gyakoriság (a felhasználó választja: 1, 2, 3 vagy 7 naponta); régi beállításnál naponta.
+  const every = [1, 2, 3, 7].includes(rem.everyDays) ? rem.everyDays : 1;
+  if (rem.lastShown && every > 1) {
+    const since = Math.round((Date.parse(todayKey(now)) - Date.parse(rem.lastShown)) / 86400000);
+    if (since < every) return;
+  }
   const note = meta?.notification ?? NOTE; // a felhasználó nyelvén (az app menti el az engedélyezéskor)
   await self.registration.showNotification(note.title, {
     body: note.body,
