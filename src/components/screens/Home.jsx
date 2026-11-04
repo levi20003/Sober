@@ -1,7 +1,7 @@
 // Főoldal: egyértelmű hierarchia. Fent a legfontosabb szám (összes józan nap a cél felé), alatta egy gyors hangulat-rögzítés,
 // két kis csempe (megtakarítás, következő mérföldkő), a hét, és egy napi gondolat. A részletes statisztika az Idővonalon van.
 import { useEffect, useState } from 'react';
-import { RISK_MESSAGES, COMPANIONS, T } from '../../content/index.js';
+import { RISK_MESSAGES, COMPANIONS, SHARE, T } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
 import { formatDateHu } from '../../domain/dates.js';
 import { phaseStartInstant } from '../../domain/elapsed.js';
@@ -16,6 +16,7 @@ import { BackupNotice } from '../home/Notices.jsx';
 import { MoodCheckin } from '../home/MoodCheckin.jsx';
 import { SetupCard } from '../home/SetupCard.jsx';
 import { Celebration } from '../home/Celebration.jsx';
+import { ShareSheet } from '../share/ShareSheet.jsx';
 import { DailyThought, Hero, Tiles, WeekGlance } from '../home/Widgets.jsx';
 import { Page } from '../shell/Page.jsx';
 
@@ -28,6 +29,7 @@ export function Home() {
   const { snapshot, dispatch } = useTimeline();
   const [reaction, setReaction] = useState(null);
   const [celebrated, setCelebrated] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const { data, stats: s, phases, savings, today } = snapshot;
   const profile = data.profile;
   const risk = riskContexts(new Date(), data.events)[0];
@@ -76,8 +78,11 @@ export function Home() {
         <DailyThought today={today} tags={profile.triggers ?? []} />
       </div>
       {milestone && (
-        <Celebration days={milestone} companion={kind} onClose={async () => { setCelebrated(true); await dispatch({ type: Actions.UPDATE_PROFILE, payload: { lastCelebration: milestone } }).catch(() => {}); }} />
+        <Celebration days={milestone} companion={kind} onClose={async () => { setCelebrated(true); await dispatch({ type: Actions.UPDATE_PROFILE, payload: { lastCelebration: milestone } }).catch(() => {}); }}>
+          <button type="button" className="btn btn-ghost" onClick={() => setSharing(true)}>{SHARE.open}</button>
+        </Celebration>
       )}
+      {milestone && sharing && <ShareSheet days={milestone} companion={kind} onClose={() => setSharing(false)} />}
       <BackupNotice data={data} suppressed={Boolean(milestone)} />
     </Page>
   );

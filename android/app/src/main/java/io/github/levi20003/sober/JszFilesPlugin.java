@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Base64;
 import android.view.WindowManager;
 
 import androidx.activity.result.ActivityResult;
@@ -33,17 +34,37 @@ import java.security.MessageDigest;
  *           csak olvasási joggal, csak a kiválasztott alkalmazásnak.
  *  - setSecure: FLAG_SECURE (képernyőkép és feladatváltó-előnézet tiltása), a felhasználó kapcsolja.
  *  - signingInfo: az aláíró tanúsítvány SHA-256 lenyomata (debug vagy kiadási kulcs felismerése).
+ * Kép (megosztható mérföldkő-kártya): a "base64" mező csak "image/png" típussal fogadott el, legfeljebb 8 MB-ig;
+ * a kép a telefonon készül (SVG → Canvas), a bővítmény csak továbbadja. Minden más tartalom szövegként (UTF-8) megy.
  * Az Activity onPause-kor "pause" eseményt küld a weboldalnak: a napló ekkor zárolódik.
  * Szándékosan nincs naplózás (Log.*): a fájl tartalma soha nem kerül a logcatbe.
  */
 @CapacitorPlugin(name = "JszFiles")
 public class JszFilesPlugin extends Plugin {
 
+    private static final int MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+    /** A kiírandó bájtok: szöveg (UTF-8), vagy csak PNG-képnél base64. Érvénytelen kérésnél null. */
+    private static byte[] payload(PluginCall call) {
+        String b64 = call.getString("base64");
+        if (b64 != null) {
+            if (!"image/png".equals(call.getString("mime"))) return null;
+            try {
+                byte[] bytes = Base64.decode(b64, Base64.DEFAULT);
+                return bytes.length > 0 && bytes.length <= MAX_IMAGE_BYTES ? bytes : null;
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        String text = call.getString("text");
+        return text == null ? null : text.getBytes(StandardCharsets.UTF_8);
+    }
+
     @PluginMethod
     public void save(PluginCall call) {
         String filename = call.getString("filename", "jozansag-mentes.json");
         String mime = call.getString("mime", "application/json");
-        if (call.getString("text") == null) {
+        if (payload(call) == null) {
             call.reject("Hiányzó tartalom");
             return;
         }
@@ -67,7 +88,9 @@ public class JszFilesPlugin extends Plugin {
         Uri uri = result.getData().getData();
         try (OutputStream out = getContext().getContentResolver().openOutputStream(uri, "wt")) {
             if (out == null) throw new java.io.IOException("Nem írható");
-            out.write(call.getString("text").getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = payload(call);
+            if (bytes == null) throw new java.io.IOException("Hiányzó tartalom");
+            out.write(bytes);
             out.flush();
             ret.put("saved", true);
             ret.put("name", displayName(uri, call.getString("filename")));
@@ -90,12 +113,14 @@ public class JszFilesPlugin extends Plugin {
     public void share(PluginCall call) {
         String filename = call.getString("filename", "jozansag-mentes.json").replaceAll("[^A-Za-z0-9._-]", "_");
         String mime = call.getString("mime", "application/json");
-        String text = call.getString("text");
-        if (text == null) {
+        byte[] bytes = payload(call);
+        if (bytes == null) {
             call.reject("Hiányzó tartalom");
             return;
         }
+        String caption = call.getString("caption");
         try {
+            // Ugyanaz az egyetlen megosztási mappa (cache/backups) a mentésfájlnak és a képnek: a FileProvider nem bővül.
             File dir = new File(getContext().getCacheDir(), "backups");
             // Csak az utolsó megosztott fájl marad meg; a korábbiakat töröljük.
             File[] old = dir.listFiles();
@@ -103,12 +128,13 @@ public class JszFilesPlugin extends Plugin {
             if (!dir.exists() && !dir.mkdirs()) throw new java.io.IOException("mkdir");
             File file = new File(dir, filename);
             try (FileOutputStream out = new FileOutputStream(file)) {
-                out.write(text.getBytes(StandardCharsets.UTF_8));
+                out.write(bytes);
             }
             Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", file);
             Intent send = new Intent(Intent.ACTION_SEND);
             send.setType(mime);
             send.putExtra(Intent.EXTRA_STREAM, uri);
+            if (caption != null && caption.length() <= 280) send.putExtra(Intent.EXTRA_TEXT, caption);
             send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             Intent chooser = Intent.createChooser(send, null);
             chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

@@ -1,6 +1,6 @@
 // A főoldal kártyái. Minden szám a titkosított napló eseményeiből és a fázisokból számolódik (src/domain/*).
 import { useEffect, useRef, useState } from 'react';
-import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, MISC, SETUP, T, TIPS } from '../../content/index.js';
+import { CHALLENGE_CATALOG, ENCOURAGEMENTS, FUN_ITEMS, HOME, MISC, SETUP, SHARE, T, TIPS } from '../../content/index.js';
 import { MOODS } from '../../domain/presets.js';
 import { energyStress, weekDigest, weekMoods } from '../../domain/moods.js';
 import { goalProgress, milestoneStatus } from '../../domain/milestones.js';
@@ -165,7 +165,8 @@ export function EnergyStress({ events, today }) {
   return <section className="stats" aria-label={`${HOME.energy}, ${HOME.stress}`}>{card('energy', HOME.energy, 'tone-mint', '#0e8f63')}{card('stress', HOME.stress, 'tone-pink', '#b4235a')}</section>;
 }
 
-export function Badges({ total }) {
+/** @param {{ total: number, onShare?: (days: number) => void }} props  onShare: az elért jelvények megoszthatók */
+export function Badges({ total, onShare }) {
   const ms = milestoneStatus(total);
   return (
     <section className="card tone tone-butter" aria-labelledby="badges-h">
@@ -173,8 +174,17 @@ export function Badges({ total }) {
       <ul className="badges">
         {ms.badges.map((b) => (
           <li key={b.days} className={`badge${b.achieved ? '' : ' locked'}`} aria-label={`${HOME.badgeLabel(b.days)}${b.achieved ? '' : MISC.badgeLocked}`}>
-            <span className="medal" aria-hidden="true">{b.achieved ? b.days : <Icon name="lock" size={18} />}</span>
-            <span aria-hidden="true">{b.days} nap</span>
+            {b.achieved && onShare ? (
+              <button type="button" className="badge-btn" onClick={() => onShare(b.days)} aria-label={SHARE.openBadge(b.days)}>
+                <span className="medal" aria-hidden="true">{b.days}</span>
+                <span aria-hidden="true">{b.days} {SHARE.daysUnit(b.days)}</span>
+              </button>
+            ) : (
+              <>
+                <span className="medal" aria-hidden="true">{b.achieved ? b.days : <Icon name="lock" size={18} />}</span>
+                <span aria-hidden="true">{b.days} {SHARE.daysUnit(b.days)}</span>
+              </>
+            )}
           </li>
         ))}
       </ul>
