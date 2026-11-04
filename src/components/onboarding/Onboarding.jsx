@@ -63,6 +63,9 @@ export function stepProblem(step, d, today = toDateKey()) {
 }
 
 /** Kezdőnap + (opcionális) ÓÓ:PP helyi időként; ha nincs óra vagy érvénytelen, null. */
+/** R4: lépésenként egy teljes színű háttér a pasztell tónusokból (a szöveg rajta --card-ink, AA-teszttel). */
+const STEP_TONES = { 1: 'butter', 2: 'lavender', 3: 'peach', 4: 'mint', 5: 'cream' };
+
 export function startInstant(dateKey, time) {
   if (!dateKey || !/^\d{2}:\d{2}$/.test(time ?? '')) return null;
   const [y, m, dd] = dateKey.split('-').map(Number);
@@ -191,7 +194,7 @@ export function Onboarding({ onFinish }) {
     case 2:
       body = (
         <>
-          <h1>{ONB.substancesTitle}</h1>
+          <h1 className="title-hero">{ONB.substancesTitle}</h1>
           <ChoiceGrid legend={ONB.substancesTitle} name="substances" options={SUBSTANCES} selected={draft.substances} onToggle={(id) => toggle('substances', id)} />
           {draft.substances.includes('other') && (
             <Field label={ONB.otherLabel}><input className="input" value={draft.otherSubstance} maxLength={40} onChange={(e) => set({ otherSubstance: e.target.value })} /></Field>
@@ -202,7 +205,7 @@ export function Onboarding({ onFinish }) {
     case 3:
       body = (
         <>
-          <h1>{ONB.startTitle}</h1>
+          <h1 className="title-hero">{ONB.startTitle}</h1>
           <ChoiceGrid legend={ONB.startTitle} name="startMode" multiple={false} selected={[draft.startMode]} onToggle={(id) => set({ startMode: id })}
             options={[{ id: 'today', label: ONB.startToday }, { id: 'earlier', label: ONB.startEarlier }]} />
           {draft.startMode === 'earlier' && (
@@ -223,7 +226,7 @@ export function Onboarding({ onFinish }) {
     default:
       body = (
         <>
-          <h1>{ONB.recoveryTitle}</h1>
+          <h1 className="title-hero">{ONB.recoveryTitle}</h1>
           <p className="lead">{ONB.recoveryText}</p>
           <RecoveryCodeCard code={recoveryCode} />
           <div className="check check-card">
@@ -240,6 +243,7 @@ export function Onboarding({ onFinish }) {
   const onNext = () => (step === RECOVERY_STEP ? onFinish({ restored: false }) : go(step + 1));
 
   return (
+    <div className={`onb-bg onb-tone-${STEP_TONES[step] ?? 'cream'}`}>
     <div className="onb">
       <div className="onb-top">
         {showBack
@@ -253,14 +257,20 @@ export function Onboarding({ onFinish }) {
       </div>
       {step === 1 && <LanguageToggle />}
       <div className="onb-body step-enter" key={step}>
-        <div className="onb-mascot"><Mascot look={LOOKS[step]} size={step === 1 ? 112 : 72} label={null} /></div>
+        <div className="onb-mascot">
+          {step === 1 && (
+            <span className="onb-stack" aria-hidden="true"><i /><i /><i /></span>
+          )}
+          <Mascot look={LOOKS[step]} size={step === 1 ? 112 : 72} label={null} />
+        </div>
         <div ref={headingRef} tabIndex={-1} style={{ outline: 'none' }} className="stack">{body}</div>
       </div>
       <div className="onb-nav">
         {step === PIN_STEP
-          ? <button type="submit" form="onb-pin" className="btn btn-primary btn-big">{nextLabel}</button>
-          : <button type="button" className="btn btn-primary btn-big" disabled={nextDisabled} onClick={onNext}>{nextLabel}</button>}
+          ? <button type="submit" form="onb-pin" className="btn btn-ink btn-big">{nextLabel}<span aria-hidden="true"> →</span></button>
+          : <button type="button" className="btn btn-ink btn-big" disabled={nextDisabled} onClick={onNext}>{nextLabel}<span aria-hidden="true"> →</span></button>}
       </div>
+    </div>
     </div>
   );
 }

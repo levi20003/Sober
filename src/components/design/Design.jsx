@@ -73,3 +73,33 @@ export function StatPill({ icon, value, label, tone = 'lavender', upcoming = fal
     </div>
   );
 }
+
+/** Összeg óriási számmal és kicsi pénznemmel (R2 „59 $” elve). A szöveg (textContent) változatlan marad. */
+export function Money({ text, className = '' }) {
+  const m = /^([^\d-]*)(-?[\d][\d\s.,\u00a0\u202f]*)(.*)$/.exec(text ?? '');
+  if (!m) return <span className={className}>{text}</span>;
+  const [, pre, num, post] = m;
+  return (
+    <span className={`money ${className}`}>
+      {pre && <small className="money-cur">{pre}</small>}
+      <span className="money-num">{num.trimEnd()}</span>
+      {num !== num.trimEnd() ? ' ' : ''}
+      {post && <small className="money-cur">{post.trim()}</small>}
+    </span>
+  );
+}
+
+/** Hullámos haladás-sáv (R2): a hullám mindig látszik, a kitöltés a `value` (0..1) arányában. */
+export function WaveProgress({ value, label }) {
+  const id = useId().replace(/:/g, '');
+  const v = Math.max(0, Math.min(1, Number(value) || 0));
+  const d = 'M4 12 C 16 2, 28 2, 40 12 S 64 22, 76 12 S 100 2, 112 12 S 136 22, 148 12 S 172 2, 184 12 S 208 22, 220 12 S 244 2, 256 12 S 280 22, 292 12 S 316 2, 316 12';
+  return (
+    <svg className="wave-progress" viewBox="0 0 320 24" preserveAspectRatio="none" role="progressbar" aria-label={label}
+      aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v * 100)} focusable="false">
+      <clipPath id={`w${id}`}><rect x="0" y="0" width={320 * v} height="24" /></clipPath>
+      <path d={d} className="wave-track" vectorEffect="non-scaling-stroke" />
+      <path d={d} className="wave-fill" clipPath={`url(#w${id})`} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}

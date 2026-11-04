@@ -250,6 +250,30 @@ try {
   assert.equal(new URL(page.url()).hash, '#/', 'one back press from any tab returns home');
   step('four tabs + centre quick-add, Settings from the avatar; phone back goes to home');
 
+  // Design (R3): a trendgörbe buboréka a diagramon belül marad, nem csúszik rá a szomszédos kártyára;
+  // 360 px szélességen és 200%-os nagyításnál (195 px) sincs vízszintes görgetés a fő oldalakon.
+  await tab(page, 'Idővonal');
+  const trend = page.locator('.trend');
+  if (await trend.count()) {
+    for (const b of await trend.locator('.trend-picks button:not([disabled])').all()) {
+      await b.click();
+      const [box, bub] = await Promise.all([trend.boundingBox(), trend.locator('.trend-bubble').boundingBox()]);
+      assert.ok(bub.x >= box.x - 0.5 && bub.x + bub.width <= box.x + box.width + 0.5, 'bubble inside the chart horizontally');
+    }
+  }
+  for (const width of [360, 195]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const name of ['Főoldal', 'Idővonal', 'Megtakarítás', 'Eszközök', 'Beállítások']) {
+      await tab(page, name);
+      await page.waitForTimeout(350);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      assert.ok(over <= 1, `${name} at ${width}px scrolls sideways by ${over}px`);
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await tab(page, 'Főoldal');
+  step('design: trend bubble stays inside the chart; no sideways scroll at 360 px and at 200% zoom');
+
   // Daily cost: "from now on" keeps the past; "correct everything" re-values on purpose
   await tab(page, 'Megtakarítás');
   await openGroup(page, 'Megtakarítás');

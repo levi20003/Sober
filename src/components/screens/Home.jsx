@@ -1,7 +1,7 @@
 // Főoldal: egyértelmű hierarchia. Fent a legfontosabb szám (összes józan nap a cél felé), alatta egy gyors hangulat-rögzítés,
 // két kis csempe (megtakarítás, következő mérföldkő), a hét, és egy napi gondolat. A részletes statisztika az Idővonalon van.
 import { useEffect, useState } from 'react';
-import { RISK_MESSAGES, COMPANIONS, SHARE, T } from '../../content/index.js';
+import { RISK_MESSAGES, COMPANIONS, HOME, SHARE, T } from '../../content/index.js';
 import { riskContexts } from '../../domain/risk.js';
 import { formatDateHu } from '../../domain/dates.js';
 import { phaseStartInstant } from '../../domain/elapsed.js';
@@ -17,7 +17,8 @@ import { MoodCheckin } from '../home/MoodCheckin.jsx';
 import { SetupCard } from '../home/SetupCard.jsx';
 import { Celebration } from '../home/Celebration.jsx';
 import { ShareSheet } from '../share/ShareSheet.jsx';
-import { DailyThought, Hero, Tiles, WeekGlance } from '../home/Widgets.jsx';
+import { DailyThought, EnergyStress, Hero, Tiles, WeekGlance, WeekMoods } from '../home/Widgets.jsx';
+import { HeroHeader } from '../design/Design.jsx';
 import { Page } from '../shell/Page.jsx';
 
 const reactionFor = (figId) => {
@@ -58,21 +59,25 @@ export function Home() {
           <strong>{RISK_MESSAGES[risk].title}</strong><span>{RISK_MESSAGES[risk].text}</span>
         </a>
       )}
-      {bubble && (
-        <div className="hello rise-in">
-          <Companion kind={kind} look={look} size={48} />
-          <p className="bubble" aria-live="polite">{bubble}</p>
-        </div>
-      )}
-      <div className="rise-in" style={{ '--d': '40ms' }}>
+      {/* R2: színátmenetes fejléc; a kísérő mellképként jobbra „kilóg”, a buborék (ha van) mellette; alatta a számláló. */}
+      <HeroHeader className="rise-in">
+        {(bubble || kind !== 'none') && (
+          <div className={`hello${bubble ? '' : ' hello-quiet'}`}>
+            {bubble ? <p className="bubble" aria-live="polite">{bubble}</p> : <span className="hello-spacer" />}
+            <Companion kind={kind} look={look} size={84} />
+          </div>
+        )}
         <Hero stats={{ ...s, today }} phases={phases} goalDays={profile.goalDays} freshToday={freshToday} currentSince={formatDateHu(s.currentPhaseStart)}
           liveStart={phaseStartInstant(s.currentPhaseStart, s.phaseCount > 1 ? null : profile.journeyStartAt)} />
-      </div>
+      </HeroHeader>
       <div className="rise-in" style={{ '--d': '80ms' }}>
         <SetupCard profile={profile} savingsConfigured={savings.configured} />
         <MoodCheckin onSaved={(fig) => setReaction(reactionFor(fig))} />
       </div>
       <div className="rise-in" style={{ '--d': '120ms' }}>
+        <h2 className="section-title">{HOME.weekAtGlance}</h2>
+        <WeekMoods events={data.events} today={today} />
+        <EnergyStress events={data.events} today={today} />
         <Tiles savings={savings} total={s.totalSoberDays} today={today} />
         <WeekGlance events={data.events} today={today} journeyStart={profile.journeyStart} />
         <DailyThought today={today} tags={profile.triggers ?? []} />

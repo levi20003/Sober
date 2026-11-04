@@ -42,6 +42,7 @@
   --tone-butter: #fff1bc;
   --tone-sky: #d0e7ff;
   --tone-coral: #ffd0c9;
+  --fig-shadow: rgba(43, 37, 64, 0.18);
   /* R2: színátmenetes fejléc (lila → barack), szöveg rajta: --card-ink */
   --coral-soft: #ffd9c7;
   --grad-hero: linear-gradient(160deg, var(--accent-soft) 0%, var(--coral-soft) 100%);

@@ -4,7 +4,11 @@ import { MOODS } from '../../domain/presets.js';
 import { moodPatterns } from '../../domain/moods.js';
 import { timelineSeries } from '../../domain/series.js';
 import { useTimeline } from '../../hooks/useTimeline.js';
-import { BarChart, Sparkline } from '../charts/Charts.jsx';
+import { BarChart } from '../charts/Charts.jsx';
+import { TrendChart } from '../charts/TrendChart.jsx';
+import { Grain, StatPill, WaveEdge } from '../design/Design.jsx';
+import { useNow } from '../home/LiveCounter.jsx';
+import { elapsedParts, phaseStartInstant } from '../../domain/elapsed.js';
 import { QuickLog } from '../QuickLog.jsx';
 import { FreshStartModal } from '../timeline/FreshStartModal.jsx';
 import { TimelineBody } from '../timeline/TimelineView.jsx';
@@ -33,6 +37,25 @@ function WidgetCard({ days, onOpen }) {
 
 const NAMES = Object.fromEntries(MOODS.map((m) => [m.id, m.label]));
 
+/** R3: telt színblokk íves alsó éllel; benne a jelenlegi szakasz óriási számmal (nap + óra), élőben. */
+function PhaseBlock({ start }) {
+  const now = useNow();
+  const p = elapsedParts(start, new Date(now));
+  const days = p?.totalDays ?? 0;
+  const hours = p?.hours ?? 0;
+  return (
+    <section className="color-block" aria-labelledby="pb-h">
+      <Grain />
+      <p className="eyebrow" id="pb-h">{TP.currentPhase}</p>
+      {/* Megcsúszás napján az új szakasz holnap indul: ilyenkor nem mutatunk csupasz „0 nap”-ot (K7), hanem egy kedves mondatot. */}
+      {p ? (
+        <p className="block-number"><span>{days}</span> <small className="num-thin">{TP.unitDays}</small> <span>{hours}</span> <small className="num-thin">{TP.unitHours}</small></p>
+      ) : <p className="block-text">{TP.phaseTomorrow}</p>}
+      <WaveEdge shape="arc" className="color-block-edge" />
+    </section>
+  );
+}
+
 export function TimelinePage() {
   const { snapshot } = useTimeline();
   const { data, phases, today } = snapshot;
@@ -45,10 +68,18 @@ export function TimelinePage() {
   const sel = picked !== null ? series[picked] : null;
   const patterns = moodPatterns(data.events, today);
   const valence = series.map((s) => (s.valence === null ? null : Math.round(((s.valence + 1) / 2) * 100)));
+  const { stats } = snapshot;
+  const urgesPassed = data.events.filter((e) => e.type === 'urge' && e.outcome === 'passed').length + stats.copedCount;
 
   return (
     <Page title={TP.title}>
-      <section className="card tone tone-sky" aria-labelledby="chart-h">
+      <PhaseBlock start={phaseStartInstant(stats.currentPhaseStart, stats.phaseCount > 1 ? null : data.profile.journeyStartAt)} />
+      <div className="stat-pills stagger">
+        <div style={{ '--i': 0 }}><StatPill icon="star" value={stats.totalSoberDays} label={TP.pillTotal} tone="lavender" /></div>
+        <div style={{ '--i': 1 }}><StatPill icon="wave" value={urgesPassed} label={TP.pillUrges} tone="mint" /></div>
+        <div style={{ '--i': 2 }}><StatPill icon="target" value={stats.longestPhaseDays} label={TP.pillLongest} tone="peach" /></div>
+      </div>
+      <section className="card" aria-labelledby="chart-h">
         <div className="row-between">
           <h2 id="chart-h">{TP.chartTitle}</h2>
           <div className="seg-tabs" role="group" aria-label={TP.chartDesc(range)}>
@@ -66,7 +97,7 @@ export function TimelinePage() {
         {valence.some((v) => v !== null) && (
           <>
             <p className="stat-label">{TP.moodTrend}</p>
-            <Sparkline values={valence} color="#6b3fe0" label={TP.moodTrend} />
+            <TrendChart values={valence} labels={series.map((s) => s.label)} format={(v) => `${v}%`} label={TP.moodTrend} />
           </>
         )}
       </section>

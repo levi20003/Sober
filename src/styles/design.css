@@ -14,7 +14,7 @@
 
 /* --- színátmenetes fejléc (R2) ----------------------------------------------------------- */
 .hero-header { position: relative; overflow: hidden; margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-4)) 0; padding: var(--sp-4) var(--sp-4) 0;
-  background: var(--grad-hero); color: var(--card-ink); border-radius: 0 0 var(--r-card) var(--r-card); }
+  background: var(--grad-hero); color: var(--card-ink); }
 .hero-header-body { position: relative; }
 .hero-header-edge { color: var(--bg); margin: var(--sp-2) calc(-1 * var(--sp-4)) -1px; width: calc(100% + 2 * var(--sp-4)); }
 .hero-header .hello { margin: 0 0 var(--sp-3); }
@@ -47,3 +47,131 @@
 .stagger > * { animation: rise-in 420ms var(--ease-soft) both; animation-delay: calc(var(--i, 0) * 40ms); }
 [data-motion="reduced"] .stagger > * { animation: none; }
 @media (prefers-reduced-motion: reduce) { .stagger > * { animation: none; } }
+
+/* --- főoldal (R2 + R4) ------------------------------------------------------------------- */
+.hero-header .hello { display: flex; align-items: flex-end; gap: var(--sp-2); min-height: 72px; }
+.hero-header .hello .bubble { flex: 1; align-self: center; }
+.hero-header .hello .mascot { flex: none; margin: -6px -4px -18px 0; position: relative; z-index: 1; filter: drop-shadow(0 6px 10px var(--fig-shadow)); }
+.hero-header .hello-spacer { flex: 1; }
+.hero-header .hero-card { position: relative; z-index: 2; box-shadow: var(--shadow-md); }
+.hero-header .hero-card .eyebrow { color: var(--muted); }
+
+/* Hangulat-választó: 4×3 rács (R1), nagy érintési felület, alatta a szó; kiválasztva gyűrű + enyhe nagyítás */
+.mood-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-2); overflow: visible; margin: 0; padding: var(--sp-1) 0 0; scroll-snap-type: none; }
+.sheet .mood-row { margin: 0; padding: var(--sp-1) 0 0; }
+.mood-chip { width: auto; min-height: 92px; border-radius: 22px; background: transparent; transition: transform 200ms var(--ease-spring), box-shadow 200ms var(--ease-soft); }
+.mood-chip.on { border-color: transparent; background: var(--tint); box-shadow: 0 0 0 3px var(--accent); transform: scale(1.04); }
+[data-motion="reduced"] .mood-chip.on { transform: none; }
+@media (prefers-reduced-motion: reduce) { .mood-chip.on { transform: none; } }
+@media (max-width: 300px) { .mood-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Energia / feszültség: nagy, vékony szám (R2) */
+.stats .meter-num { font-size: clamp(2.4rem, 12vw, 3.2rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1; }
+
+/* Heti sáv: a mai nap betűje tinta kitöltésű kerek jelvény (R4); a kör maga üres marad, amíg a nap tart */
+.day-dot.is-today > span[aria-hidden="true"] { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--ink-btn); color: var(--ink-btn-fg); }
+.tile-grid > div { display: grid; }
+.tile-grid > div > .tile { height: 100%; }
+.tone-coral { background: var(--tone-coral); }
+
+/* --- trendgörbe buborékcímkével (R3) ----------------------------------------------------- */
+.trend { position: relative; padding-top: 58px; }
+.trend-svg { display: block; width: 100%; height: 120px; overflow: visible; }
+.trend-line { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+.trend-guide { stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.trend-dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); pointer-events: none; }
+.trend-bubble { position: absolute; width: 28%; max-width: 28%; display: grid; justify-items: center; gap: 0;
+  padding: 6px 8px; border-radius: 14px; background: var(--ink-btn); color: var(--ink-btn-fg); text-align: center; font-size: var(--fs-xs); line-height: 1.2; box-sizing: border-box; pointer-events: none; }
+.trend-bubble strong { font-size: var(--fs-md); }
+.trend-bubble span { opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.trend-picks { display: flex; justify-content: space-between; margin-top: 6px; }
+.trend-picks button { flex: 1; min-height: 32px; border: 0; background: none; color: var(--muted); font: inherit; font-size: var(--fs-xs); font-weight: 700; border-radius: 99px; cursor: pointer; padding: 0; }
+.trend-picks button[aria-pressed="true"] { color: var(--text); box-shadow: inset 0 0 0 2px var(--line); }
+.trend-picks button:disabled { opacity: .45; cursor: default; }
+
+/* --- idővonal: színblokk (R3) ------------------------------------------------------------ */
+.color-block { position: relative; overflow: hidden; margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-4)) 0; padding: var(--sp-5) var(--sp-5) 0;
+  background: var(--block-bg); color: var(--block-ink); }
+.color-block .eyebrow { color: var(--block-muted); position: relative; }
+.block-number { position: relative; margin: var(--sp-1) 0 0; font-weight: 800; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.block-number span { font-size: clamp(3.4rem, 18vw, 4.6rem); }
+.block-number small { font-size: var(--fs-lg); letter-spacing: 0; color: var(--block-muted); margin-right: var(--sp-2); }
+.color-block-edge { color: var(--bg); margin: var(--sp-4) calc(-1 * var(--sp-5)) -1px; width: calc(100% + 2 * var(--sp-5)); transform: scaleY(-1); }
+.chart .bar { fill: var(--accent); }
+.block-text { position: relative; margin: var(--sp-2) 0 0; font-size: var(--fs-xl); font-weight: 800; line-height: 1.2; }
+
+/* --- megtakarítás (R2) ------------------------------------------------------------------- */
+.savings.tone .savings-total { color: var(--card-ink); }
+.money { display: inline-flex; align-items: baseline; gap: 4px; }
+.money-num { font-size: clamp(2.8rem, 15vw, 3.8rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.money-cur { font-size: var(--fs-lg); font-weight: 400; }
+.wave-progress { display: block; width: 100%; height: 22px; margin: var(--sp-2) 0 var(--sp-1); }
+.wave-track { fill: none; stroke: color-mix(in srgb, var(--card-ink) 18%, transparent); stroke-width: 6; stroke-linecap: round; }
+.wave-fill { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+
+/* --- bevezető (R4 felső sor) ------------------------------------------------------------- */
+.onb-bg { min-height: 100dvh; background: var(--bg); color: var(--text); transition: background-color 400ms var(--ease-soft); }
+.onb-tone-butter { background: var(--tone-butter); } .onb-tone-lavender { background: var(--tone-lavender); }
+.onb-tone-peach { background: var(--tone-peach); } .onb-tone-mint { background: var(--tone-mint); }
+.onb-bg:not(.onb-tone-cream) { color: var(--card-ink); }
+.onb-bg:not(.onb-tone-cream) .lead, .onb-bg:not(.onb-tone-cream) .hint, .onb-bg:not(.onb-tone-cream) .onb-count { color: var(--card-muted); }
+.onb-bg:not(.onb-tone-cream) .onb-nav { background: transparent; }
+.onb-bg:not(.onb-tone-cream) .choice span { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+.onb-bg:not(.onb-tone-cream) .input { background: var(--surface); }
+/* a sárga „Segítség most” minden háttéren kivehető: tinta keret */
+.onb .btn-help { box-shadow: 0 0 0 2px var(--fig-ink); }
+.btn-ink { background: var(--ink-btn); color: var(--ink-btn-fg); font-weight: 800; border-radius: var(--r-pill); flex: 1; min-height: 56px; font-size: 1.1rem; }
+.btn-ink:disabled { opacity: .45; }
+.btn-ink:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* 1. lépés díszítése: egymásra rakott, kissé elforgatott színes kártyák (max ±6°); kevesebb mozgásnál egyenesen */
+.onb-mascot { position: relative; display: grid; place-items: center; }
+.onb-stack { position: absolute; inset: 50% auto auto 50%; width: 0; height: 0; }
+.onb-stack i { position: absolute; width: 150px; height: 104px; left: -75px; top: -52px; border-radius: 24px; }
+.onb-stack i:nth-child(1) { background: var(--tone-pink); transform: translate(-34px, 8px) rotate(-6deg); }
+.onb-stack i:nth-child(2) { background: var(--tone-lavender); transform: translate(30px, -6px) rotate(5deg); }
+.onb-stack i:nth-child(3) { background: var(--tone-mint); transform: translate(0, 14px) rotate(-2deg); }
+.onb-mascot .mascot { position: relative; }
+[data-motion="reduced"] .onb-stack i { transform: none !important; }
+@media (prefers-reduced-motion: reduce) { .onb-stack i { transform: none !important; } .onb-bg { transition: none; } }
+.onb h1 { font-size: clamp(2.2rem, 9vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+
+/* --- beállítások: xs nagybetűs szakaszfejlécek, sorok --surface kártyán ------------------ */
+.screen details.group > summary { min-height: var(--tap); }
+.screen details.group > summary h2 { font-size: var(--fs-xs); font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.screen details.group[open] > summary h2 { color: var(--text); }
+
+/* Keskeny kijelző / 200%-os nagyítás: a sáv összehúzódik, semmi nem csúszik egymásra (a feliratok megmaradnak). */
+.tab-bubble { max-width: 100%; }
+.tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 340px) {
+  .tab-center { flex-basis: 54px; }
+  .fab { width: 48px; height: 48px; margin-top: -20px; border-width: 3px; }
+  .tab-label { font-size: 0.56rem; }
+}
+
+/* 200%-os nagyítás / nagyon keskeny kijelző: a fejléc gombjai a cím alá törnek, így nincs vízszintes görgetés.
+   A „Segítség most” marad a legszélesebb, legjobban látható elem. */
+@media (max-width: 340px) {
+  .appbar-inner { flex-wrap: wrap; row-gap: 6px; padding-top: 6px; padding-bottom: 6px; }
+  .appbar-text { flex-basis: 100%; }
+  .appbar-actions { flex: 1 1 100%; flex-wrap: wrap; justify-content: flex-start; min-width: 0; }
+  .appbar-actions .btn-help { flex: 1 1 auto; min-width: 0; }
+  .appbar-actions .btn-help .help-short { white-space: normal; }
+}
+@media (max-width: 340px) {
+  .row-between, .row { flex-wrap: wrap; row-gap: var(--sp-2); }
+  .seg-tabs { display: flex; flex-wrap: wrap; max-width: 100%; }
+  .challenge { flex-wrap: wrap; }
+  .challenge .btn { margin-left: 0; flex: 1 1 100%; }
+  .btn { white-space: normal; max-width: 100%; }
+  .setup-item { min-width: 0; }
+  .setup-item .setup-label { min-width: 0; overflow-wrap: anywhere; }
+  .phase-badge { white-space: normal; }
+  .breath-blob { max-width: 100%; }
+}
+@media (max-width: 340px) {
+  .tiles { grid-template-columns: 1fr; }
+  .title-info { flex-wrap: wrap; min-width: 0; }
+  .title-info h2 { min-width: 0; overflow-wrap: anywhere; }
+}
+@media (max-width: 340px) { .quick-card { overflow-wrap: anywhere; min-width: 0; } }

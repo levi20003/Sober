@@ -2,6 +2,7 @@ import { T, UX } from '../../content/index.js';
 import { InfoButton } from '../Info.jsx';
 import { formatHuf } from '../../domain/savings.js';
 import { Progress } from '../ui.jsx';
+import { Money, WaveProgress } from '../design/Design.jsx';
 
 export function SavingsWidget({ savings: s, onSetup }) {
   if (!s.configured) {
@@ -15,9 +16,9 @@ export function SavingsWidget({ savings: s, onSetup }) {
   }
   const m = s.milestones;
   return (
-    <section className="card savings" aria-labelledby="savings-h">
+    <section className="card savings tone tone-peach" aria-labelledby="savings-h">
       <div className="title-info"><h2 id="savings-h" className="stat-label">{T.saved}</h2><InfoButton title={UX.savingsInfoTitle}><p>{T.savingsEstimate}</p>{s.changedOverTime && <p>{T.savingsChanged}</p>}</InfoButton></div>
-      <p className="savings-total">{formatHuf(s.total)}</p>
+      <p className="savings-total"><Money text={formatHuf(s.total)} /></p>
       {/* Like the phase cards: never greet someone right after a slip with a bare "0 Ft". */}
       {s.currentPhase > 0 && s.currentPhase < s.total && <p className="hint">{T.savingsCurrentPhase(formatHuf(s.currentPhase))}</p>}
       {s.daily > 0 && <p className="hint">{T.savingsPerMonth(formatHuf(s.perMonth))}</p>}
@@ -31,7 +32,7 @@ export function SavingsWidget({ savings: s, onSetup }) {
       {m.achieved.length > 0 && <p className="savings-achieved">{`${T.savingsAchieved} `}<strong>{m.achieved.at(-1).label}</strong></p>}
       {m.next ? (
         <div>
-          <Progress value={m.progress} label={m.next.label} />
+          <WaveProgress value={m.progress} label={m.next.label} />
           <p className="hint">{T.savingsNext(m.next.label, formatHuf(m.remaining))}</p>
         </div>
       ) : <p className="hint">{T.savingsAllMilestones}</p>}
