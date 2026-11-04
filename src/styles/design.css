@@ -1,0 +1,49 @@
+/* A design-referenciák (R1–R4) elvei: pasztell felületek, színátmenetes fejléc, hullámos él, nagy számok, csempék.
+   Csak tokenek (var(--…)); nyers szín nincs. Kevesebb mozgásnál minden mozgás és forgatás kikapcsol. */
+
+/* --- tipográfia -------------------------------------------------------------------------- */
+.title-hero { font-size: clamp(2.2rem, 9vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin: 0; }
+.title-hero em { font-style: italic; font-weight: 400; }
+.num-thin { font-weight: 300; }
+
+/* --- hullámos él, szemcse ---------------------------------------------------------------- */
+.wave-edge { display: block; width: 100%; height: 26px; }
+.grain { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .07; pointer-events: none; mix-blend-mode: multiply; }
+:root[data-theme="dark"] .grain { mix-blend-mode: screen; opacity: .05; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grain { mix-blend-mode: screen; opacity: .05; } }
+
+/* --- színátmenetes fejléc (R2) ----------------------------------------------------------- */
+.hero-header { position: relative; overflow: hidden; margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-4)) 0; padding: var(--sp-4) var(--sp-4) 0;
+  background: var(--grad-hero); color: var(--card-ink); border-radius: 0 0 var(--r-card) var(--r-card); }
+.hero-header-body { position: relative; }
+.hero-header-edge { color: var(--bg); margin: var(--sp-2) calc(-1 * var(--sp-4)) -1px; width: calc(100% + 2 * var(--sp-4)); }
+.hero-header .hello { margin: 0 0 var(--sp-3); }
+.hero-header .bubble { background: var(--surface); color: var(--text); }
+.hero-figure { position: absolute; right: -6px; top: -4px; pointer-events: none; }
+.hero-header .hero-card { background: var(--surface); }
+
+/* --- csempék (R4) ------------------------------------------------------------------------ */
+.tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); }
+@media (max-width: 300px) { .tile-grid { grid-template-columns: 1fr; } }
+.tile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 148px; padding: var(--sp-4); border: 0; border-radius: var(--r-tile);
+  text-align: left; text-decoration: none; font: inherit; cursor: pointer; box-shadow: var(--shadow-sm); }
+.tile:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.tile-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: color-mix(in srgb, var(--surface) 70%, transparent); margin-bottom: var(--sp-2); }
+.tile-title { font-weight: 800; font-size: var(--fs-md); line-height: 1.2; }
+.tile-desc { font-size: var(--fs-xs); color: var(--card-muted); line-height: 1.35; }
+.tile-cta { margin-top: auto; padding-top: var(--sp-2); display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-sm); font-weight: 700; }
+
+/* --- statisztika-pirulák (R3) ------------------------------------------------------------ */
+.stat-pills { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+@media (max-width: 300px) { .stat-pills { grid-template-columns: 1fr; } }
+.stat-pill { display: grid; justify-items: center; gap: 2px; padding: 26px 6px 12px; margin-top: 16px; border-radius: 26px; position: relative; text-align: center; }
+.stat-pill.upcoming { background: transparent; border: 2px dashed var(--line); color: var(--text); }
+.stat-pill-icon { position: absolute; top: -16px; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+.stat-pill-value { font-size: clamp(1.5rem, 7vw, 2rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat-pill-label { font-size: var(--fs-xs); font-weight: 600; color: var(--card-muted); }
+.stat-pill.upcoming .stat-pill-label { color: var(--muted); }
+
+/* --- lépcsőzetes felúszás (40 ms) -------------------------------------------------------- */
+.stagger > * { animation: rise-in 420ms var(--ease-soft) both; animation-delay: calc(var(--i, 0) * 40ms); }
+[data-motion="reduced"] .stagger > * { animation: none; }
+@media (prefers-reduced-motion: reduce) { .stagger > * { animation: none; } }
