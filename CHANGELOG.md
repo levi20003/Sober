@@ -7,6 +7,19 @@ az alkalmazás kódját módosítja, de ezt a fájlt nem (`scripts/check-changel
 **Legfrissebb Android-alkalmazás:** [APK letöltése](https://github.com/levi20003/Sober/releases/download/android-latest/jozansag-szamlalo.apk) ·
 [Telepítési útmutató](https://levi20003.github.io/Sober/telepites.html) · [Webes változat](https://levi20003.github.io/Sober/)
 
+## 0.13.0 – 2026-11-04
+- **Új megjelenés a referenciaképek hangulatában** (saját rajzzal, a meglévő palettára építve):
+  - Főoldal: színátmenetes (lila → barack) fejléc, benne a kísérő és a számláló; „Hogy vagy ma?” 4×3-as rácsban; heti hangulat, energia és feszültség nagy, vékony számmal.
+  - Alsó sáv: tinta „pill”, 4 fül és középen kiemelt kerek **+** (gyors rögzítés). A **Beállítások** a jobb felső avatarról nyílik.
+  - Idővonal: színes fejlécblokk a jelenlegi szakasszal (nap + óra), három statisztika-pirula (összes józan nap, átvészelt sóvárgás, leghosszabb szakasz), sima hangulat-görbe buborékcímkével, amely mindig a diagramon belül marad.
+  - Eszközök: kétoszlopos pasztell csempék rövid leírással és „Megnézem →” sorral (sóvárgás, légzés, kihívások, hála, levél, okaim).
+  - Megtakarítás: nagy összeg kis pénznemmel, hullámos haladás-sáv.
+  - Bevezető: lépésenként más színű háttér, nagy címek, tinta „Tovább →” gomb.
+  - Beállítások: kisbetűs-nagybetűs szakaszcímek, átláthatóbb lista.
+- A sötét téma pasztell kártyái mélyebb, telítettebb színt kaptak; minden új színpár megfelel a WCAG AA kontrasztnak.
+- 200%-os nagyításnál és 360 px szélességen sehol nincs vízszintes görgetés (a fejléc gombjai a cím alá törnek).
+- A krízisképernyő tartalma, sorrendje és színei változatlanok.
+
 ## 0.12.0 – 2026-11-04
 - **Új számláló (stopper):** a kör és a nagy középső szám helyett az élő nap, óra, perc, másodperc csíkokkal; fent kicsiben az összes józan nap. A „nap” csík a kezdés pillanatától telik (nem a napszaktól), így induláskor üres.
 - **Percre pontos kezdés:** a Beállítások → Biztonság részben a kezdés napja mellett az óra és a perc is megadható; a bevezetőben a „Korábban kezdtem” mellé is. Pontos kezdésnél a napok száma pontosan 24 óránként nő, nem éjfélkor.
